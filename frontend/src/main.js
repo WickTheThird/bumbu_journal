@@ -1,24 +1,38 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+
+import { my_list } from './merge_sort.js';
+import { my_function } from './soring_algo.js';
+
+//arays sunt varabile ca o structura care pot stoca mai multe valori
+let fruits =["blueberry", "apple", "banana", "mango"];
+let numbers=[1, 2, 3, 4, 5, 6, 7, 8, 9];
+//> List Methods
+//fruits.push("strawberry");
+//fruits.pop();
+//fruits.shift();
+//let numOfFruits = fruits.length;
+//let index= fruits.indexOf('tomato');
+//console.log(index);
+
+//> for loop
+/*
+  for(let i=0; i < fruits.length; i++) {
+      console.log(fruits[i]);
+  }
+*/
+
+//> function Example
+let sum = my_function(5, 10);
+console.log(sum);
+
+
+//> sorting/ also reverse
+fruits.sort().reverse();
 
 document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
 
-setupCounter(document.querySelector('#counter'))
+<p class="red">${fruits}</p>
+<p class="red">List Len: ${sum}</p>
+<p class>List sort: ${my_list(numbers)}</p>
+
+`

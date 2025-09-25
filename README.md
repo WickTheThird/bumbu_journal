@@ -15,3 +15,8 @@ This is a project where I will learn the following:
 3. `cd` -> navigeaza prin foldere
 4. `ls` -> sa vezi continutul unui folder
 5. `clear` -> cureti ecranul
+
+## Javascript stuff
+1. am creat o functie care a fost importata si exportata dupa care a fost urcata pe site
+2. functia primeste si returneaza o lista
+3. pe viitor as dori lista sa implementeze algoritmul sorting
