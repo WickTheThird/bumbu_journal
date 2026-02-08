@@ -20,7 +20,7 @@ describe('Build Output', () => {
     
     expect(content).toContain('<!doctype html>')
     expect(content).toContain('<div id="app">')
-    expect(content).toContain('/bumbu_journal/')
+    expect(content).toContain('/bumbu_journal/docs/')
   })
 
   it('assets directory exists with JS and CSS', () => {
