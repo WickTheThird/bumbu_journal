@@ -185,24 +185,54 @@ body {
   background: #444;
 }
 
+/* ASCII Logo scaling */
+.ascii-logo {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .terminal-container {
     padding: 10px;
   }
   
   .terminal-window {
     height: 95vh;
-    border-radius: 0;
+    border-radius: 8px;
   }
   
   .terminal-body {
     padding: 12px;
+    font-size: 13px;
+  }
+  
+  .ascii-logo {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal-window {
+    border-radius: 0;
+  }
+  
+  .terminal-body {
+    padding: 10px;
     font-size: 12px;
+  }
+  
+  .ascii-logo {
+    font-size: 7px;
+    letter-spacing: -0.5px;
   }
   
   .output-line {
     white-space: pre-wrap;
-    word-break: break-all;
+    word-break: break-word;
+  }
+  
+  .terminal-title {
+    display: none;
   }
 }
