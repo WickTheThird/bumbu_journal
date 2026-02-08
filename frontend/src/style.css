@@ -185,60 +185,47 @@ body {
   background: #444;
 }
 
-/* ASCII Logo with neon drip effect */
+/* ASCII Logo */
 .ascii-logo {
   font-size: 14px;
   line-height: 1.2;
-  position: relative;
+  display: inline-block;
+}
+
+.logo-main {
+  color: var(--cyan);
+}
+
+/* Neon green dripping effect */
+.drip-line {
+  display: block;
+  height: 1.2em;
+}
+
+.drip {
+  color: #39ff14;
   text-shadow: 
-    0 0 5px var(--cyan),
-    0 0 10px var(--cyan),
-    0 0 20px var(--cyan),
-    0 0 40px var(--cyan),
-    0 2px 2px rgba(0, 212, 255, 0.8),
-    0 4px 4px rgba(0, 212, 255, 0.6),
-    0 6px 6px rgba(0, 212, 255, 0.4),
-    0 8px 8px rgba(0, 212, 255, 0.3),
-    0 10px 10px rgba(0, 212, 255, 0.2),
-    0 12px 15px rgba(0, 212, 255, 0.1);
-  animation: neonPulse 2s ease-in-out infinite, drip 3s ease-in-out infinite;
+    0 0 5px #39ff14,
+    0 0 10px #39ff14,
+    0 0 15px #39ff14;
+  animation: dripFall 2s ease-in-out infinite;
+  display: inline-block;
 }
 
-@keyframes neonPulse {
-  0%, 100% {
-    text-shadow: 
-      0 0 5px var(--cyan),
-      0 0 10px var(--cyan),
-      0 0 20px var(--cyan),
-      0 0 40px var(--cyan),
-      0 2px 2px rgba(0, 212, 255, 0.8),
-      0 4px 4px rgba(0, 212, 255, 0.6),
-      0 6px 6px rgba(0, 212, 255, 0.4),
-      0 8px 8px rgba(0, 212, 255, 0.3),
-      0 10px 10px rgba(0, 212, 255, 0.2),
-      0 12px 15px rgba(0, 212, 255, 0.1);
-  }
-  50% {
-    text-shadow: 
-      0 0 10px var(--cyan),
-      0 0 20px var(--cyan),
-      0 0 30px var(--cyan),
-      0 0 50px var(--cyan),
-      0 2px 2px rgba(0, 212, 255, 0.9),
-      0 5px 5px rgba(0, 212, 255, 0.7),
-      0 8px 8px rgba(0, 212, 255, 0.5),
-      0 12px 12px rgba(0, 212, 255, 0.4),
-      0 16px 16px rgba(0, 212, 255, 0.3),
-      0 20px 25px rgba(0, 212, 255, 0.15);
-  }
-}
+.drip.d1 { animation-delay: 0s; }
+.drip.d2 { animation-delay: 0.3s; }
+.drip.d3 { animation-delay: 0.6s; }
+.drip.d4 { animation-delay: 0.9s; }
+.drip.d5 { animation-delay: 1.2s; }
 
-@keyframes drip {
+@keyframes dripFall {
   0%, 100% {
-    filter: blur(0px);
+    opacity: 0.3;
+    transform: translateY(0);
   }
   50% {
-    filter: blur(0.3px);
+    opacity: 1;
+    transform: translateY(3px);
   }
 }
 
