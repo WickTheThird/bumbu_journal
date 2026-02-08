@@ -167,6 +167,27 @@ body {
 .dim { color: var(--dim); }
 .white { color: var(--white); }
 
+/* Links */
+a.link, a.project-link {
+  color: var(--cyan);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+a.link:hover, a.project-link:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+}
+
+a.project-link {
+  color: var(--green);
+}
+
+a.project-link:hover {
+  color: #39ff14;
+  text-shadow: 0 0 8px #39ff14;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
