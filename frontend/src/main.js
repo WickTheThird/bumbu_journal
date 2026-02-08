@@ -18,7 +18,7 @@ const PROFILE = {
   alias: 'WickTheThird',
   title: 'Full Stack Developer & Freelancer',
   location: 'Ireland 🇮🇪',
-  email: 'contact@filipbumbu.dev',
+  email: 'bumbuindustries@gmail.com',
   github: 'https://github.com/WickTheThird',
   linkedin: 'https://www.linkedin.com/in/filip-bumbu-410741262/',
   status: 'Available for hire ✓'
