@@ -6,9 +6,11 @@ const WICK_LOGO = `<span class="logo-main">██╗    ██╗ ██╗  █
 ██║███╗██║ ██║ ██║      ██╔═██╗ 
 ╚███╔███╔╝ ██║ ╚██████╗ ██║  ██╗
  ╚══╝╚══╝  ╚═╝  ╚═════╝ ╚═╝  ╚═╝</span>
-<span class="drip-line"><span class="drip d1">│</span>    <span class="drip d2">│</span>      <span class="drip d3">║</span>         <span class="drip d4">│</span>    <span class="drip d5">│</span></span>
-<span class="drip-line"><span class="drip d1">│</span>         <span class="drip d3">║</span>              <span class="drip d5">│</span></span>
-<span class="drip-line"><span class="drip d1">▼</span>         <span class="drip d3">▼</span>              <span class="drip d5">▼</span></span>`
+<span class="drip">  ║│        │    ║║         │ ║</span>
+<span class="drip">  ║│        │    ║║         │ ║</span>
+<span class="drip">  │         │     ║           │</span>
+<span class="drip">  │         │     ║           │</span>
+<span class="drip">            ╵     ╵            </span>`
 
 const welcomeLines = [
   '',
