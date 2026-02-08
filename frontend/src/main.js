@@ -28,11 +28,13 @@ const PROFILE = {
 let projects = []
 
 const SKILLS = [
-  { category: 'Languages', items: ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++'] },
+  { category: 'Languages', items: ['Python', 'JavaScript', 'TypeScript', 'Java', 'C++'] },
   { category: 'Frontend', items: ['React', 'Vue', 'Tailwind', 'HTML/CSS'] },
-  { category: 'Backend', items: ['Node.js', 'Express', 'Django', 'REST APIs'] },
-  { category: 'Database', items: ['PostgreSQL', 'MongoDB', 'Redis'] },
-  { category: 'Tools', items: ['Git', 'Docker', 'Linux', 'AWS'] }
+  { category: 'Backend', items: ['FastAPI', 'Node.js', 'Express', 'Django'] },
+  { category: 'Database', items: ['PostgreSQL', 'MongoDB', 'Redis', 'Elasticsearch'] },
+  { category: 'DevOps', items: ['Docker', 'Jenkins', 'Kubernetes', 'AWS'] },
+  { category: 'Monitoring', items: ['Grafana', 'Prometheus', 'Datadog'] },
+  { category: 'Tools', items: ['Git', 'Linux', 'Kafka', 'RabbitMQ'] }
 ]
 
 // Commands
