@@ -21,7 +21,7 @@ const PROFILE = {
   email: 'bumbuindustries@gmail.com',
   github: 'https://github.com/WickTheThird',
   linkedin: 'https://www.linkedin.com/in/filip-bumbu-410741262/',
-  status: 'Available for hire ✓'
+  status: 'Get in contact ✉'
 }
 
 // Projects - will be fetched from GitHub
@@ -49,7 +49,7 @@ const commands = {
   <span class="green">open</span> <span class="dim">[name]</span>   Open a project (e.g., open bumbu_journal)
   <span class="green">contact</span>        Ways to reach me
   <span class="green">social</span>         Social media links
-  <span class="green">hire</span>           Freelance availability & rates
+  <span class="green">hire</span>           Work with me
   <span class="green">whoami</span>         Quick intro
   <span class="green">clear</span>          Clear commands (keep welcome)
   <span class="green">empty</span>          Clear everything
@@ -189,12 +189,10 @@ ${PROFILE.title}
   hire: () => {
     return `
 <span class="cyan">┌─────────────────────────────────────────────────────────┐</span>
-<span class="cyan">│</span>  <span class="green">🚀 Hire Me</span>                                            <span class="cyan">│</span>
+<span class="cyan">│</span>  <span class="green">🚀 Work With Me</span>                                       <span class="cyan">│</span>
 <span class="cyan">└─────────────────────────────────────────────────────────┘</span>
 
-  <span class="green">Status:</span> ${PROFILE.status}
-
-  <span class="yellow">What I Can Do For You:</span>
+  <span class="yellow">What I Can Do:</span>
   
   • Full-stack web development
   • Custom web applications
@@ -203,12 +201,12 @@ ${PROFILE.title}
   • Code review & consulting
   • Bug fixes & maintenance
 
-  <span class="yellow">Let's Work Together:</span>
+  <span class="yellow">Let's Connect:</span>
   
   📧 <a href="mailto:${PROFILE.email}" class="link">${PROFILE.email}</a>
   💼 <a href="${PROFILE.linkedin}" target="_blank" class="link">Connect on LinkedIn</a>
 
-<span class="dim">  Serious inquiries only. Let's build something great!</span>
+<span class="dim">  Let's build something great!</span>
 `
   },
 

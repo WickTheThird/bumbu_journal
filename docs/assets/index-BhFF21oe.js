@@ -1,4 +1,4 @@
-(function(){const s=document.createElement("link").relList;if(s&&s.supports&&s.supports("modulepreload"))return;for(const t of document.querySelectorAll('link[rel="modulepreload"]'))i(t);new MutationObserver(t=>{for(const l of t)if(l.type==="childList")for(const m of l.addedNodes)m.tagName==="LINK"&&m.rel==="modulepreload"&&i(m)}).observe(document,{childList:!0,subtree:!0});function e(t){const l={};return t.integrity&&(l.integrity=t.integrity),t.referrerPolicy&&(l.referrerPolicy=t.referrerPolicy),t.crossOrigin==="use-credentials"?l.credentials="include":t.crossOrigin==="anonymous"?l.credentials="omit":l.credentials="same-origin",l}function i(t){if(t.ep)return;t.ep=!0;const l=e(t);fetch(t.href,l)}})();const b=`<span class="logo-main">██╗    ██╗ ██╗  ██████╗ ██╗  ██╗
+(function(){const s=document.createElement("link").relList;if(s&&s.supports&&s.supports("modulepreload"))return;for(const t of document.querySelectorAll('link[rel="modulepreload"]'))i(t);new MutationObserver(t=>{for(const l of t)if(l.type==="childList")for(const m of l.addedNodes)m.tagName==="LINK"&&m.rel==="modulepreload"&&i(m)}).observe(document,{childList:!0,subtree:!0});function e(t){const l={};return t.integrity&&(l.integrity=t.integrity),t.referrerPolicy&&(l.referrerPolicy=t.referrerPolicy),t.crossOrigin==="use-credentials"?l.credentials="include":t.crossOrigin==="anonymous"?l.credentials="omit":l.credentials="same-origin",l}function i(t){if(t.ep)return;t.ep=!0;const l=e(t);fetch(t.href,l)}})();const k=`<span class="logo-main">██╗    ██╗ ██╗  ██████╗ ██╗  ██╗
 ██║    ██║ ██║ ██╔════╝ ██║ ██╔╝
 ██║ █╗ ██║ ██║ ██║      █████╔╝ 
 ██║███╗██║ ██║ ██║      ██╔═██╗ 
@@ -8,7 +8,7 @@
 <span class="drip">  ║│        │    ║║         │ ║</span>
 <span class="drip">  │         │     ║           │</span>
 <span class="drip">  │         │     ║           │</span>
-<span class="drip">            ╵     ╵            </span>`,n={name:"Filip Bumbu",alias:"WickTheThird",title:"Full Stack Developer & Freelancer",location:"Ireland 🇮🇪",email:"bumbuindustries@gmail.com",github:"https://github.com/WickTheThird",linkedin:"https://www.linkedin.com/in/filip-bumbu-410741262/",status:"Available for hire ✓"};let r=[];const k=[{category:"Languages",items:["Python","JavaScript","TypeScript","Java","C++"]},{category:"Frontend",items:["React","Vue","Tailwind","HTML/CSS"]},{category:"Backend",items:["FastAPI","Node.js","Express","Django"]},{category:"Database",items:["PostgreSQL","MongoDB","Redis","Elasticsearch"]},{category:"DevOps",items:["Docker","Jenkins","Kubernetes","AWS"]},{category:"Monitoring",items:["Grafana","Prometheus","Datadog"]},{category:"Tools",items:["Git","Linux","Kafka","RabbitMQ"]}],d={help:()=>`
+<span class="drip">            ╵     ╵            </span>`,n={name:"Filip Bumbu",alias:"WickTheThird",title:"Full Stack Developer & Freelancer",location:"Ireland 🇮🇪",email:"bumbuindustries@gmail.com",github:"https://github.com/WickTheThird",linkedin:"https://www.linkedin.com/in/filip-bumbu-410741262/",status:"Get in contact ✉"};let r=[];const b=[{category:"Languages",items:["Python","JavaScript","TypeScript","Java","C++"]},{category:"Frontend",items:["React","Vue","Tailwind","HTML/CSS"]},{category:"Backend",items:["FastAPI","Node.js","Express","Django"]},{category:"Database",items:["PostgreSQL","MongoDB","Redis","Elasticsearch"]},{category:"DevOps",items:["Docker","Jenkins","Kubernetes","AWS"]},{category:"Monitoring",items:["Grafana","Prometheus","Datadog"]},{category:"Tools",items:["Git","Linux","Kafka","RabbitMQ"]}],d={help:()=>`
 <span class="cyan">Available Commands:</span>
 
   <span class="green">about</span>          Who am I? My story and profile
@@ -17,7 +17,7 @@
   <span class="green">open</span> <span class="dim">[name]</span>   Open a project (e.g., open bumbu_journal)
   <span class="green">contact</span>        Ways to reach me
   <span class="green">social</span>         Social media links
-  <span class="green">hire</span>           Freelance availability & rates
+  <span class="green">hire</span>           Work with me
   <span class="green">whoami</span>         Quick intro
   <span class="green">clear</span>          Clear commands (keep welcome)
   <span class="green">empty</span>          Clear everything
@@ -52,7 +52,7 @@ ${n.title}
 <span class="cyan">┌─────────────────────────────────────────────────────────┐</span>
 <span class="cyan">│</span>  <span class="green">Technical Skills</span>                                      <span class="cyan">│</span>
 <span class="cyan">└─────────────────────────────────────────────────────────┘</span>
-`;return k.forEach(s=>{a+=`
+`;return b.forEach(s=>{a+=`
   <span class="yellow">${s.category}</span>
   <span class="dim">└─</span> ${s.items.map(e=>`<span class="white">${e}</span>`).join(" • ")}
 `}),a+=`
@@ -90,12 +90,10 @@ ${n.title}
 <span class="dim">  Click any link to open!</span>
 `,hire:()=>`
 <span class="cyan">┌─────────────────────────────────────────────────────────┐</span>
-<span class="cyan">│</span>  <span class="green">🚀 Hire Me</span>                                            <span class="cyan">│</span>
+<span class="cyan">│</span>  <span class="green">🚀 Work With Me</span>                                       <span class="cyan">│</span>
 <span class="cyan">└─────────────────────────────────────────────────────────┘</span>
 
-  <span class="green">Status:</span> ${n.status}
-
-  <span class="yellow">What I Can Do For You:</span>
+  <span class="yellow">What I Can Do:</span>
   
   • Full-stack web development
   • Custom web applications
@@ -104,12 +102,12 @@ ${n.title}
   • Code review & consulting
   • Bug fixes & maintenance
 
-  <span class="yellow">Let's Work Together:</span>
+  <span class="yellow">Let's Connect:</span>
   
   📧 <a href="mailto:${n.email}" class="link">${n.email}</a>
   💼 <a href="${n.linkedin}" target="_blank" class="link">Connect on LinkedIn</a>
 
-<span class="dim">  Serious inquiries only. Let's build something great!</span>
+<span class="dim">  Let's build something great!</span>
 `,clear:()=>{const a=y.querySelectorAll(".output-line"),s=h.length;for(let e=a.length-1;e>=s;e--)a[e].remove();return null},empty:()=>(y.innerHTML="",null),github:()=>(window.open(n.github,"_blank"),'<span class="green">Opening GitHub profile...</span>'),linkedin:()=>(window.open(n.linkedin,"_blank"),'<span class="green">Opening LinkedIn profile...</span>'),echo:a=>a.join(" "),date:()=>new Date().toLocaleString(),pwd:()=>"/home/wick",neofetch:()=>`
 <span class="cyan">${n.alias}</span>@<span class="cyan">portfolio</span>
 ──────────────────────
@@ -118,7 +116,7 @@ ${n.title}
 <span class="yellow">Shell:</span> wick-terminal
 <span class="yellow">Theme:</span> Neon Graffiti
 <span class="yellow">Status:</span> <span class="green">${n.status}</span>
-`},h=["",'<span class="ascii-logo">'+b+"</span>","",'<span class="dim">────────────────────────────────────────────────────────────</span>',"",`  <span class="green">WICK TERMINAL</span> <span class="dim">v3.0.0</span>  <span class="yellow">│</span>  <span class="white">${n.name}</span>  <span class="yellow">│</span>  <span class="dim">${n.title}</span>`,"",`  <span class="green">${n.status}</span>`,"",'<span class="dim">────────────────────────────────────────────────────────────</span>',"",'  <span class="yellow">⚡</span> Type <span class="green">help</span> to see available commands','  <span class="yellow">⚡</span> Type <span class="green">about</span> to learn more about me','  <span class="yellow">⚡</span> Type <span class="green">proj</span> to see my work',""];document.querySelector("#app").innerHTML=`
+`},h=["",'<span class="ascii-logo">'+k+"</span>","",'<span class="dim">────────────────────────────────────────────────────────────</span>',"",`  <span class="green">WICK TERMINAL</span> <span class="dim">v3.0.0</span>  <span class="yellow">│</span>  <span class="white">${n.name}</span>  <span class="yellow">│</span>  <span class="dim">${n.title}</span>`,"",`  <span class="green">${n.status}</span>`,"",'<span class="dim">────────────────────────────────────────────────────────────</span>',"",'  <span class="yellow">⚡</span> Type <span class="green">help</span> to see available commands','  <span class="yellow">⚡</span> Type <span class="green">about</span> to learn more about me','  <span class="yellow">⚡</span> Type <span class="green">proj</span> to see my work',""];document.querySelector("#app").innerHTML=`
   <div class="terminal-container">
     <div class="scanlines"></div>
     
