@@ -51,7 +51,8 @@ const commands = {
   <span class="green">social</span>         Social media links
   <span class="green">hire</span>           Freelance availability & rates
   <span class="green">whoami</span>         Quick intro
-  <span class="green">clear</span>          Clear the terminal
+  <span class="green">clear</span>          Clear commands (keep welcome)
+  <span class="green">empty</span>          Clear everything
   <span class="green">help</span>           Show this message
 
 <span class="dim">Tip: Click on any link to open it!</span>
@@ -218,6 +219,11 @@ ${PROFILE.title}
     for (let i = lines.length - 1; i >= welcomeCount; i--) {
       lines[i].remove()
     }
+    return null
+  },
+
+  empty: () => {
+    output.innerHTML = ''
     return null
   },
 
