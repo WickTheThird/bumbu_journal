@@ -1,106 +1,112 @@
 import './style.css'
 
-const ASCII_LOGO = `
-██╗    ██╗██╗ ██████╗██╗  ██╗    ████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ██╗     
-██║    ██║██║██╔════╝██║ ██╔╝    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██╔══██╗██║     
-██║ █╗ ██║██║██║     █████╔╝        ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║███████║██║     
-██║███╗██║██║██║     ██╔═██╗        ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║╚██╗██║██╔══██║██║     
-╚███╔███╔╝██║╚██████╗██║  ██╗       ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║ ╚████║██║  ██║███████╗
- ╚══╝╚══╝ ╚═╝ ╚═════╝╚═╝  ╚═╝       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
+const WICK_LOGO = `
+ █     █░ ██▓ ▄████▄   ██ ▄█▀
+▓█░ █ ░█░▓██▒▒██▀ ▀█   ██▄█▒ 
+▒█░ █ ░█ ▒██▒▒▓█    ▄ ▓███▄░ 
+░█░ █ ░█ ░██░▒▓▓▄ ▄██▒▓██ █▄ 
+░░██▒██▓ ░██░▒ ▓███▀ ░▒██▒ █▄
+░ ▓░▒ ▒  ░▓  ░ ░▒ ▒  ░▒ ▒▒ ▓▒
+  ▒ ░ ░   ▒ ░  ░  ▒   ░ ░▒ ▒░
+  ░   ░   ▒ ░░        ░ ░░ ░ 
+    ░     ░  ░ ░      ░  ░   
+             ░               
 `
 
-const CANDLE_ASCII = `
-     )
-    (
-   .-'-.
-   |   |
-   |   |
-   |   |
-   |   |
- __|   |__
-/  '---'  \\
-'---------'
-`
+const welcomeLines = [
+  '',
+  '<span class="cyan">' + WICK_LOGO + '</span>',
+  '',
+  '<span class="dim">────────────────────────────────────────────────────────────</span>',
+  '',
+  '  <span class="green">WICK TERMINAL</span> <span class="dim">v3.0.0</span> <span class="yellow">64 bit</span> <span class="dim">| Educational Mode</span>',
+  '',
+  '  <span class="dim">Port:</span> <span class="white">6379</span>',
+  '  <span class="dim">PID:</span> <span class="white">42069</span>',
+  '  <span class="dim">Mode:</span> <span class="green">standalone</span>',
+  '',
+  '  <span class="dim">Documentation:</span> <span class="cyan">https://github.com/WickTheThird</span>',
+  '',
+  '<span class="dim">────────────────────────────────────────────────────────────</span>',
+  '',
+  '  <span class="yellow">⚡</span> Type <span class="green">help</span> to see available commands',
+  '  <span class="yellow">⚡</span> Type <span class="green">about</span> to learn more',
+  '  <span class="yellow">⚡</span> Type <span class="green">clear</span> to reset the terminal',
+  '',
+]
 
 document.querySelector('#app').innerHTML = `
   <div class="terminal-container">
-    <!-- Scanline overlay -->
     <div class="scanlines"></div>
     
-    <!-- CRT flicker -->
-    <div class="crt-flicker"></div>
-    
-    <!-- Main terminal window -->
     <div class="terminal-window">
-      <!-- Header bar -->
       <div class="terminal-header">
         <div class="terminal-buttons">
           <span class="btn-close"></span>
           <span class="btn-minimize"></span>
           <span class="btn-maximize"></span>
         </div>
-        <div class="terminal-title">WICK_TERMINAL v3.0 // SECURE CONNECTION</div>
+        <div class="terminal-title">wick@terminal ~ </div>
         <div class="terminal-status">
           <span class="status-dot"></span>
-          <span>ONLINE</span>
+          <span>connected</span>
         </div>
       </div>
       
-      <!-- Terminal body -->
-      <div class="terminal-body">
-        <!-- ASCII Logo -->
-        <pre class="ascii-logo">${ASCII_LOGO}</pre>
+      <div class="terminal-body" id="terminal">
+        <div class="output" id="output"></div>
         
-        <!-- System info panel -->
-        <div class="system-panel">
-          <div class="panel-section">
-            <pre class="candle-art">${CANDLE_ASCII}</pre>
-          </div>
-          <div class="panel-section info-section">
-            <div class="info-line"><span class="label">SYSTEM</span><span class="value">WICK_OS v3.0.0</span></div>
-            <div class="info-line"><span class="label">STATUS</span><span class="value status-active">OPERATIONAL</span></div>
-            <div class="info-line"><span class="label">UPTIME</span><span class="value" id="uptime">00:00:00</span></div>
-            <div class="info-line"><span class="label">MEMORY</span><span class="value">2.4 TB / 4.0 TB</span></div>
-            <div class="info-line"><span class="label">NETWORK</span><span class="value">ENCRYPTED</span></div>
-            <div class="info-line"><span class="label">LOCATION</span><span class="value">CLASSIFIED</span></div>
-          </div>
+        <div class="input-line">
+          <span class="prompt">wick&gt;</span>
+          <input type="text" class="command-input" id="commandInput" autofocus spellcheck="false" />
         </div>
-        
-        <!-- Command output area -->
-        <div class="output-area" id="output">
-          <div class="output-line"><span class="timestamp">[00:00:00]</span> System initialized...</div>
-          <div class="output-line"><span class="timestamp">[00:00:01]</span> Loading modules...</div>
-          <div class="output-line"><span class="timestamp">[00:00:02]</span> Establishing secure connection...</div>
-          <div class="output-line success"><span class="timestamp">[00:00:03]</span> Connection established. Welcome back.</div>
-        </div>
-        
-        <!-- Command input -->
-        <div class="input-area">
-          <span class="prompt">wick@terminal:~$</span>
-          <input type="text" class="command-input" id="commandInput" placeholder="Enter command..." autofocus />
-          <span class="cursor"></span>
-        </div>
-      </div>
-      
-      <!-- Footer with stats -->
-      <div class="terminal-footer">
-        <div class="footer-item">CPU: <span class="highlight">23%</span></div>
-        <div class="footer-item">MEM: <span class="highlight">61%</span></div>
-        <div class="footer-item">NET: <span class="highlight">↑ 1.2 MB/s</span></div>
-        <div class="footer-item">TEMP: <span class="highlight">42°C</span></div>
       </div>
     </div>
   </div>
 `
 
-// Uptime counter
-let seconds = 0
-setInterval(() => {
-  seconds++
-  const h = String(Math.floor(seconds / 3600)).padStart(2, '0')
-  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0')
-  const s = String(seconds % 60).padStart(2, '0')
-  document.getElementById('uptime').textContent = `${h}:${m}:${s}`
-}, 1000)
+const output = document.getElementById('output')
+const input = document.getElementById('commandInput')
+const terminal = document.getElementById('terminal')
 
-// Blinking cursor effect handled by CSS
+// Type out welcome message
+let lineIndex = 0
+function typeWelcome() {
+  if (lineIndex < welcomeLines.length) {
+    const line = document.createElement('div')
+    line.className = 'output-line'
+    line.innerHTML = welcomeLines[lineIndex]
+    output.appendChild(line)
+    lineIndex++
+    terminal.scrollTop = terminal.scrollHeight
+    setTimeout(typeWelcome, 30)
+  }
+}
+
+typeWelcome()
+
+// Handle input (no commands yet, just echo)
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const cmd = input.value.trim()
+    if (cmd) {
+      // Echo the command
+      const cmdLine = document.createElement('div')
+      cmdLine.className = 'output-line'
+      cmdLine.innerHTML = `<span class="prompt">wick&gt;</span> ${cmd}`
+      output.appendChild(cmdLine)
+      
+      // Response placeholder
+      const response = document.createElement('div')
+      response.className = 'output-line dim'
+      response.textContent = '(commands coming soon...)'
+      output.appendChild(response)
+      
+      terminal.scrollTop = terminal.scrollHeight
+    }
+    input.value = ''
+  }
+})
+
+// Keep focus on input
+terminal.addEventListener('click', () => input.focus())
