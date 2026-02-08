@@ -1,15 +1,11 @@
-import './style.css'
-
-const ASCII_LOGO = `
+(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const s of document.querySelectorAll('link[rel="modulepreload"]'))c(s);new MutationObserver(s=>{for(const a of s)if(a.type==="childList")for(const t of a.addedNodes)t.tagName==="LINK"&&t.rel==="modulepreload"&&c(t)}).observe(document,{childList:!0,subtree:!0});function n(s){const a={};return s.integrity&&(a.integrity=s.integrity),s.referrerPolicy&&(a.referrerPolicy=s.referrerPolicy),s.crossOrigin==="use-credentials"?a.credentials="include":s.crossOrigin==="anonymous"?a.credentials="omit":a.credentials="same-origin",a}function c(s){if(s.ep)return;s.ep=!0;const a=n(s);fetch(s.href,a)}})();const o=`
 ██╗    ██╗██╗ ██████╗██╗  ██╗    ████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ██╗     
 ██║    ██║██║██╔════╝██║ ██╔╝    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██╔══██╗██║     
 ██║ █╗ ██║██║██║     █████╔╝        ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║███████║██║     
 ██║███╗██║██║██║     ██╔═██╗        ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║╚██╗██║██╔══██║██║     
 ╚███╔███╔╝██║╚██████╗██║  ██╗       ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║ ╚████║██║  ██║███████╗
  ╚══╝╚══╝ ╚═╝ ╚═════╝╚═╝  ╚═╝       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
-`
-
-const CANDLE_ASCII = `
+`,d=`
      )
     (
    .-'-.
@@ -20,9 +16,7 @@ const CANDLE_ASCII = `
  __|   |__
 /  '---'  \\
 '---------'
-`
-
-document.querySelector('#app').innerHTML = `
+`;document.querySelector("#app").innerHTML=`
   <div class="terminal-container">
     <!-- Scanline overlay -->
     <div class="scanlines"></div>
@@ -49,12 +43,12 @@ document.querySelector('#app').innerHTML = `
       <!-- Terminal body -->
       <div class="terminal-body">
         <!-- ASCII Logo -->
-        <pre class="ascii-logo">${ASCII_LOGO}</pre>
+        <pre class="ascii-logo">${o}</pre>
         
         <!-- System info panel -->
         <div class="system-panel">
           <div class="panel-section">
-            <pre class="candle-art">${CANDLE_ASCII}</pre>
+            <pre class="candle-art">${d}</pre>
           </div>
           <div class="panel-section info-section">
             <div class="info-line"><span class="label">SYSTEM</span><span class="value">WICK_OS v3.0.0</span></div>
@@ -91,16 +85,4 @@ document.querySelector('#app').innerHTML = `
       </div>
     </div>
   </div>
-`
-
-// Uptime counter
-let seconds = 0
-setInterval(() => {
-  seconds++
-  const h = String(Math.floor(seconds / 3600)).padStart(2, '0')
-  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0')
-  const s = String(seconds % 60).padStart(2, '0')
-  document.getElementById('uptime').textContent = `${h}:${m}:${s}`
-}, 1000)
-
-// Blinking cursor effect handled by CSS
+`;let i=0;setInterval(()=>{i++;const l=String(Math.floor(i/3600)).padStart(2,"0"),e=String(Math.floor(i%3600/60)).padStart(2,"0"),n=String(i%60).padStart(2,"0");document.getElementById("uptime").textContent=`${l}:${e}:${n}`},1e3);
