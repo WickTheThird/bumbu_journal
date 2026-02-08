@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 
@@ -39,8 +39,8 @@ describe('Build Output', () => {
     const indexPath = resolve(docsDir, 'index.html')
     const content = readFileSync(indexPath, 'utf-8')
     
-    // All asset references should use /bumbu_journal/ base
-    expect(content).toContain('href="/bumbu_journal/')
-    expect(content).toContain('src="/bumbu_journal/')
+    // All asset references should use /bumbu_journal/docs/ base
+    expect(content).toContain('href="/bumbu_journal/docs/')
+    expect(content).toContain('src="/bumbu_journal/docs/')
   })
 })

@@ -1,16 +1,7 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
 
 document.querySelector('#app').innerHTML = `
-  <div>
-    <h1>🌍 Hello World!</h1>
-    <p>Welcome to <strong>Bumbu Journal</strong></p>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
+  <div class="min-h-screen bg-gray-100 flex items-center justify-center">
+    <h1 class="text-4xl font-bold text-gray-800">Hello, Tailwind!</h1>
   </div>
 `
-
-setupCounter(document.querySelector('#counter'))
