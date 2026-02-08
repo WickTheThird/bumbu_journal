@@ -212,7 +212,12 @@ ${PROFILE.title}
   },
 
   clear: () => {
-    output.innerHTML = ''
+    // Keep only the welcome message (first N lines)
+    const lines = output.querySelectorAll('.output-line')
+    const welcomeCount = welcomeLines.length
+    for (let i = lines.length - 1; i >= welcomeCount; i--) {
+      lines[i].remove()
+    }
     return null
   },
 
