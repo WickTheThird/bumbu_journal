@@ -20,7 +20,7 @@ describe('Build Output', () => {
     
     expect(content).toContain('<!doctype html>')
     expect(content).toContain('<div id="app">')
-    expect(content).toContain('/bumbu_journal/docs/')
+    expect(content).toContain('/docs/')
   })
 
   it('assets directory exists with JS and CSS', () => {
@@ -39,8 +39,8 @@ describe('Build Output', () => {
     const indexPath = resolve(docsDir, 'index.html')
     const content = readFileSync(indexPath, 'utf-8')
     
-    // All asset references should use /bumbu_journal/docs/ base
-    expect(content).toContain('href="/bumbu_journal/docs/')
-    expect(content).toContain('src="/bumbu_journal/docs/')
+    // All asset references should use /docs/ base
+    expect(content).toContain('href="/docs/')
+    expect(content).toContain('src="/docs/')
   })
 })

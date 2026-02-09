@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/bumbu_journal/docs/',
+  base: '/docs/',
   build: {
     outDir: '../docs',
     emptyOutDir: true
