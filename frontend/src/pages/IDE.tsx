@@ -5,12 +5,13 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
 import { execute, ExecutionResult } from '../lib/sandbox'
 import { saveSnapshot } from '../lib/history'
+import { downloadWorkspaceAsZip } from '../lib/download'
 import Terminal from '../components/Terminal'
 import SettingsPanel from '../components/SettingsPanel'
 import HistoryPanel from '../components/HistoryPanel'
@@ -77,6 +78,10 @@ export default function IDE() {
     await navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+  
+  const handleDownload = async () => {
+    await downloadWorkspaceAsZip(workspace)
   }
   
   const handleCreateFile = () => {
@@ -220,6 +225,14 @@ export default function IDE() {
             title="Settings"
           >
             <Settings className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={handleDownload}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
+            title="Download as ZIP"
+          >
+            <Download className="w-4 h-4" />
           </button>
           
           <button 
