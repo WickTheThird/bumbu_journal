@@ -13,29 +13,22 @@ export interface ExecutionResult {
 const SANDBOX_TIMEOUT = 10_000 // 10 seconds max execution
 
 /**
- * Create a sandboxed iframe for code execution
- */
-function createSandbox(): HTMLIFrameElement {
-  const iframe = document.createElement('iframe')
-  iframe.setAttribute('sandbox', 'allow-scripts')
-  iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;'
-  document.body.appendChild(iframe)
-  return iframe
-}
-
-/**
- * Execute JavaScript code in a sandboxed iframe
+ * Execute JavaScript code in a sandboxed iframe using Blob URL
  */
 export async function executeJavaScript(code: string): Promise<ExecutionResult> {
   const startTime = performance.now()
   
   return new Promise((resolve) => {
-    const iframe = createSandbox()
     let settled = false
+    let iframe: HTMLIFrameElement | null = null
+    let blobUrl: string | null = null
     
     const cleanup = () => {
-      if (iframe.parentNode) {
+      if (iframe?.parentNode) {
         iframe.parentNode.removeChild(iframe)
+      }
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl)
       }
     }
     
@@ -54,12 +47,11 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     
     // Listen for messages from the sandbox
     const handleMessage = (event: MessageEvent) => {
-      // Accept messages from our sandbox iframe
       if (!settled && event.data && (event.data.type === 'result' || event.data.type === 'error')) {
         settled = true
         clearTimeout(timeout)
-        cleanup()
         window.removeEventListener('message', handleMessage)
+        cleanup()
         
         const duration = performance.now() - startTime
         
@@ -69,7 +61,7 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
             output: event.data.output || '',
             duration,
           })
-        } else if (event.data.type === 'error') {
+        } else {
           resolve({
             success: false,
             output: event.data.output || '',
@@ -82,47 +74,38 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     
     window.addEventListener('message', handleMessage)
     
-    // Small delay to ensure listener is ready
-    setTimeout(() => {
-    // Inject the code into the sandbox
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head><meta charset="utf-8"></head>
-      <body>
-      <script>
-        const output = [];
-        console.log = (...args) => {
-          output.push(args.map(a => 
-            typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
-          ).join(' '));
-        };
-        console.error = console.log;
-        console.warn = console.log;
-        console.info = console.log;
-        
-        (async () => {
-          try {
-            const result = await (async () => { ${code} })();
-            if (result !== undefined) {
-              output.push(typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result));
-            }
-            parent.postMessage({ type: 'result', output: output.join('\\n') }, '*');
-          } catch (e) {
-            parent.postMessage({ 
-              type: 'error', 
-              error: e.message || String(e),
-              output: output.join('\\n')
-            }, '*');
-          }
-        })();
-      </script>
-      </body>
-      </html>
-    `
+    // Build the HTML with the user code
+    const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head><body><script>
+const output = [];
+console.log = (...args) => {
+  output.push(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' '));
+};
+console.error = console.log;
+console.warn = console.log;
+console.info = console.log;
+
+(async () => {
+  try {
+    const result = await (async () => { ${code} })();
+    if (result !== undefined) {
+      output.push(typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result));
+    }
+    parent.postMessage({ type: 'result', output: output.join('\\n') }, '*');
+  } catch (e) {
+    parent.postMessage({ type: 'error', error: e.message || String(e), output: output.join('\\n') }, '*');
+  }
+})();
+</script></body></html>`
     
-    iframe.srcdoc = html
-    }, 10)
+    // Create blob URL and iframe
+    const blob = new Blob([html], { type: 'text/html' })
+    blobUrl = URL.createObjectURL(blob)
+    
+    iframe = document.createElement('iframe')
+    iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;'
+    iframe.src = blobUrl
+    document.body.appendChild(iframe)
   })
 }
 
