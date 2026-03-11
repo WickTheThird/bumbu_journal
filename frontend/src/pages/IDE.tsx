@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -36,6 +36,7 @@ export default function IDE() {
   } = useWorkspaceStore()
   
   const [copied, setCopied] = useState(false)
+  const [isSaved, setIsSaved] = useState(true)
   const [showNewFileModal, setShowNewFileModal] = useState(false)
   const [renamingFile, setRenamingFile] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
@@ -79,7 +80,11 @@ export default function IDE() {
   
   const handleEditorChange = useCallback((value: string | undefined) => {
     if (value !== undefined && workspace.activeFile) {
+      setIsSaved(false)
       updateFile(workspace.activeFile, value)
+      // Mark as saved after debounce (URL updates automatically)
+      const timer = setTimeout(() => setIsSaved(true), 1000)
+      return () => clearTimeout(timer)
     }
   }, [workspace.activeFile, updateFile])
   
@@ -465,6 +470,14 @@ export default function IDE() {
       {/* Status bar */}
       <footer className="flex items-center justify-between px-4 py-1 bg-ide-surface border-t border-ide-border text-xs text-ide-muted">
         <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1">
+            {isSaved ? (
+              <Cloud className="w-3 h-3 text-green-400" />
+            ) : (
+              <CloudOff className="w-3 h-3 text-yellow-400 animate-pulse" />
+            )}
+            {isSaved ? 'Saved' : 'Saving...'}
+          </span>
           <span>{activeFile?.language || 'plaintext'}</span>
           <span>{workspace.files.length} file{workspace.files.length !== 1 ? 's' : ''}</span>
         </div>
