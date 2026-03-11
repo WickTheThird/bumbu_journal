@@ -23,6 +23,7 @@ interface CommandPaletteProps {
   onDownload: () => void
   onShare: () => void
   onShortcuts: () => void
+  onNewFile?: () => void
 }
 
 export default function CommandPalette({
@@ -35,6 +36,7 @@ export default function CommandPalette({
   onDownload,
   onShare,
   onShortcuts,
+  onNewFile,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -57,7 +59,7 @@ export default function CommandPalette({
     { id: 'share', label: 'Share Workspace', icon: <Share2 className="w-4 h-4" />, action: () => { onShare(); onClose() } },
     { id: 'download', label: 'Download as ZIP', icon: <Download className="w-4 h-4" />, action: () => { onDownload(); onClose() } },
     { id: 'import', label: 'Import Files', icon: <Upload className="w-4 h-4" />, action: () => { onImport(); onClose() } },
-    { id: 'new', label: 'New File', icon: <Plus className="w-4 h-4" />, action: () => { createFile('untitled.py'); onClose() } },
+    { id: 'new', label: 'New File', icon: <Plus className="w-4 h-4" />, action: () => { onNewFile ? onNewFile() : createFile('untitled.py'); onClose() } },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" />, action: () => { onSettings(); onClose() } },
     { id: 'history', label: 'Version History', icon: <History className="w-4 h-4" />, action: () => { onHistory(); onClose() } },
     { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: '?', action: () => { onShortcuts(); onClose() } },

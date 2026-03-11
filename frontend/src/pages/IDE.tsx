@@ -18,6 +18,7 @@ import HistoryPanel from '../components/HistoryPanel'
 import KeyboardShortcuts from '../components/KeyboardShortcuts'
 import ImportModal from '../components/ImportModal'
 import CommandPalette from '../components/CommandPalette'
+import NewFileModal from '../components/NewFileModal'
 
 export default function IDE() {
   const { 
@@ -27,15 +28,13 @@ export default function IDE() {
     loadFromHash, 
     saveToHash,
     updateFile, 
-    createFile,
     deleteFile,
     renameFile,
     setActiveFile,
   } = useWorkspaceStore()
   
   const [copied, setCopied] = useState(false)
-  const [newFileName, setNewFileName] = useState('')
-  const [showNewFile, setShowNewFile] = useState(false)
+  const [showNewFileModal, setShowNewFileModal] = useState(false)
   const [renamingFile, setRenamingFile] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [showTerminal, setShowTerminal] = useState(false)
@@ -89,14 +88,6 @@ export default function IDE() {
   
   const handleDownload = async () => {
     await downloadWorkspaceAsZip(workspace)
-  }
-  
-  const handleCreateFile = () => {
-    if (newFileName.trim()) {
-      createFile(newFileName.trim())
-      setNewFileName('')
-      setShowNewFile(false)
-    }
   }
   
   const handleRename = (oldName: string) => {
@@ -284,30 +275,13 @@ export default function IDE() {
           <div className="p-3 border-b border-ide-border flex items-center justify-between">
             <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Files</span>
             <button 
-              onClick={() => setShowNewFile(true)}
+              onClick={() => setShowNewFileModal(true)}
               className="p-1 rounded hover:bg-ide-border transition"
               title="New file"
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
-          
-          {showNewFile && (
-            <div className="p-2 border-b border-ide-border">
-              <input
-                type="text"
-                value={newFileName}
-                onChange={(e) => setNewFileName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateFile()
-                  if (e.key === 'Escape') setShowNewFile(false)
-                }}
-                placeholder="filename.py"
-                className="w-full px-2 py-1 text-sm bg-ide-bg border border-ide-border rounded focus:border-ide-accent focus:outline-none"
-                autoFocus
-              />
-            </div>
-          )}
           
           <div className="flex-1 overflow-y-auto py-2">
             {workspace.files.map((file) => (
@@ -458,7 +432,11 @@ export default function IDE() {
         onDownload={handleDownload}
         onShare={handleShare}
         onShortcuts={() => setShowShortcuts(true)}
+        onNewFile={() => setShowNewFileModal(true)}
       />
+      
+      {/* New File Modal */}
+      <NewFileModal isOpen={showNewFileModal} onClose={() => setShowNewFileModal(false)} />
     </div>
   )
 }
