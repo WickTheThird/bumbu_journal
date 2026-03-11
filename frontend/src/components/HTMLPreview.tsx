@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { X, Eye, RefreshCw } from 'lucide-react'
 
 interface HTMLPreviewProps {
@@ -10,37 +10,25 @@ interface HTMLPreviewProps {
 }
 
 export default function HTMLPreview({ html, css, js, isOpen, onClose }: HTMLPreviewProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const [key, setKey] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0)
   
-  useEffect(() => {
-    if (!isOpen || !iframeRef.current) return
-    
-    const doc = iframeRef.current.contentDocument
-    if (!doc) return
-    
-    const content = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
-          ${css || ''}
-        </style>
-      </head>
-      <body>
-        ${html}
-        ${js ? `<script>${js}</script>` : ''}
-      </body>
-      </html>
-    `
-    
-    doc.open()
-    doc.write(content)
-    doc.close()
-  }, [html, css, js, isOpen, key])
+  const srcdoc = useMemo(() => {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+    ${css || ''}
+  </style>
+</head>
+<body>
+  ${html}
+  ${js ? `<script>${js}<\/script>` : ''}
+</body>
+</html>`
+  }, [html, css, js, refreshKey])
   
   if (!isOpen) return null
   
@@ -54,7 +42,7 @@ export default function HTMLPreview({ html, css, js, isOpen, onClose }: HTMLPrev
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setKey(k => k + 1)}
+            onClick={() => setRefreshKey(k => k + 1)}
             className="p-1.5 rounded hover:bg-ide-border transition"
             title="Refresh"
           >
@@ -71,8 +59,8 @@ export default function HTMLPreview({ html, css, js, isOpen, onClose }: HTMLPrev
       
       {/* Preview iframe */}
       <iframe
-        ref={iframeRef}
-        key={key}
+        key={refreshKey}
+        srcDoc={srcdoc}
         className="flex-1 w-full bg-white"
         sandbox="allow-scripts"
         title="HTML Preview"
