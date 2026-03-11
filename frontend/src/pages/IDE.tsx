@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -88,6 +88,13 @@ export default function IDE() {
     await navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+  
+  const handleShareTwitter = () => {
+    const url = getShareableURL(workspace)
+    const text = `Check out my code on HashIDE - the IDE that lives in a link! 🚀`
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+    window.open(twitterUrl, '_blank')
   }
   
   const handleDownload = async () => {
@@ -250,6 +257,14 @@ export default function IDE() {
           </button>
           
           <button
+            onClick={() => setShowSearch(true)}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
+            title="Search Files (Ctrl+Shift+F)"
+          >
+            <SearchIcon className="w-4 h-4" />
+          </button>
+          
+          <button
             onClick={() => setShowShortcuts(true)}
             className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
             title="Keyboard Shortcuts (?)"
@@ -295,6 +310,14 @@ export default function IDE() {
           >
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             {copied ? 'Copied!' : 'Share'}
+          </button>
+          
+          <button 
+            onClick={handleShareTwitter}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-[#1DA1F2] transition"
+            title="Share on Twitter/X"
+          >
+            <Twitter className="w-4 h-4" />
           </button>
         </div>
       </header>
