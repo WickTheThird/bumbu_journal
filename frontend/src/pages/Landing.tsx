@@ -324,13 +324,13 @@ export default function Landing() {
           {/* Bottom bar */}
           <div className="pt-8 border-t border-ide-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-ide-muted">
             <p>© {new Date().getFullYear()} HashIDE. All rights reserved.</p>
-            <p className="flex items-center gap-1">
-              Made by{' '}
+            <p>
+              Built by{' '}
               <a 
                 href="https://www.linkedin.com/in/filip-bumbu-410741262" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-ide-accent hover:underline font-medium"
+                className="text-ide-text hover:text-ide-accent transition font-medium"
               >
                 Filip Bumbu
               </a>
