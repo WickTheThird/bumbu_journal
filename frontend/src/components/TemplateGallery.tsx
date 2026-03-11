@@ -23,17 +23,17 @@ function TemplateCard({ template }: TemplateCardProps) {
   return (
     <Link
       to={`/ide#${hash}`}
-      className="group glass rounded-xl p-6 hover:border-ide-accent/30 transition-all duration-300 hover:-translate-y-1"
+      className="group p-6 rounded-xl bg-slate-900/50 border border-slate-800/50 hover:border-slate-700 transition"
     >
-      <div className="w-12 h-12 rounded-lg bg-ide-accent/10 flex items-center justify-center text-ide-accent mb-4">
-        {iconMap[template.icon] || <FileCode className="w-6 h-6" />}
+      <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400 mb-4">
+        {iconMap[template.icon] || <FileCode className="w-5 h-5" />}
       </div>
-      <h3 className="text-lg font-semibold mb-2 group-hover:text-ide-accent transition">
+      <h3 className="font-semibold text-white mb-2 group-hover:text-violet-400 transition">
         {template.name}
       </h3>
-      <p className="text-sm text-ide-muted mb-4">{template.description}</p>
-      <div className="flex items-center gap-2 text-sm text-ide-accent opacity-0 group-hover:opacity-100 transition">
-        Open template <ArrowRight className="w-4 h-4" />
+      <p className="text-sm text-slate-400 mb-4">{template.description}</p>
+      <div className="flex items-center gap-2 text-sm text-violet-400 opacity-0 group-hover:opacity-100 transition">
+        Open <ArrowRight className="w-4 h-4" />
       </div>
     </Link>
   )
