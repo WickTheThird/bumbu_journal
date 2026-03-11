@@ -89,7 +89,6 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
       <body>
       <script>
         const output = [];
-        const originalLog = console.log;
         console.log = (...args) => {
           output.push(args.map(a => 
             typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)
@@ -97,17 +96,23 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
         };
         console.error = console.log;
         console.warn = console.log;
+        console.info = console.log;
         
-        try {
-          ${code}
-          parent.postMessage({ type: 'result', output: output.join('\\n') }, '*');
-        } catch (e) {
-          parent.postMessage({ 
-            type: 'error', 
-            error: e.message || String(e),
-            output: output.join('\\n')
-          }, '*');
-        }
+        (async () => {
+          try {
+            const result = await (async () => { ${code} })();
+            if (result !== undefined) {
+              output.push(typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result));
+            }
+            parent.postMessage({ type: 'result', output: output.join('\\n') }, '*');
+          } catch (e) {
+            parent.postMessage({ 
+              type: 'error', 
+              error: e.message || String(e),
+              output: output.join('\\n')
+            }, '*');
+          }
+        })();
       </script>
       </body>
       </html>
