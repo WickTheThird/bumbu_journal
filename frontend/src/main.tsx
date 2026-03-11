@@ -3,13 +3,19 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 import App from './App'
 import './index.css'
+
+// @ts-expect-error - Vite worker imports
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
+// @ts-expect-error - Vite worker imports
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
+// @ts-expect-error - Vite worker imports
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
+// @ts-expect-error - Vite worker imports
+import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
+// @ts-expect-error - Vite worker imports
+import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 
 // Configure Monaco workers
 self.MonacoEnvironment = {
