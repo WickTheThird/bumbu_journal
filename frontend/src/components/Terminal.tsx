@@ -12,6 +12,11 @@ interface TerminalProps {
 export default function Terminal({ output, isRunning, onClose, onRun }: TerminalProps) {
   const outputRef = useRef<HTMLPreElement>(null)
   
+  // Debug: log what Terminal receives
+  useEffect(() => {
+    console.log('[Terminal] Received output prop:', output)
+  }, [output])
+  
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight
@@ -65,15 +70,15 @@ export default function Terminal({ output, isRunning, onClose, onRun }: Terminal
         {output && !isRunning && (
           <>
             {output.output && (
-              <span className="text-ide-text whitespace-pre-wrap">{output.output}</span>
+              <span style={{ color: '#e2e8f0' }} className="whitespace-pre-wrap">{output.output}</span>
             )}
             {output.error && (
-              <span className="text-red-400 whitespace-pre-wrap">
+              <span style={{ color: '#f87171' }} className="whitespace-pre-wrap">
                 {output.output ? '\n' : ''}Error: {output.error}
               </span>
             )}
             {!output.output && !output.error && output.success && (
-              <span className="text-ide-muted">(no output)</span>
+              <span style={{ color: '#64748b' }}>(no output)</span>
             )}
           </>
         )}
