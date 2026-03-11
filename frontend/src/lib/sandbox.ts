@@ -104,6 +104,8 @@ console.info = console.log;
     
     iframe = document.createElement('iframe')
     iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;'
+    // sandbox with allow-scripts lets code run, but blocks same-origin access for security
+    iframe.setAttribute('sandbox', 'allow-scripts')
     iframe.src = blobUrl
     document.body.appendChild(iframe)
   })
