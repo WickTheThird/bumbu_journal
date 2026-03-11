@@ -1,4 +1,3 @@
-import { useRef, useEffect } from 'react'
 import { X, Play, Loader2 } from 'lucide-react'
 import type { ExecutionResult } from '../lib/sandbox'
 
@@ -10,81 +9,107 @@ interface TerminalProps {
 }
 
 export default function Terminal({ output, isRunning, onClose, onRun }: TerminalProps) {
-  const outputRef = useRef<HTMLPreElement>(null)
+  // Determine what text to show
+  let displayText = ''
+  let textColor = '#e2e8f0'
   
-  // Debug: log what Terminal receives
-  useEffect(() => {
-    console.log('[Terminal] Received output prop:', output)
-  }, [output])
-  
-  useEffect(() => {
-    if (outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight
+  if (isRunning) {
+    displayText = 'Running...'
+    textColor = '#64748b'
+  } else if (output) {
+    if (output.output) {
+      displayText = output.output
+      textColor = '#e2e8f0'
+    } else if (output.error) {
+      displayText = 'Error: ' + output.error
+      textColor = '#f87171'
+    } else {
+      displayText = '(no output)'
+      textColor = '#64748b'
     }
-  }, [output])
-  
+  } else {
+    displayText = 'Press Run or Ctrl+Enter to execute'
+    textColor = '#64748b'
+  }
+
   return (
-    <div className="flex flex-col bg-ide-surface border-t border-ide-border h-48">
-      {/* Terminal header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-ide-border">
-        <div className="flex items-center gap-4">
-          <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: '#12121a',
+      borderTop: '1px solid #1e1e2e',
+      height: '200px',
+      minHeight: '200px',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '8px 16px',
+        borderBottom: '1px solid #1e1e2e',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
             Output
           </span>
           {output && (
-            <span className={`text-xs ${output.success ? 'text-green-400' : 'text-red-400'}`}>
+            <span style={{ fontSize: '12px', color: output.success ? '#4ade80' : '#f87171' }}>
               {output.success ? '✓' : '✗'} {(output.duration / 1000).toFixed(2)}s
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={onRun}
             disabled={isRunning}
-            className="flex items-center gap-1.5 px-3 py-1 text-xs rounded bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 12px',
+              fontSize: '12px',
+              borderRadius: '4px',
+              backgroundColor: '#16a34a',
+              color: 'white',
+              border: 'none',
+              cursor: isRunning ? 'not-allowed' : 'pointer',
+              opacity: isRunning ? 0.5 : 1,
+            }}
           >
-            {isRunning ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <Play className="w-3 h-3" />
-            )}
+            {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
             Run
           </button>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-ide-border transition"
+            style={{
+              padding: '4px',
+              borderRadius: '4px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#64748b',
+            }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
       
-      {/* Terminal output */}
-      <pre
-        ref={outputRef}
-        className="flex-1 overflow-auto p-4 font-mono text-sm leading-relaxed"
-      >
-        {isRunning && (
-          <span className="text-ide-muted">Running...</span>
-        )}
-        {output && !isRunning && (
-          <>
-            {output.output && (
-              <span style={{ color: '#e2e8f0' }} className="whitespace-pre-wrap">{output.output}</span>
-            )}
-            {output.error && (
-              <span style={{ color: '#f87171' }} className="whitespace-pre-wrap">
-                {output.output ? '\n' : ''}Error: {output.error}
-              </span>
-            )}
-            {!output.output && !output.error && output.success && (
-              <span style={{ color: '#64748b' }}>(no output)</span>
-            )}
-          </>
-        )}
-        {!output && !isRunning && (
-          <span className="text-ide-muted">Press Run or Ctrl+Enter to execute</span>
-        )}
+      {/* Output area */}
+      <pre style={{
+        flex: 1,
+        overflow: 'auto',
+        padding: '16px',
+        margin: 0,
+        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        fontSize: '14px',
+        lineHeight: '1.5',
+        color: textColor,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+      }}>
+        {displayText}
       </pre>
     </div>
   )
