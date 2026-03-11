@@ -434,7 +434,7 @@ export default function IDE() {
           </div>
           
           {/* Monaco Editor */}
-          <div className={`${showTerminal ? 'flex-1' : 'flex-1'}`}>
+          <div style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}>
             {activeFile ? (
               <Editor
                 height="100%"
