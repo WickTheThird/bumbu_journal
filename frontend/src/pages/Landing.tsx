@@ -325,7 +325,7 @@ export default function Landing() {
           <div className="pt-8 border-t border-ide-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-ide-muted">
             <p>© {new Date().getFullYear()} HashIDE. All rights reserved.</p>
             <p className="flex items-center gap-1">
-              Made with <span className="text-red-500">♥</span> by{' '}
+              Made by{' '}
               <a 
                 href="https://www.linkedin.com/in/filip-bumbu-410741262" 
                 target="_blank" 
