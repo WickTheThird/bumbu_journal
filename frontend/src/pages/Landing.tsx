@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { 
-  Code2, Share2, Lock, Zap, Terminal, GitBranch, 
-  ArrowRight, Hash, Layers, Shield, Menu, X, Linkedin, Mail 
+  Share2, Lock, Zap, Terminal, GitBranch, ArrowRight,
+  Hash, Layers, Shield, Menu, X, Linkedin, Mail 
 } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 
