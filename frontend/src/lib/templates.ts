@@ -13,7 +13,7 @@ export const templates: Template[] = [
     id: 'canvas-game',
     name: 'Bouncing Ball Game',
     description: 'Interactive canvas animation with physics',
-    icon: '🎮',
+    icon: 'canvas',
     workspace: {
       version: 1,
       files: [
@@ -129,7 +129,7 @@ animate();`,
     id: 'python-algo',
     name: 'Algorithm Visualizer',
     description: 'Sorting algorithms with step-by-step output',
-    icon: '📊',
+    icon: 'chart',
     workspace: {
       version: 1,
       files: [
@@ -206,7 +206,7 @@ visualize(sorted_quick, label="Quick Sort Result")
     id: 'js-particles',
     name: 'Particle System',
     description: 'Beautiful particle animation with mouse interaction',
-    icon: '✨',
+    icon: 'particle',
     workspace: {
       version: 1,
       files: [
@@ -344,7 +344,7 @@ console.log('Move your mouse to attract particles!');`,
     id: 'python-api',
     name: 'REST API Pattern',
     description: 'Modern Python API structure with type hints',
-    icon: '🔌',
+    icon: 'api',
     workspace: {
       version: 1,
       files: [
@@ -451,7 +451,7 @@ for task in repo.find_by_user(user.id):
     id: 'web-portfolio',
     name: 'Portfolio Template',
     description: 'Minimal portfolio with smooth animations',
-    icon: '💼',
+    icon: 'portfolio',
     workspace: {
       version: 1,
       files: [
@@ -674,7 +674,7 @@ footer {
     id: 'python-game',
     name: 'ASCII Game',
     description: 'Text-based dungeon crawler',
-    icon: '🎲',
+    icon: 'game',
     workspace: {
       version: 1,
       files: [
@@ -785,7 +785,7 @@ print("=" * 40)
     id: 'blank',
     name: 'Blank Workspace',
     description: 'Start from scratch',
-    icon: '📄',
+    icon: 'file',
     workspace: {
       version: 1,
       files: [

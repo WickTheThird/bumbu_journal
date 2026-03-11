@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Code2, Share2, Lock, Zap, Terminal, GitBranch, 
-  ArrowRight, Hash, Layers, Shield, Sparkles, Menu, X, Linkedin, Mail 
+  ArrowRight, Hash, Layers, Shield, Menu, X, Linkedin, Mail 
 } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 
@@ -129,42 +129,42 @@ export default function Landing() {
       <section id="features" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Everything you need, <span className="gradient-text">nothing you don't</span>
+            Features
           </h2>
           <p className="text-ide-muted text-center mb-12 max-w-2xl mx-auto">
-            A powerful IDE without the overhead. No accounts, no deployments, no maintenance.
+            A lightweight IDE that runs entirely in your browser.
           </p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               icon={<Hash className="w-6 h-6" />}
-              title="Hash-Based Storage"
-              description="Your entire workspace is encoded in the URL. Copy the link, share your code instantly."
+              title="URL Storage"
+              description="Workspace state is compressed into the URL hash. Share by copying the link."
             />
             <FeatureCard
               icon={<Zap className="w-6 h-6" />}
-              title="Lightning Fast"
-              description="No server roundtrips. Everything runs locally in your browser at native speed."
+              title="Client-Side"
+              description="Runs entirely in your browser. No backend, no latency."
             />
             <FeatureCard
               icon={<Share2 className="w-6 h-6" />}
-              title="Instant Sharing"
-              description="Send a link. That's it. No sign up, no accounts, no friction."
+              title="Shareable"
+              description="Anyone with the link sees your exact workspace."
             />
             <FeatureCard
               icon={<Lock className="w-6 h-6" />}
-              title="Sandboxed Execution"
-              description="User code runs in isolated environments. Your browser stays safe."
+              title="Sandboxed"
+              description="Code execution is isolated in iframes."
             />
             <FeatureCard
               icon={<Terminal className="w-6 h-6" />}
               title="Monaco Editor"
-              description="The same editor powering VS Code. IntelliSense, themes, and keybindings."
+              description="VS Code's editor with syntax highlighting and autocomplete."
             />
             <FeatureCard
               icon={<Layers className="w-6 h-6" />}
-              title="Multi-File Support"
-              description="Create, rename, and organize multiple files in your workspace."
+              title="Multi-File"
+              description="Organize code across multiple files."
             />
           </div>
         </div>
@@ -237,13 +237,11 @@ export default function Landing() {
       <section id="templates" className="py-20 px-6 bg-ide-surface/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <Sparkles className="w-10 h-10 text-ide-accent mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Start with a template
+              Templates
             </h2>
             <p className="text-ide-muted max-w-2xl mx-auto">
-              Jump into coding with pre-built examples. Each template opens with everything 
-              you need to learn and experiment.
+              Start with a working example.
             </p>
           </div>
           <TemplateGallery />
@@ -254,10 +252,10 @@ export default function Landing() {
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to code?
+            Try it out
           </h2>
           <p className="text-ide-muted mb-8">
-            No signup. No download. Just click and start building.
+            No account required.
           </p>
           <Link to="/ide" className="btn-primary inline-flex items-center gap-2 text-lg">
             Open HashIDE <ArrowRight className="w-5 h-5" />
