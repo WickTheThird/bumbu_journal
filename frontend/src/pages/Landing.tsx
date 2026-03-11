@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Code2, Share2, Lock, Zap, Terminal, GitBranch, 
-  ArrowRight, Hash, Layers, Shield, Sparkles, Menu, X, Linkedin 
+  ArrowRight, Hash, Layers, Shield, Sparkles, Menu, X, Linkedin, Mail 
 } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 
@@ -284,6 +284,12 @@ export default function Landing() {
             </a>
           </div>
           <div className="flex items-center gap-6">
+            <a 
+              href="mailto:bumbufilip22@gmail.com"
+              className="hover:text-ide-text transition flex items-center gap-1"
+            >
+              <Mail className="w-4 h-4" /> Email
+            </a>
             <a 
               href="https://www.linkedin.com/in/filip-bumbu-410741262" 
               target="_blank" 
