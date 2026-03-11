@@ -162,23 +162,31 @@ async function loadPyodide(): Promise<unknown> {
 
 export async function executePython(code: string): Promise<ExecutionResult> {
   const startTime = performance.now()
+  console.log('[Python] Starting execution')
   
   try {
+    console.log('[Python] Loading Pyodide...')
     const pyodide = await loadPyodide() as {
       runPythonAsync: (code: string) => Promise<unknown>
       runPython: (code: string) => unknown
       setStdout: (options: { batched: (text: string) => void }) => void
     }
+    console.log('[Python] Pyodide loaded')
     
     const output: string[] = []
     
     // Capture stdout
     pyodide.setStdout({
-      batched: (text: string) => output.push(text),
+      batched: (text: string) => {
+        console.log('[Python] stdout:', text)
+        output.push(text)
+      },
     })
     
     // Run the code
+    console.log('[Python] Running code...')
     const result = await pyodide.runPythonAsync(code)
+    console.log('[Python] Result:', result)
     
     const duration = performance.now() - startTime
     
@@ -188,12 +196,14 @@ export async function executePython(code: string): Promise<ExecutionResult> {
       finalOutput += (finalOutput ? '\n' : '') + String(result)
     }
     
+    console.log('[Python] Final output:', finalOutput)
     return {
       success: true,
-      output: finalOutput,
+      output: finalOutput || '(no output)',
       duration,
     }
   } catch (e) {
+    console.error('[Python] Error:', e)
     const duration = performance.now() - startTime
     return {
       success: false,

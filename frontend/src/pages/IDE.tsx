@@ -127,9 +127,12 @@ export default function IDE() {
     setOutput(null)
     
     try {
+      console.log('[IDE] Executing:', activeFile.language, activeFile.content.substring(0, 50))
       const result = await execute(activeFile.content, activeFile.language || 'plaintext')
+      console.log('[IDE] Execution result:', result)
       setOutput(result)
     } catch (e) {
+      console.error('[IDE] Execution error:', e)
       setOutput({
         success: false,
         output: '',
