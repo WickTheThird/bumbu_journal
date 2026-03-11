@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Code2, Share2, Lock, Zap, Terminal, GitBranch, 
-  ArrowRight, Hash, Layers, Shield, Sparkles, Menu, X 
+  ArrowRight, Hash, Layers, Shield, Sparkles, Menu, X, Linkedin 
 } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 
@@ -267,12 +267,31 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-ide-border py-8 px-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between text-sm text-ide-muted">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-ide-muted">
           <div className="flex items-center gap-2">
             <Hash className="w-5 h-5 text-ide-accent" />
             <span>HashIDE</span>
           </div>
+          <div className="flex items-center gap-1">
+            Made by{' '}
+            <a 
+              href="https://www.linkedin.com/in/filip-bumbu/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-ide-accent hover:underline font-medium"
+            >
+              Filip Bumbu
+            </a>
+          </div>
           <div className="flex items-center gap-6">
+            <a 
+              href="https://www.linkedin.com/in/filip-bumbu/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-ide-text transition flex items-center gap-1"
+            >
+              <Linkedin className="w-4 h-4" /> LinkedIn
+            </a>
             <a href="https://github.com/WickTheThird/bumbu_journal" className="hover:text-ide-text transition flex items-center gap-1">
               <GitBranch className="w-4 h-4" /> GitHub
             </a>

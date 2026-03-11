@@ -503,6 +503,14 @@ export default function IDE() {
           <span className="text-ide-muted/50">Ctrl+Enter to run</span>
           <span>UTF-8</span>
           <span>Tab Size: {workspace.settings?.tabSize || 2}</span>
+          <a 
+            href="https://www.linkedin.com/in/filip-bumbu/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-ide-accent transition"
+          >
+            Made by Filip Bumbu
+          </a>
         </div>
       </footer>
       
