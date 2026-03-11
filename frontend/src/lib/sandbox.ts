@@ -55,21 +55,25 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
         cleanup()
         
         const duration = performance.now() - startTime
-        console.log('[Sandbox] Processing result, duration:', duration)
+        console.log('[Sandbox] Processing result, duration:', duration, 'output:', event.data.output)
         
         if (event.data.type === 'result') {
-          resolve({
+          const result = {
             success: true,
-            output: event.data.output || '',
+            output: event.data.output || '(empty output)',
             duration,
-          })
+          }
+          console.log('[Sandbox] Resolving with:', result)
+          resolve(result)
         } else {
-          resolve({
+          const result = {
             success: false,
             output: event.data.output || '',
             error: event.data.error,
             duration,
-          })
+          }
+          console.log('[Sandbox] Resolving error with:', result)
+          resolve(result)
         }
       }
     }
@@ -78,31 +82,34 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     console.log('[Sandbox] Message listener attached')
     
     // Build the HTML with the user code
+    const escapedCode = code.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')
     const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head><body><script>
-try {
-  const output = [];
-  const _log = (...args) => {
-    const line = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ');
+(function() {
+  var output = [];
+  var origLog = console.log;
+  
+  console.log = function() {
+    var args = Array.prototype.slice.call(arguments);
+    var line = args.map(function(a) { 
+      return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); 
+    }).join(' ');
     output.push(line);
+    origLog.apply(console, ['[iframe]', line]);
   };
-  console.log = _log;
-  console.error = _log;
-  console.warn = _log;
-  console.info = _log;
+  console.error = console.log;
+  console.warn = console.log;
+  console.info = console.log;
 
-  // Execute user code synchronously first
   try {
-    ${code}
+    eval(\`${escapedCode}\`);
   } catch (e) {
     output.push('Error: ' + (e.message || e));
   }
   
-  // Send results
+  origLog('[iframe] Sending output:', output.length, 'lines');
   window.parent.postMessage({ type: 'result', output: output.join('\\n') }, '*');
-} catch (e) {
-  window.parent.postMessage({ type: 'error', error: String(e), output: '' }, '*');
-}
+})();
 </script></body></html>`
     
     // Create blob URL and iframe
