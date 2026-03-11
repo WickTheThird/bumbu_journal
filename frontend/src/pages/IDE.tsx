@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -14,6 +14,7 @@ import { saveSnapshot } from '../lib/history'
 import Terminal from '../components/Terminal'
 import SettingsPanel from '../components/SettingsPanel'
 import HistoryPanel from '../components/HistoryPanel'
+import KeyboardShortcuts from '../components/KeyboardShortcuts'
 
 export default function IDE() {
   const { 
@@ -34,6 +35,7 @@ export default function IDE() {
   const [showTerminal, setShowTerminal] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -110,6 +112,13 @@ export default function IDE() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ? to show keyboard shortcuts
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        // Don't trigger if typing in an input
+        if (document.activeElement?.tagName !== 'INPUT') {
+          setShowShortcuts(prev => !prev)
+        }
+      }
       // Ctrl/Cmd + Enter to run
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault()
@@ -187,6 +196,14 @@ export default function IDE() {
             title="Toggle Terminal"
           >
             <TerminalIcon className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={() => setShowShortcuts(true)}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
+            title="Keyboard Shortcuts (?)"
+          >
+            <Keyboard className="w-4 h-4" />
           </button>
           
           <button
@@ -346,6 +363,9 @@ export default function IDE() {
       
       {/* History Panel */}
       <HistoryPanel isOpen={showHistory} onClose={() => setShowHistory(false)} />
+      
+      {/* Keyboard Shortcuts */}
+      <KeyboardShortcuts isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   )
 }
