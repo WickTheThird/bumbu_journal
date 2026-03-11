@@ -5,12 +5,13 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
 import { execute, ExecutionResult } from '../lib/sandbox'
 import Terminal from '../components/Terminal'
+import SettingsPanel from '../components/SettingsPanel'
 
 export default function IDE() {
   const { 
@@ -29,6 +30,7 @@ export default function IDE() {
   const [newFileName, setNewFileName] = useState('')
   const [showNewFile, setShowNewFile] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -177,6 +179,14 @@ export default function IDE() {
             <TerminalIcon className="w-4 h-4" />
           </button>
           
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+          
           <button 
             onClick={handleShare}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition"
@@ -312,6 +322,9 @@ export default function IDE() {
           <span>Tab Size: {workspace.settings?.tabSize || 2}</span>
         </div>
       </footer>
+      
+      {/* Settings Panel */}
+      <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   )
 }

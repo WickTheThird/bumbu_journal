@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Code2, Share2, Lock, Zap, Terminal, GitBranch, 
-  ArrowRight, Hash, Layers, Shield, Sparkles 
+  ArrowRight, Hash, Layers, Shield, Sparkles, Menu, X 
 } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 
 export default function Landing() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -15,7 +18,9 @@ export default function Landing() {
             <Hash className="w-8 h-8 text-ide-accent" />
             <span className="text-xl font-bold">HashIDE</span>
           </div>
-          <div className="flex items-center gap-6">
+          
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-ide-muted hover:text-ide-text transition">Features</a>
             <a href="#how-it-works" className="text-ide-muted hover:text-ide-text transition">How it works</a>
             <a href="#templates" className="text-ide-muted hover:text-ide-text transition">Templates</a>
@@ -24,7 +29,30 @@ export default function Landing() {
               Open IDE <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+          
+          {/* Mobile menu button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-ide-border/50 transition"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+        
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-ide-border bg-ide-surface/95 backdrop-blur-xl">
+            <div className="px-6 py-4 space-y-4">
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-ide-muted hover:text-ide-text transition">Features</a>
+              <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block text-ide-muted hover:text-ide-text transition">How it works</a>
+              <a href="#templates" onClick={() => setMobileMenuOpen(false)} className="block text-ide-muted hover:text-ide-text transition">Templates</a>
+              <a href="#security" onClick={() => setMobileMenuOpen(false)} className="block text-ide-muted hover:text-ide-text transition">Security</a>
+              <Link to="/ide" onClick={() => setMobileMenuOpen(false)} className="btn-primary flex items-center justify-center gap-2 w-full">
+                Open IDE <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
