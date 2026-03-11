@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -16,6 +16,7 @@ import Terminal from '../components/Terminal'
 import SettingsPanel from '../components/SettingsPanel'
 import HistoryPanel from '../components/HistoryPanel'
 import KeyboardShortcuts from '../components/KeyboardShortcuts'
+import ImportModal from '../components/ImportModal'
 
 export default function IDE() {
   const { 
@@ -37,6 +38,7 @@ export default function IDE() {
   const [showSettings, setShowSettings] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -228,6 +230,14 @@ export default function IDE() {
           </button>
           
           <button
+            onClick={() => setShowImport(true)}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
+            title="Import Files"
+          >
+            <Upload className="w-4 h-4" />
+          </button>
+          
+          <button
             onClick={handleDownload}
             className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
             title="Download as ZIP"
@@ -379,6 +389,9 @@ export default function IDE() {
       
       {/* Keyboard Shortcuts */}
       <KeyboardShortcuts isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      
+      {/* Import Modal */}
+      <ImportModal isOpen={showImport} onClose={() => setShowImport(false)} />
     </div>
   )
 }
