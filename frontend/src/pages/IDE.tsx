@@ -504,7 +504,7 @@ export default function IDE() {
           <span>UTF-8</span>
           <span>Tab Size: {workspace.settings?.tabSize || 2}</span>
           <a 
-            href="https://www.linkedin.com/in/filip-bumbu/" 
+            href="https://www.linkedin.com/in/filip-bumbu-410741262" 
             target="_blank" 
             rel="noopener noreferrer"
             className="hover:text-ide-accent transition"

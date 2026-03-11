@@ -275,7 +275,7 @@ export default function Landing() {
           <div className="flex items-center gap-1">
             Made by{' '}
             <a 
-              href="https://www.linkedin.com/in/filip-bumbu/" 
+              href="https://www.linkedin.com/in/filip-bumbu-410741262" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-ide-accent hover:underline font-medium"
@@ -285,7 +285,7 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-6">
             <a 
-              href="https://www.linkedin.com/in/filip-bumbu/" 
+              href="https://www.linkedin.com/in/filip-bumbu-410741262" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:text-ide-text transition flex items-center gap-1"
