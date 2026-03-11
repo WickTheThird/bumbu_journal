@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -19,6 +19,7 @@ import KeyboardShortcuts from '../components/KeyboardShortcuts'
 import ImportModal from '../components/ImportModal'
 import CommandPalette from '../components/CommandPalette'
 import NewFileModal from '../components/NewFileModal'
+import HTMLPreview from '../components/HTMLPreview'
 
 export default function IDE() {
   const { 
@@ -43,6 +44,7 @@ export default function IDE() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [showCommandPalette, setShowCommandPalette] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -177,6 +179,12 @@ export default function IDE() {
   }
   
   const canRun = activeFile && ['javascript', 'typescript', 'python'].includes(activeFile.language || '')
+  const canPreview = activeFile && ['html', 'css', 'javascript'].includes(activeFile.language || '')
+  
+  // Get HTML/CSS/JS content for preview
+  const htmlFile = workspace.files.find(f => f.name.endsWith('.html'))
+  const cssFile = workspace.files.find(f => f.name.endsWith('.css'))
+  const jsFile = workspace.files.find(f => f.name.endsWith('.js') && !f.name.endsWith('.test.js'))
   
   return (
     <div className="h-screen flex flex-col bg-ide-bg">
@@ -204,6 +212,21 @@ export default function IDE() {
             >
               <Play className="w-4 h-4" />
               Run
+            </button>
+          )}
+          
+          {canPreview && (
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${
+                showPreview 
+                  ? 'bg-blue-600/20 text-blue-400' 
+                  : 'bg-ide-border/50 text-ide-muted hover:text-ide-text'
+              }`}
+              title="Live Preview"
+            >
+              <Eye className="w-4 h-4" />
+              Preview
             </button>
           )}
           
@@ -394,6 +417,19 @@ export default function IDE() {
             />
           )}
         </main>
+        
+        {/* HTML Preview Panel */}
+        {showPreview && htmlFile && (
+          <div className="w-1/2">
+            <HTMLPreview
+              html={htmlFile.content}
+              css={cssFile?.content}
+              js={jsFile?.content}
+              isOpen={showPreview}
+              onClose={() => setShowPreview(false)}
+            />
+          </div>
+        )}
       </div>
       
       {/* Status bar */}
