@@ -37,34 +37,16 @@
 
 @layer components {
   .glass {
-    @apply bg-ide-surface/80 backdrop-blur-xl border border-ide-border/50;
-  }
-
-  .glow-border {
-    @apply relative;
-  }
-
-  .glow-border::before {
-    content: '';
-    @apply absolute inset-0 rounded-inherit -z-10;
-    background: linear-gradient(135deg, theme('colors.ide-accent'), theme('colors.ide-accent-glow'));
-    filter: blur(20px);
-    opacity: 0.3;
+    @apply bg-ide-surface border border-ide-border;
   }
 
   .btn-primary {
     @apply px-6 py-3 bg-ide-accent text-white font-medium rounded-lg
-           hover:bg-ide-accent-glow transition-all duration-300
-           shadow-lg shadow-ide-accent/25 hover:shadow-ide-accent-glow/40;
+           hover:bg-ide-accent-glow transition-colors;
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-ide-surface border border-ide-border text-ide-text font-medium rounded-lg
-           hover:border-ide-accent/50 hover:bg-ide-surface/80 transition-all duration-300;
-  }
-
-  .gradient-text {
-    @apply bg-gradient-to-r from-ide-accent to-ide-accent-glow bg-clip-text text-transparent;
+    @apply px-6 py-3 text-ide-muted hover:text-ide-text transition-colors;
   }
 }
 

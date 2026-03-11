@@ -56,57 +56,41 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-ide-accent/20 rounded-full blur-[128px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-ide-accent-glow/10 rounded-full blur-[128px]" />
-        </div>
-        
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-sm text-ide-muted">No backend. No signup. Just code.</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            The IDE that lives{' '}
-            <span className="gradient-text">in a link</span>
+      <section className="pt-32 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
+            The IDE that lives in a link
           </h1>
           
-          <p className="text-xl text-ide-muted max-w-2xl mx-auto mb-10 text-balance">
-            A full development environment stored entirely in the URL hash. 
-            Edit, run, and share your code — all without a server.
+          <p className="text-lg text-ide-muted max-w-2xl mx-auto mb-10">
+            Your entire workspace is stored in the URL. No backend, no accounts — 
+            just share the link.
           </p>
           
-          <div className="flex items-center justify-center gap-4">
-            <Link to="/ide" className="btn-primary flex items-center gap-2 text-lg">
-              Start Coding <Code2 className="w-5 h-5" />
+          <div className="flex items-center justify-center gap-4 mb-16">
+            <Link to="/ide" className="px-6 py-3 bg-ide-accent text-white font-medium rounded-lg hover:bg-ide-accent-glow transition">
+              Open Editor
             </Link>
-            <a href="#how-it-works" className="btn-secondary flex items-center gap-2 text-lg">
-              Learn More
+            <a href="#how-it-works" className="px-6 py-3 text-ide-muted hover:text-ide-text transition">
+              How it works →
             </a>
           </div>
           
-          {/* Code preview mockup */}
-          <div className="mt-16 glass rounded-xl overflow-hidden shadow-2xl shadow-ide-accent/10 animate-float">
-            <div className="flex items-center gap-2 px-4 py-3 bg-ide-surface border-b border-ide-border">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-              <div className="w-3 h-3 rounded-full bg-green-500/80" />
+          {/* Code preview */}
+          <div className="rounded-lg overflow-hidden border border-ide-border bg-ide-surface">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-ide-border bg-ide-bg">
+              <div className="w-3 h-3 rounded-full bg-ide-border" />
+              <div className="w-3 h-3 rounded-full bg-ide-border" />
+              <div className="w-3 h-3 rounded-full bg-ide-border" />
               <span className="ml-4 text-sm text-ide-muted font-mono">main.py</span>
             </div>
-            <pre className="p-6 text-left font-mono text-sm leading-relaxed">
+            <pre className="p-6 text-left font-mono text-sm leading-relaxed overflow-x-auto">
               <code>
                 <span className="text-purple-400">def</span>{' '}
                 <span className="text-yellow-300">greet</span>
                 <span className="text-ide-muted">(</span>
                 <span className="text-orange-300">name</span>
-                <span className="text-ide-muted">: </span>
-                <span className="text-cyan-300">str</span>
-                <span className="text-ide-muted">) -&gt; </span>
-                <span className="text-cyan-300">str</span>
-                <span className="text-ide-muted">:</span>
+                <span className="text-ide-muted">):</span>
                 {'\n'}
                 {'    '}
                 <span className="text-purple-400">return</span>{' '}
@@ -116,9 +100,9 @@ export default function Landing() {
                 <span className="text-ide-muted">{'}'}</span>
                 <span className="text-green-400">!"</span>
                 {'\n\n'}
-                <span className="text-ide-muted"># Your entire workspace is in the URL</span>
+                <span className="text-ide-muted"># Workspace state is in the URL hash</span>
                 {'\n'}
-                <span className="text-ide-muted"># Share it. Fork it. No server needed.</span>
+                <span className="text-ide-muted"># Copy the link to share</span>
               </code>
             </pre>
           </div>
@@ -346,12 +330,12 @@ function FeatureCard({ icon, title, description }: {
   description: string 
 }) {
   return (
-    <div className="glass rounded-xl p-6 hover:border-ide-accent/30 transition-colors">
-      <div className="w-12 h-12 rounded-lg bg-ide-accent/10 flex items-center justify-center text-ide-accent mb-4">
+    <div className="p-6">
+      <div className="text-ide-accent mb-3">
         {icon}
       </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-ide-muted text-sm">{description}</p>
+      <h3 className="font-semibold mb-2">{title}</h3>
+      <p className="text-ide-muted text-sm leading-relaxed">{description}</p>
     </div>
   )
 }
