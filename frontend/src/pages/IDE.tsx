@@ -17,6 +17,7 @@ import SettingsPanel from '../components/SettingsPanel'
 import HistoryPanel from '../components/HistoryPanel'
 import KeyboardShortcuts from '../components/KeyboardShortcuts'
 import ImportModal from '../components/ImportModal'
+import CommandPalette from '../components/CommandPalette'
 
 export default function IDE() {
   const { 
@@ -39,6 +40,7 @@ export default function IDE() {
   const [showHistory, setShowHistory] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  const [showCommandPalette, setShowCommandPalette] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -125,6 +127,11 @@ export default function IDE() {
         if (document.activeElement?.tagName !== 'INPUT') {
           setShowShortcuts(prev => !prev)
         }
+      }
+      // Ctrl/Cmd + P to open command palette
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault()
+        setShowCommandPalette(true)
       }
       // Ctrl/Cmd + Enter to run
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -392,6 +399,19 @@ export default function IDE() {
       
       {/* Import Modal */}
       <ImportModal isOpen={showImport} onClose={() => setShowImport(false)} />
+      
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onRun={handleRun}
+        onSettings={() => setShowSettings(true)}
+        onHistory={() => setShowHistory(true)}
+        onImport={() => setShowImport(true)}
+        onDownload={handleDownload}
+        onShare={handleShare}
+        onShortcuts={() => setShowShortcuts(true)}
+      />
     </div>
   )
 }
