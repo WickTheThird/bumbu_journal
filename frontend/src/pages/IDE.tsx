@@ -1,0 +1,221 @@
+import { useEffect, useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
+import Editor from '@monaco-editor/react'
+import { 
+  Hash, Share2, Plus, Trash2, FileCode, 
+  ChevronLeft, Check
+} from 'lucide-react'
+import { useWorkspaceStore } from '../store/workspace'
+import { getShareableURL } from '../lib/hash'
+
+export default function IDE() {
+  const { 
+    workspace, 
+    isLoading,
+    error,
+    loadFromHash, 
+    saveToHash,
+    updateFile, 
+    createFile,
+    deleteFile,
+    setActiveFile,
+  } = useWorkspaceStore()
+  
+  const [copied, setCopied] = useState(false)
+  const [newFileName, setNewFileName] = useState('')
+  const [showNewFile, setShowNewFile] = useState(false)
+  
+  // Load workspace from hash on mount
+  useEffect(() => {
+    loadFromHash()
+    
+    // Listen for hash changes (back/forward navigation)
+    const handleHashChange = () => loadFromHash()
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [loadFromHash])
+  
+  // Auto-save to hash with debounce
+  useEffect(() => {
+    if (isLoading) return
+    const timer = setTimeout(() => saveToHash(), 500)
+    return () => clearTimeout(timer)
+  }, [workspace, isLoading, saveToHash])
+  
+  const activeFile = workspace.files.find(f => f.name === workspace.activeFile)
+  
+  const handleEditorChange = useCallback((value: string | undefined) => {
+    if (value !== undefined && workspace.activeFile) {
+      updateFile(workspace.activeFile, value)
+    }
+  }, [workspace.activeFile, updateFile])
+  
+  const handleShare = async () => {
+    const url = getShareableURL(workspace)
+    await navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  
+  const handleCreateFile = () => {
+    if (newFileName.trim()) {
+      createFile(newFileName.trim())
+      setNewFileName('')
+      setShowNewFile(false)
+    }
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-ide-bg">
+        <div className="text-center">
+          <Hash className="w-12 h-12 text-ide-accent mx-auto mb-4 animate-pulse" />
+          <p className="text-ide-muted">Loading workspace...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  return (
+    <div className="h-screen flex flex-col bg-ide-bg">
+      {/* Toolbar */}
+      <header className="flex items-center justify-between px-4 py-2 bg-ide-surface border-b border-ide-border">
+        <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-2 text-ide-muted hover:text-ide-text transition">
+            <ChevronLeft className="w-4 h-4" />
+            <Hash className="w-5 h-5 text-ide-accent" />
+            <span className="font-semibold">HashIDE</span>
+          </Link>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {error && (
+            <span className="text-red-400 text-sm mr-4">{error}</span>
+          )}
+          
+          <button 
+            onClick={handleShare}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition"
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+            {copied ? 'Copied!' : 'Share'}
+          </button>
+        </div>
+      </header>
+      
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar - File Explorer */}
+        <aside className="w-56 bg-ide-surface border-r border-ide-border flex flex-col">
+          <div className="p-3 border-b border-ide-border flex items-center justify-between">
+            <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Files</span>
+            <button 
+              onClick={() => setShowNewFile(true)}
+              className="p-1 rounded hover:bg-ide-border transition"
+              title="New file"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+          
+          {showNewFile && (
+            <div className="p-2 border-b border-ide-border">
+              <input
+                type="text"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreateFile()
+                  if (e.key === 'Escape') setShowNewFile(false)
+                }}
+                placeholder="filename.py"
+                className="w-full px-2 py-1 text-sm bg-ide-bg border border-ide-border rounded focus:border-ide-accent focus:outline-none"
+                autoFocus
+              />
+            </div>
+          )}
+          
+          <div className="flex-1 overflow-y-auto py-2">
+            {workspace.files.map((file) => (
+              <div
+                key={file.name}
+                className={`group flex items-center gap-2 px-3 py-1.5 cursor-pointer transition ${
+                  file.name === workspace.activeFile 
+                    ? 'bg-ide-accent/10 text-ide-accent' 
+                    : 'hover:bg-ide-border/50'
+                }`}
+                onClick={() => setActiveFile(file.name)}
+              >
+                <FileCode className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm truncate flex-1">{file.name}</span>
+                {workspace.files.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteFile(file.name)
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </aside>
+        
+        {/* Editor */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Tab bar */}
+          <div className="flex items-center bg-ide-surface border-b border-ide-border">
+            {activeFile && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-ide-bg border-r border-ide-border">
+                <FileCode className="w-4 h-4 text-ide-accent" />
+                <span className="text-sm">{activeFile.name}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Monaco Editor */}
+          <div className="flex-1">
+            {activeFile ? (
+              <Editor
+                height="100%"
+                language={activeFile.language}
+                value={activeFile.content}
+                onChange={handleEditorChange}
+                theme="vs-dark"
+                options={{
+                  fontSize: workspace.settings?.fontSize || 14,
+                  tabSize: workspace.settings?.tabSize || 2,
+                  wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
+                  minimap: { enabled: true },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontLigatures: true,
+                  padding: { top: 16 },
+                }}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center text-ide-muted">
+                <p>No file selected</p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+      
+      {/* Status bar */}
+      <footer className="flex items-center justify-between px-4 py-1 bg-ide-surface border-t border-ide-border text-xs text-ide-muted">
+        <div className="flex items-center gap-4">
+          <span>{activeFile?.language || 'plaintext'}</span>
+          <span>{workspace.files.length} file{workspace.files.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span>UTF-8</span>
+          <span>Tab Size: {workspace.settings?.tabSize || 2}</span>
+        </div>
+      </footer>
+    </div>
+  )
+}
