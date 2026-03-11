@@ -5,13 +5,15 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
 import { execute, ExecutionResult } from '../lib/sandbox'
+import { saveSnapshot } from '../lib/history'
 import Terminal from '../components/Terminal'
 import SettingsPanel from '../components/SettingsPanel'
+import HistoryPanel from '../components/HistoryPanel'
 
 export default function IDE() {
   const { 
@@ -31,6 +33,7 @@ export default function IDE() {
   const [showNewFile, setShowNewFile] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -51,6 +54,13 @@ export default function IDE() {
     const timer = setTimeout(() => saveToHash(), 500)
     return () => clearTimeout(timer)
   }, [workspace, isLoading, saveToHash])
+  
+  // Save snapshot to history periodically (every 30 seconds of activity)
+  useEffect(() => {
+    if (isLoading) return
+    const timer = setTimeout(() => saveSnapshot(workspace), 30000)
+    return () => clearTimeout(timer)
+  }, [workspace, isLoading])
   
   const activeFile = workspace.files.find(f => f.name === workspace.activeFile)
   
@@ -177,6 +187,14 @@ export default function IDE() {
             title="Toggle Terminal"
           >
             <TerminalIcon className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={() => setShowHistory(true)}
+            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
+            title="Version History"
+          >
+            <History className="w-4 h-4" />
           </button>
           
           <button
@@ -325,6 +343,9 @@ export default function IDE() {
       
       {/* Settings Panel */}
       <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      
+      {/* History Panel */}
+      <HistoryPanel isOpen={showHistory} onClose={() => setShowHistory(false)} />
     </div>
   )
 }
