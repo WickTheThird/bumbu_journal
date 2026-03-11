@@ -387,7 +387,7 @@ export default function IDE() {
                 value={activeFile.content}
                 onChange={handleEditorChange}
                 onMount={handleEditorMount}
-                theme="vs-dark"
+                theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
                 options={{
                   fontSize: workspace.settings?.fontSize || 14,
                   tabSize: workspace.settings?.tabSize || 2,

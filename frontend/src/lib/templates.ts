@@ -280,6 +280,85 @@ print(f"\\nTotal revenue: \${sum(revenue.values()):.2f}")
     },
   },
   {
+    id: 'web-starter',
+    name: 'Web Starter',
+    description: 'HTML + CSS + JS with live preview',
+    icon: '🌐',
+    workspace: {
+      version: 1,
+      files: [
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Page</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello, HashIDE!</h1>
+    <p>Edit this HTML and see the live preview.</p>
+    <button id="btn">Click me</button>
+    <p id="output"></p>
+  </div>
+</body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'style.css',
+          content: `/* Styles for the page */
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  color: #7c3aed;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:hover {
+  background: #6d28d9;
+}
+
+#output {
+  margin-top: 1rem;
+  color: #666;
+}`,
+          language: 'css',
+        },
+        {
+          name: 'script.js',
+          content: `// JavaScript for interactivity
+let clicks = 0;
+
+document.getElementById('btn').addEventListener('click', () => {
+  clicks++;
+  document.getElementById('output').textContent = 
+    \`You clicked \${clicks} time\${clicks === 1 ? '' : 's'}!\`;
+});`,
+          language: 'javascript',
+        },
+      ],
+      activeFile: 'index.html',
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true },
+    },
+  },
+  {
     id: 'blank',
     name: 'Blank Workspace',
     description: 'Start from scratch',
