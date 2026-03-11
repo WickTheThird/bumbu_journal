@@ -266,41 +266,75 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-ide-border py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-ide-muted">
-          <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-ide-accent" />
-            <span>HashIDE</span>
+      <footer className="border-t border-ide-border bg-ide-surface/50">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          {/* Main footer content */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Brand */}
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                <Hash className="w-6 h-6 text-ide-accent" />
+                <span className="text-xl font-bold">HashIDE</span>
+              </div>
+              <p className="text-sm text-ide-muted">
+                The IDE that lives in a link. Share code instantly, no server required.
+              </p>
+            </div>
+            
+            {/* Quick Links */}
+            <div className="text-center">
+              <h4 className="font-semibold mb-3">Quick Links</h4>
+              <div className="flex flex-col gap-2 text-sm text-ide-muted">
+                <Link to="/ide" className="hover:text-ide-accent transition">Open IDE</Link>
+                <a href="#features" className="hover:text-ide-accent transition">Features</a>
+                <a href="#security" className="hover:text-ide-accent transition">Security</a>
+              </div>
+            </div>
+            
+            {/* Contact */}
+            <div className="text-center md:text-right">
+              <h4 className="font-semibold mb-3">Get in Touch</h4>
+              <div className="flex flex-col gap-2 text-sm">
+                <a 
+                  href="mailto:bumbufilip22@gmail.com"
+                  className="text-ide-muted hover:text-ide-accent transition flex items-center justify-center md:justify-end gap-2"
+                >
+                  <Mail className="w-4 h-4" /> bumbufilip22@gmail.com
+                </a>
+                <a 
+                  href="https://www.linkedin.com/in/filip-bumbu-410741262" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-ide-muted hover:text-ide-accent transition flex items-center justify-center md:justify-end gap-2"
+                >
+                  <Linkedin className="w-4 h-4" /> LinkedIn
+                </a>
+                <a 
+                  href="https://github.com/WickTheThird/bumbu_journal" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ide-muted hover:text-ide-accent transition flex items-center justify-center md:justify-end gap-2"
+                >
+                  <GitBranch className="w-4 h-4" /> GitHub
+                </a>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            Made by{' '}
-            <a 
-              href="https://www.linkedin.com/in/filip-bumbu-410741262" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-ide-accent hover:underline font-medium"
-            >
-              Filip Bumbu
-            </a>
-          </div>
-          <div className="flex items-center gap-6">
-            <a 
-              href="mailto:bumbufilip22@gmail.com"
-              className="hover:text-ide-text transition flex items-center gap-1"
-            >
-              <Mail className="w-4 h-4" /> Email
-            </a>
-            <a 
-              href="https://www.linkedin.com/in/filip-bumbu-410741262" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-ide-text transition flex items-center gap-1"
-            >
-              <Linkedin className="w-4 h-4" /> LinkedIn
-            </a>
-            <a href="https://github.com/WickTheThird/bumbu_journal" className="hover:text-ide-text transition flex items-center gap-1">
-              <GitBranch className="w-4 h-4" /> GitHub
-            </a>
+          
+          {/* Bottom bar */}
+          <div className="pt-8 border-t border-ide-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-ide-muted">
+            <p>© {new Date().getFullYear()} HashIDE. All rights reserved.</p>
+            <p className="flex items-center gap-1">
+              Made with <span className="text-red-500">♥</span> by{' '}
+              <a 
+                href="https://www.linkedin.com/in/filip-bumbu-410741262" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-ide-accent hover:underline font-medium"
+              >
+                Filip Bumbu
+              </a>
+            </p>
           </div>
         </div>
       </footer>
