@@ -6,6 +6,9 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: '..',
-    emptyOutDir: false, // Don't wipe entire repo
+    emptyOutDir: false,
+  },
+  optimizeDeps: {
+    include: ['monaco-editor'],
   },
 })
