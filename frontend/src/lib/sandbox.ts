@@ -47,6 +47,7 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     
     // Listen for messages from the sandbox
     const handleMessage = (event: MessageEvent) => {
+      console.log('[Sandbox] Message received:', event.data)
       if (!settled && event.data && (event.data.type === 'result' || event.data.type === 'error')) {
         settled = true
         clearTimeout(timeout)
@@ -54,6 +55,7 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
         cleanup()
         
         const duration = performance.now() - startTime
+        console.log('[Sandbox] Processing result, duration:', duration)
         
         if (event.data.type === 'result') {
           resolve({
@@ -73,6 +75,7 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     }
     
     window.addEventListener('message', handleMessage)
+    console.log('[Sandbox] Message listener attached')
     
     // Build the HTML with the user code
     const html = `<!DOCTYPE html>
@@ -101,13 +104,18 @@ console.info = console.log;
     // Create blob URL and iframe
     const blob = new Blob([html], { type: 'text/html' })
     blobUrl = URL.createObjectURL(blob)
+    console.log('[Sandbox] Created blob URL:', blobUrl)
+    console.log('[Sandbox] Executing code:', code.substring(0, 100) + '...')
     
     iframe = document.createElement('iframe')
     iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;'
     // Blob URLs already have unique/null origin providing isolation
     // No sandbox attribute needed - blob isolation is sufficient
     iframe.src = blobUrl
+    iframe.onload = () => console.log('[Sandbox] Iframe loaded')
+    iframe.onerror = (e) => console.error('[Sandbox] Iframe error:', e)
     document.body.appendChild(iframe)
+    console.log('[Sandbox] Iframe appended to DOM')
   })
 }
 
