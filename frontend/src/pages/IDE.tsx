@@ -1,12 +1,16 @@
 import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
+import type { Monaco } from '@monaco-editor/react'
+import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check
+  ChevronLeft, Check, Play, Terminal as TerminalIcon
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
+import { execute, ExecutionResult } from '../lib/sandbox'
+import Terminal from '../components/Terminal'
 
 export default function IDE() {
   const { 
@@ -24,6 +28,10 @@ export default function IDE() {
   const [copied, setCopied] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [showNewFile, setShowNewFile] = useState(false)
+  const [showTerminal, setShowTerminal] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
+  const [output, setOutput] = useState<ExecutionResult | null>(null)
+  const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -65,6 +73,56 @@ export default function IDE() {
     }
   }
   
+  const handleRun = useCallback(async () => {
+    if (!activeFile || isRunning) return
+    
+    setShowTerminal(true)
+    setIsRunning(true)
+    setOutput(null)
+    
+    try {
+      const result = await execute(activeFile.content, activeFile.language || 'plaintext')
+      setOutput(result)
+    } catch (e) {
+      setOutput({
+        success: false,
+        output: '',
+        error: e instanceof Error ? e.message : 'Execution failed',
+        duration: 0,
+      })
+    } finally {
+      setIsRunning(false)
+    }
+  }, [activeFile, isRunning])
+  
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Enter to run
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault()
+        handleRun()
+      }
+      // Ctrl/Cmd + S to save (hash is already auto-saved, just prevent default)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        saveToHash()
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleRun, saveToHash])
+  
+  const handleEditorMount = (editor: editor.IStandaloneCodeEditor, _monaco: Monaco) => {
+    setEditorRef(editor)
+    
+    // Add run command to editor
+    editor.addCommand(_monaco.KeyMod.CtrlCmd | _monaco.KeyCode.Enter, () => {
+      handleRun()
+    })
+  }
+  
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-ide-bg">
@@ -75,6 +133,8 @@ export default function IDE() {
       </div>
     )
   }
+  
+  const canRun = activeFile && ['javascript', 'typescript', 'python'].includes(activeFile.language || '')
   
   return (
     <div className="h-screen flex flex-col bg-ide-bg">
@@ -92,6 +152,30 @@ export default function IDE() {
           {error && (
             <span className="text-red-400 text-sm mr-4">{error}</span>
           )}
+          
+          {canRun && (
+            <button
+              onClick={handleRun}
+              disabled={isRunning}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600/30 disabled:opacity-50 transition"
+              title="Run (Ctrl+Enter)"
+            >
+              <Play className="w-4 h-4" />
+              Run
+            </button>
+          )}
+          
+          <button
+            onClick={() => setShowTerminal(!showTerminal)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${
+              showTerminal 
+                ? 'bg-ide-accent/20 text-ide-accent' 
+                : 'bg-ide-border/50 text-ide-muted hover:text-ide-text'
+            }`}
+            title="Toggle Terminal"
+          >
+            <TerminalIcon className="w-4 h-4" />
+          </button>
           
           <button 
             onClick={handleShare}
@@ -163,7 +247,7 @@ export default function IDE() {
           </div>
         </aside>
         
-        {/* Editor */}
+        {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Tab bar */}
           <div className="flex items-center bg-ide-surface border-b border-ide-border">
@@ -176,13 +260,14 @@ export default function IDE() {
           </div>
           
           {/* Monaco Editor */}
-          <div className="flex-1">
+          <div className={`${showTerminal ? 'flex-1' : 'flex-1'}`}>
             {activeFile ? (
               <Editor
                 height="100%"
                 language={activeFile.language}
                 value={activeFile.content}
                 onChange={handleEditorChange}
+                onMount={handleEditorMount}
                 theme="vs-dark"
                 options={{
                   fontSize: workspace.settings?.fontSize || 14,
@@ -202,6 +287,16 @@ export default function IDE() {
               </div>
             )}
           </div>
+          
+          {/* Terminal */}
+          {showTerminal && (
+            <Terminal
+              output={output}
+              isRunning={isRunning}
+              onClose={() => setShowTerminal(false)}
+              onRun={handleRun}
+            />
+          )}
         </main>
       </div>
       
@@ -212,6 +307,7 @@ export default function IDE() {
           <span>{workspace.files.length} file{workspace.files.length !== 1 ? 's' : ''}</span>
         </div>
         <div className="flex items-center gap-4">
+          <span className="text-ide-muted/50">Ctrl+Enter to run</span>
           <span>UTF-8</span>
           <span>Tab Size: {workspace.settings?.tabSize || 2}</span>
         </div>

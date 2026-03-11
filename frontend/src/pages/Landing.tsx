@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { 
   Code2, Share2, Lock, Zap, Terminal, GitBranch, 
-  ArrowRight, Hash, Layers, Shield 
+  ArrowRight, Hash, Layers, Shield, Sparkles 
 } from 'lucide-react'
+import TemplateGallery from '../components/TemplateGallery'
 
 export default function Landing() {
   return (
@@ -17,6 +18,7 @@ export default function Landing() {
           <div className="flex items-center gap-6">
             <a href="#features" className="text-ide-muted hover:text-ide-text transition">Features</a>
             <a href="#how-it-works" className="text-ide-muted hover:text-ide-text transition">How it works</a>
+            <a href="#templates" className="text-ide-muted hover:text-ide-text transition">Templates</a>
             <a href="#security" className="text-ide-muted hover:text-ide-text transition">Security</a>
             <Link to="/ide" className="btn-primary flex items-center gap-2">
               Open IDE <ArrowRight className="w-4 h-4" />
@@ -200,6 +202,23 @@ export default function Landing() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Templates */}
+      <section id="templates" className="py-20 px-6 bg-ide-surface/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <Sparkles className="w-10 h-10 text-ide-accent mx-auto mb-4" />
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Start with a template
+            </h2>
+            <p className="text-ide-muted max-w-2xl mx-auto">
+              Jump into coding with pre-built examples. Each template opens with everything 
+              you need to learn and experiment.
+            </p>
+          </div>
+          <TemplateGallery />
         </div>
       </section>
 
