@@ -23,15 +23,15 @@ function TemplateCard({ template }: TemplateCardProps) {
   return (
     <Link
       to={`/ide#${hash}`}
-      className="group p-6 rounded-xl bg-slate-900/50 border border-slate-800/50 hover:border-slate-700 transition"
+      className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all"
     >
-      <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-400 mb-4">
+      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 mb-4 group-hover:text-violet-400 transition-colors">
         {iconMap[template.icon] || <FileCode className="w-5 h-5" />}
       </div>
       <h3 className="font-semibold text-white mb-2 group-hover:text-violet-400 transition">
         {template.name}
       </h3>
-      <p className="text-sm text-slate-400 mb-4">{template.description}</p>
+      <p className="text-sm text-zinc-500 mb-4">{template.description}</p>
       <div className="flex items-center gap-2 text-sm text-violet-400 opacity-0 group-hover:opacity-100 transition">
         Open <ArrowRight className="w-4 h-4" />
       </div>
