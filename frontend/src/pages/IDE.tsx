@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
-  Hash, Share2, Plus, Trash2, FileCode, 
+  Hash, Share2, Plus, Trash2, FileCode, X,
   ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
@@ -404,13 +404,30 @@ export default function IDE() {
         {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Tab bar */}
-          <div className="flex items-center bg-ide-surface border-b border-ide-border">
-            {activeFile && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-ide-bg border-r border-ide-border">
-                <FileCode className="w-4 h-4 text-ide-accent" />
-                <span className="text-sm">{activeFile.name}</span>
-              </div>
-            )}
+          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto">
+            {workspace.files.map((file) => (
+              <button
+                key={file.name}
+                onClick={() => setActiveFile(file.name)}
+                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition ${
+                  file.name === workspace.activeFile 
+                    ? 'bg-ide-bg text-ide-text' 
+                    : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
+                }`}
+              >
+                <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : ''}`} />
+                <span>{file.name}</span>
+                {workspace.files.length > 1 && (
+                  <X
+                    className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteFile(file.name)
+                    }}
+                  />
+                )}
+              </button>
+            ))}
           </div>
           
           {/* Monaco Editor */}
