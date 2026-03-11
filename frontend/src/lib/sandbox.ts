@@ -17,8 +17,8 @@ const SANDBOX_TIMEOUT = 10_000 // 10 seconds max execution
  */
 function createSandbox(): HTMLIFrameElement {
   const iframe = document.createElement('iframe')
-  iframe.sandbox.add('allow-scripts') // Only scripts, no same-origin
-  iframe.style.display = 'none'
+  iframe.setAttribute('sandbox', 'allow-scripts')
+  iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;'
   document.body.appendChild(iframe)
   return iframe
 }
@@ -54,7 +54,8 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     
     // Listen for messages from the sandbox
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === iframe.contentWindow && !settled) {
+      // Accept messages from our sandbox iframe
+      if (!settled && event.data && (event.data.type === 'result' || event.data.type === 'error')) {
         settled = true
         clearTimeout(timeout)
         cleanup()
@@ -81,6 +82,8 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     
     window.addEventListener('message', handleMessage)
     
+    // Small delay to ensure listener is ready
+    setTimeout(() => {
     // Inject the code into the sandbox
     const html = `
       <!DOCTYPE html>
@@ -119,6 +122,7 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     `
     
     iframe.srcdoc = html
+    }, 10)
   })
 }
 
