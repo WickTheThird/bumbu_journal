@@ -38,7 +38,7 @@ if __name__ == "__main__":
         },
       ],
       activeFile: 'main.py',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
   {
@@ -87,7 +87,7 @@ main();
         },
       ],
       activeFile: 'main.js',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
   {
@@ -152,7 +152,7 @@ for shape in shapes:
         },
       ],
       activeFile: 'shapes.py',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
   {
@@ -215,7 +215,7 @@ console.log('add5(10) =', add5(10));
         },
       ],
       activeFile: 'functional.js',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
   {
@@ -276,7 +276,7 @@ print(f"\\nTotal revenue: \${sum(revenue.values()):.2f}")
         },
       ],
       activeFile: 'data.py',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
   {
@@ -355,7 +355,7 @@ document.getElementById('btn').addEventListener('click', () => {
         },
       ],
       activeFile: 'index.html',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
   {
@@ -373,7 +373,7 @@ document.getElementById('btn').addEventListener('click', () => {
         },
       ],
       activeFile: 'main.py',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true },
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
     },
   },
 ]

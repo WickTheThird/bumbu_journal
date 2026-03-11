@@ -131,6 +131,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         fontSize: 14,
         tabSize: 2,
         wordWrap: true,
+        minimap: true,
+        lineNumbers: true,
       }
       return {
         workspace: {

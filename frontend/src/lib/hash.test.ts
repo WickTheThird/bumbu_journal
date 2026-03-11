@@ -14,7 +14,7 @@ describe('hash encoding/decoding', () => {
         theme: 'dark',
         fontSize: 14,
         tabSize: 2,
-        wordWrap: true,
+        wordWrap: true, minimap: true, lineNumbers: true,
       },
     }
     

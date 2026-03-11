@@ -13,6 +13,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     fontSize: 14,
     tabSize: 2,
     wordWrap: true,
+    minimap: true,
+    lineNumbers: true,
   }
   
   if (!isOpen) return null
@@ -76,7 +78,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <div className="flex items-center justify-between">
             <div>
               <label className="block text-sm font-medium">Word Wrap</label>
-              <p className="text-xs text-ide-muted">Wrap long lines to fit the editor width</p>
+              <p className="text-xs text-ide-muted">Wrap long lines to fit the editor</p>
             </div>
             <button
               onClick={() => updateSettings({ wordWrap: !settings.wordWrap })}
@@ -87,6 +89,46 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <div
                 className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
                   settings.wordWrap ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          
+          {/* Minimap */}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-medium">Minimap</label>
+              <p className="text-xs text-ide-muted">Show code overview on the right</p>
+            </div>
+            <button
+              onClick={() => updateSettings({ minimap: !settings.minimap })}
+              className={`relative w-12 h-6 rounded-full transition ${
+                settings.minimap ? 'bg-ide-accent' : 'bg-ide-border'
+              }`}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                  settings.minimap ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          
+          {/* Line Numbers */}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-medium">Line Numbers</label>
+              <p className="text-xs text-ide-muted">Show line numbers in gutter</p>
+            </div>
+            <button
+              onClick={() => updateSettings({ lineNumbers: !settings.lineNumbers })}
+              className={`relative w-12 h-6 rounded-full transition ${
+                settings.lineNumbers ? 'bg-ide-accent' : 'bg-ide-border'
+              }`}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                  settings.lineNumbers ? 'translate-x-7' : 'translate-x-1'
                 }`}
               />
             </button>

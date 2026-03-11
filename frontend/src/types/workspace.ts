@@ -15,6 +15,8 @@ export const WorkspaceSchema = z.object({
     fontSize: z.number().min(10).max(24).default(14),
     tabSize: z.number().min(2).max(8).default(2),
     wordWrap: z.boolean().default(true),
+    minimap: z.boolean().default(true),
+    lineNumbers: z.boolean().default(true),
   }).optional(),
 })
 
@@ -45,5 +47,7 @@ if __name__ == "__main__":
     fontSize: 14,
     tabSize: 2,
     wordWrap: true,
+    minimap: true,
+    lineNumbers: true,
   },
 }
