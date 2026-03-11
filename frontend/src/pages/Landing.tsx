@@ -63,8 +63,7 @@ export default function Landing() {
           </h1>
           
           <p className="text-lg text-ide-muted max-w-2xl mx-auto mb-10">
-            Your entire workspace is stored in the URL. No backend, no accounts — 
-            just share the link.
+            Your workspace is compressed into the URL hash. Share it by copying the link.
           </p>
           
           <div className="flex items-center justify-center gap-4 mb-16">
@@ -128,7 +127,7 @@ export default function Landing() {
             <FeatureCard
               icon={<Zap className="w-6 h-6" />}
               title="Client-Side"
-              description="Runs entirely in your browser. No backend, no latency."
+              description="Runs entirely in your browser."
             />
             <FeatureCard
               icon={<Share2 className="w-6 h-6" />}
@@ -176,7 +175,7 @@ export default function Landing() {
             </Step>
             <Step number={4} title="They open, you're synced">
               When they open the link, they see exactly what you see. Fork it, 
-              modify it, share it again. No server required.
+              modify it, share it again.
             </Step>
           </div>
         </div>
@@ -239,7 +238,7 @@ export default function Landing() {
             Try it out
           </h2>
           <p className="text-ide-muted mb-8">
-            No account required.
+            Start building something.
           </p>
           <Link to="/ide" className="btn-primary inline-flex items-center gap-2 text-lg">
             Open HashIDE <ArrowRight className="w-5 h-5" />
@@ -259,7 +258,7 @@ export default function Landing() {
                 <span className="text-xl font-bold">HashIDE</span>
               </div>
               <p className="text-sm text-ide-muted">
-                The IDE that lives in a link. Share code instantly, no server required.
+                A browser-based code editor with URL-based state.
               </p>
             </div>
             
