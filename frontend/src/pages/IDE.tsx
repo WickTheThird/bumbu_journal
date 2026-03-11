@@ -20,6 +20,7 @@ import ImportModal from '../components/ImportModal'
 import CommandPalette from '../components/CommandPalette'
 import NewFileModal from '../components/NewFileModal'
 import HTMLPreview from '../components/HTMLPreview'
+import SearchPanel from '../components/SearchPanel'
 
 export default function IDE() {
   const { 
@@ -45,6 +46,7 @@ export default function IDE() {
   const [showImport, setShowImport] = useState(false)
   const [showCommandPalette, setShowCommandPalette] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -141,6 +143,11 @@ export default function IDE() {
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault()
         setShowCommandPalette(true)
+      }
+      // Ctrl/Cmd + Shift + F to search in files
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'f') {
+        e.preventDefault()
+        setShowSearch(true)
       }
       // Ctrl/Cmd + Enter to run
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -473,6 +480,9 @@ export default function IDE() {
       
       {/* New File Modal */}
       <NewFileModal isOpen={showNewFileModal} onClose={() => setShowNewFileModal(false)} />
+      
+      {/* Search Panel */}
+      <SearchPanel isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   )
 }
