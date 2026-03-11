@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, 
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -29,12 +29,15 @@ export default function IDE() {
     updateFile, 
     createFile,
     deleteFile,
+    renameFile,
     setActiveFile,
   } = useWorkspaceStore()
   
   const [copied, setCopied] = useState(false)
   const [newFileName, setNewFileName] = useState('')
   const [showNewFile, setShowNewFile] = useState(false)
+  const [renamingFile, setRenamingFile] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
   const [showTerminal, setShowTerminal] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -94,6 +97,19 @@ export default function IDE() {
       setNewFileName('')
       setShowNewFile(false)
     }
+  }
+  
+  const handleRename = (oldName: string) => {
+    if (renameValue.trim() && renameValue !== oldName) {
+      renameFile(oldName, renameValue.trim())
+    }
+    setRenamingFile(null)
+    setRenameValue('')
+  }
+  
+  const startRename = (fileName: string) => {
+    setRenamingFile(fileName)
+    setRenameValue(fileName)
   }
   
   const handleRun = useCallback(async () => {
@@ -302,11 +318,42 @@ export default function IDE() {
                     ? 'bg-ide-accent/10 text-ide-accent' 
                     : 'hover:bg-ide-border/50'
                 }`}
-                onClick={() => setActiveFile(file.name)}
+                onClick={() => renamingFile !== file.name && setActiveFile(file.name)}
               >
                 <FileCode className="w-4 h-4 flex-shrink-0" />
-                <span className="text-sm truncate flex-1">{file.name}</span>
-                {workspace.files.length > 1 && (
+                {renamingFile === file.name ? (
+                  <input
+                    type="text"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRename(file.name)
+                      if (e.key === 'Escape') {
+                        setRenamingFile(null)
+                        setRenameValue('')
+                      }
+                    }}
+                    onBlur={() => handleRename(file.name)}
+                    className="flex-1 text-sm bg-ide-bg border border-ide-accent rounded px-1 outline-none"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span className="text-sm truncate flex-1">{file.name}</span>
+                )}
+                {renamingFile !== file.name && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      startRename(file.name)
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-ide-accent transition"
+                    title="Rename"
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                )}
+                {workspace.files.length > 1 && renamingFile !== file.name && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
