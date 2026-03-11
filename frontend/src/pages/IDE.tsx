@@ -130,17 +130,17 @@ export default function IDE() {
       console.log('[IDE] Executing:', activeFile.language, activeFile.content.substring(0, 50))
       const result = await execute(activeFile.content, activeFile.language || 'plaintext')
       console.log('[IDE] Execution result:', result)
+      setIsRunning(false) // Set running false BEFORE setting output
       setOutput(result)
     } catch (e) {
       console.error('[IDE] Execution error:', e)
+      setIsRunning(false)
       setOutput({
         success: false,
         output: '',
         error: e instanceof Error ? e.message : 'Execution failed',
         duration: 0,
       })
-    } finally {
-      setIsRunning(false)
     }
   }, [activeFile, isRunning])
   
