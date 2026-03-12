@@ -1,5 +1,5 @@
 /**
- * Sandboxed code execution using iframes
+ * Sandboxed code execution using iframes and Pyodide
  * User code runs in complete isolation from the IDE
  */
 
@@ -10,7 +10,13 @@ export interface ExecutionResult {
   duration: number
 }
 
-const SANDBOX_TIMEOUT = 10_000 // 10 seconds max execution
+export interface ProjectFile {
+  name: string
+  content: string
+}
+
+const SANDBOX_TIMEOUT = 30_000 // 30 seconds max execution (Pyodide can be slow)
+const PROJECT_DIR = '/project'
 
 /**
  * Execute JavaScript code in a sandboxed iframe using Blob URL
@@ -39,15 +45,13 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
         resolve({
           success: false,
           output: '',
-          error: 'Execution timed out (10s limit)',
+          error: 'Execution timed out (30s limit)',
           duration: SANDBOX_TIMEOUT,
         })
       }
     }, SANDBOX_TIMEOUT)
     
-    // Listen for messages from the sandbox
     const handleMessage = (event: MessageEvent) => {
-      console.log('[Sandbox] Message received:', event.data)
       if (!settled && event.data && (event.data.type === 'result' || event.data.type === 'error')) {
         settled = true
         clearTimeout(timeout)
@@ -55,33 +59,26 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
         cleanup()
         
         const duration = performance.now() - startTime
-        console.log('[Sandbox] Processing result, duration:', duration, 'output:', event.data.output)
         
         if (event.data.type === 'result') {
-          const result = {
+          resolve({
             success: true,
             output: event.data.output || '(empty output)',
             duration,
-          }
-          console.log('[Sandbox] Resolving with:', result)
-          resolve(result)
+          })
         } else {
-          const result = {
+          resolve({
             success: false,
             output: event.data.output || '',
             error: event.data.error,
             duration,
-          }
-          console.log('[Sandbox] Resolving error with:', result)
-          resolve(result)
+          })
         }
       }
     }
     
     window.addEventListener('message', handleMessage)
-    console.log('[Sandbox] Message listener attached')
     
-    // Build the HTML with the user code
     const escapedCode = code.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')
     const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head><body><script>
@@ -95,7 +92,6 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
       return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); 
     }).join(' ');
     output.push(line);
-    origLog.apply(console, ['[iframe]', line]);
   };
   console.error = console.log;
   console.warn = console.log;
@@ -107,36 +103,40 @@ export async function executeJavaScript(code: string): Promise<ExecutionResult> 
     output.push('Error: ' + (e.message || e));
   }
   
-  origLog('[iframe] Sending output:', output.length, 'lines');
   window.parent.postMessage({ type: 'result', output: output.join('\\n') }, '*');
 })();
 </script></body></html>`
     
-    // Create blob URL and iframe
     const blob = new Blob([html], { type: 'text/html' })
     blobUrl = URL.createObjectURL(blob)
-    console.log('[Sandbox] Created blob URL:', blobUrl)
-    console.log('[Sandbox] Executing code:', code.substring(0, 100) + '...')
     
     iframe = document.createElement('iframe')
     iframe.style.cssText = 'position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;'
-    // Blob URLs already have unique/null origin providing isolation
-    // No sandbox attribute needed - blob isolation is sufficient
     iframe.src = blobUrl
-    iframe.onload = () => console.log('[Sandbox] Iframe loaded')
-    iframe.onerror = (e) => console.error('[Sandbox] Iframe error:', e)
     document.body.appendChild(iframe)
-    console.log('[Sandbox] Iframe appended to DOM')
   })
 }
 
 /**
- * Execute Python code using Pyodide (WebAssembly)
- * Loads Pyodide on first use
+ * Pyodide instance and loading
  */
-let pyodidePromise: Promise<unknown> | null = null
+interface PyodideInterface {
+  runPythonAsync: (code: string) => Promise<unknown>
+  runPython: (code: string) => unknown
+  setStdout: (options: { batched: (text: string) => void }) => void
+  setStderr: (options: { batched: (text: string) => void }) => void
+  FS: {
+    mkdir: (path: string) => void
+    writeFile: (path: string, content: string) => void
+    readdir: (path: string) => string[]
+    unlink: (path: string) => void
+    stat: (path: string) => { isDirectory: () => boolean }
+  }
+}
 
-async function loadPyodide(): Promise<unknown> {
+let pyodidePromise: Promise<PyodideInterface> | null = null
+
+async function loadPyodide(): Promise<PyodideInterface> {
   if (pyodidePromise) return pyodidePromise
   
   pyodidePromise = new Promise((resolve, reject) => {
@@ -148,7 +148,7 @@ async function loadPyodide(): Promise<unknown> {
         const pyodide = await window.loadPyodide({
           indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
         })
-        resolve(pyodide)
+        resolve(pyodide as PyodideInterface)
       } catch (e) {
         reject(e)
       }
@@ -160,37 +160,103 @@ async function loadPyodide(): Promise<unknown> {
   return pyodidePromise
 }
 
-export async function executePython(code: string): Promise<ExecutionResult> {
+/**
+ * Execute Python code with full project filesystem support
+ */
+export async function executePython(
+  entryFile: string,
+  files: ProjectFile[]
+): Promise<ExecutionResult> {
   const startTime = performance.now()
-  console.log('[Python] Starting execution')
+  console.log('[Python] Starting execution with', files.length, 'files, entry:', entryFile)
   
   try {
     console.log('[Python] Loading Pyodide...')
-    const pyodide = await loadPyodide() as {
-      runPythonAsync: (code: string) => Promise<unknown>
-      runPython: (code: string) => unknown
-      setStdout: (options: { batched: (text: string) => void }) => void
-    }
+    const pyodide = await loadPyodide()
     console.log('[Python] Pyodide loaded')
     
     const output: string[] = []
     
-    // Capture stdout
+    // Capture stdout and stderr
     pyodide.setStdout({
       batched: (text: string) => {
         console.log('[Python] stdout:', text)
         output.push(text)
       },
     })
+    pyodide.setStderr({
+      batched: (text: string) => {
+        console.log('[Python] stderr:', text)
+        output.push(text)
+      },
+    })
     
-    // Run the code
-    console.log('[Python] Running code...')
-    const result = await pyodide.runPythonAsync(code)
-    console.log('[Python] Result:', result)
+    // Step 1: Create project directory if it doesn't exist
+    try {
+      pyodide.FS.mkdir(PROJECT_DIR)
+    } catch {
+      // Directory may already exist, that's fine
+    }
+    
+    // Step 2: Clear old files from project directory
+    try {
+      const existingFiles = pyodide.FS.readdir(PROJECT_DIR)
+      for (const file of existingFiles) {
+        if (file !== '.' && file !== '..') {
+          try {
+            pyodide.FS.unlink(`${PROJECT_DIR}/${file}`)
+          } catch {
+            // Ignore errors removing files
+          }
+        }
+      }
+    } catch {
+      // Directory might not exist yet
+    }
+    
+    // Step 3: Write all project files to virtual filesystem
+    for (const file of files) {
+      const filePath = `${PROJECT_DIR}/${file.name}`
+      console.log('[Python] Writing file:', filePath)
+      pyodide.FS.writeFile(filePath, file.content)
+    }
+    
+    // Step 4: Clear module cache and add project to sys.path
+    await pyodide.runPythonAsync(`
+import sys
+
+# Clear any cached modules from previous runs
+modules_to_remove = [key for key in sys.modules.keys() 
+                     if not key.startswith('_') 
+                     and key not in ('sys', 'builtins', 'importlib')]
+for mod in modules_to_remove:
+    if not mod.startswith(('pyodide', 'js', 'micropip', 'packaging')):
+        try:
+            del sys.modules[mod]
+        except:
+            pass
+
+# Add project directory to path (at the beginning for priority)
+if '${PROJECT_DIR}' not in sys.path:
+    sys.path.insert(0, '${PROJECT_DIR}')
+
+# Change to project directory
+import os
+os.chdir('${PROJECT_DIR}')
+`)
+    
+    // Step 5: Execute the entry file using exec with proper globals
+    const entryPath = `${PROJECT_DIR}/${entryFile}`
+    console.log('[Python] Executing entry file:', entryPath)
+    
+    const result = await pyodide.runPythonAsync(`
+with open('${entryPath}', 'r') as f:
+    __code = f.read()
+exec(__code, {'__name__': '__main__', '__file__': '${entryPath}'})
+`)
     
     const duration = performance.now() - startTime
     
-    // Include return value if present
     let finalOutput = output.join('')
     if (result !== undefined && result !== null) {
       finalOutput += (finalOutput ? '\n' : '') + String(result)
@@ -205,10 +271,17 @@ export async function executePython(code: string): Promise<ExecutionResult> {
   } catch (e) {
     console.error('[Python] Error:', e)
     const duration = performance.now() - startTime
+    const errorMessage = e instanceof Error ? e.message : String(e)
+    
+    // Clean up the error message for better readability
+    const cleanError = errorMessage
+      .replace(/PythonError: Traceback \(most recent call last\):\n/, '')
+      .replace(/File "<exec>", line \d+, in <module>\n/, '')
+    
     return {
       success: false,
       output: '',
-      error: e instanceof Error ? e.message : String(e),
+      error: cleanError,
       duration,
     }
   }
@@ -216,14 +289,25 @@ export async function executePython(code: string): Promise<ExecutionResult> {
 
 /**
  * Execute code based on language
+ * For Python, pass all project files to enable imports
  */
-export async function execute(code: string, language: string): Promise<ExecutionResult> {
+export async function execute(
+  code: string, 
+  language: string,
+  entryFile?: string,
+  allFiles?: ProjectFile[]
+): Promise<ExecutionResult> {
   switch (language) {
     case 'javascript':
-    case 'typescript': // TypeScript runs as JS in browser
+    case 'typescript':
       return executeJavaScript(code)
     case 'python':
-      return executePython(code)
+      // If we have all files, use the full project execution
+      if (allFiles && allFiles.length > 0 && entryFile) {
+        return executePython(entryFile, allFiles)
+      }
+      // Fallback: single file execution
+      return executePython('main.py', [{ name: 'main.py', content: code }])
     default:
       return {
         success: false,

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
-import { execute, ExecutionResult } from '../lib/sandbox'
+import { execute, ExecutionResult, ProjectFile } from '../lib/sandbox'
 import { saveSnapshot } from '../lib/history'
 import { downloadWorkspaceAsZip } from '../lib/download'
 import Terminal from '../components/Terminal'
@@ -133,7 +133,20 @@ export default function IDE() {
     
     try {
       console.log('[IDE] Executing:', activeFile.language, activeFile.content.substring(0, 50))
-      const result = await execute(activeFile.content, activeFile.language || 'plaintext')
+      
+      // For Python, pass all .py files to enable imports
+      let result
+      if (activeFile.language === 'python') {
+        const pythonFiles: ProjectFile[] = workspace.files
+          .filter(f => f.name.endsWith('.py'))
+          .map(f => ({ name: f.name, content: f.content }))
+        
+        console.log('[IDE] Python project files:', pythonFiles.map(f => f.name))
+        result = await execute(activeFile.content, 'python', activeFile.name, pythonFiles)
+      } else {
+        result = await execute(activeFile.content, activeFile.language || 'plaintext')
+      }
+      
       console.log('[IDE] Execution result:', result)
       setIsRunning(false)
       setOutput(result)
@@ -147,7 +160,7 @@ export default function IDE() {
         duration: 0,
       })
     }
-  }, [activeFile, isRunning])
+  }, [activeFile, isRunning, workspace.files])
   
   // Keyboard shortcuts
   useEffect(() => {
