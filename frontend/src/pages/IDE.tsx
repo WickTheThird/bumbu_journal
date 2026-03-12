@@ -698,14 +698,15 @@ declare module '*';
             className="relative"
             onDragOver={(e) => {
               e.preventDefault()
-              if (!draggedFile || draggedFile === workspace.activeFile) return
+              if (!draggedFile) return
               const rect = e.currentTarget.getBoundingClientRect()
               const x = e.clientX - rect.left
               setDropZone(x < rect.width / 2 ? 'left' : 'right')
             }}
             onDragLeave={() => setDropZone(null)}
             onDrop={() => {
-              if (draggedFile && draggedFile !== workspace.activeFile) {
+              if (draggedFile) {
+                // Allow splitting same file for viewing different parts
                 setSplitFile(draggedFile)
               }
               setDraggedFile(null)
@@ -713,7 +714,7 @@ declare module '*';
             }}
           >
             {/* Drop zone indicators - only show when dragging AND over the editor */}
-            {draggedFile && draggedFile !== workspace.activeFile && dropZone && (
+            {draggedFile && dropZone && (
               <>
                 <div 
                   className={`absolute inset-y-0 left-0 w-1/2 border-2 border-dashed pointer-events-none z-50 ${
@@ -744,7 +745,7 @@ declare module '*';
               </>
             )}
             {activeFile ? (
-              splitFile && splitFile !== workspace.activeFile ? (
+              splitFile ? (
                 <SplitPane direction="horizontal" defaultSize={50}>
                   <Editor
                     height="100%"
