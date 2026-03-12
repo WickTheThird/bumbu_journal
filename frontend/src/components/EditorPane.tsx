@@ -440,6 +440,10 @@ export default function EditorPane({
   initialOpenTabs,
   externalSelectFile,
 }: EditorPaneProps) {
+  // Use ref for files to avoid recreating callbacks
+  const filesRef = useRef(files)
+  filesRef.current = files
+  
   // Single source of truth: the pane tree
   const [paneTree, setPaneTree] = useState<PaneNode>(() => {
     const tree = createEditorNode(
@@ -475,20 +479,20 @@ export default function EditorPane({
     }
   }, [externalSelectFile, files])
 
-  // Update a node in the tree
+  // Update a node in the tree - stable reference (no deps that change)
   const handleUpdateNode = useCallback((nodeId: string, updater: (node: PaneNode) => PaneNode | null) => {
     setPaneTree(prev => {
-      console.log('[EditorPane] Updating node:', nodeId, 'prev tree:', JSON.stringify(prev))
+      console.log('[EditorPane] Updating node:', nodeId)
       const result = updateNodeInTree(prev, nodeId, updater)
-      console.log('[EditorPane] Result:', result ? JSON.stringify(result) : 'NULL')
+      console.log('[EditorPane] Result:', result ? 'valid' : 'NULL')
       // If root becomes null (all panes closed), create a new empty editor
       if (result === null) {
-        console.log('[EditorPane] Creating new root')
-        return createEditorNode(files[0]?.name || null, files.slice(0, 1).map(f => f.name))
+        const currentFiles = filesRef.current
+        return createEditorNode(currentFiles[0]?.name || null, currentFiles.slice(0, 1).map(f => f.name))
       }
       return result
     })
-  }, [files])
+  }, []) // Empty deps - uses filesRef instead
 
   return (
     <PaneRenderer
