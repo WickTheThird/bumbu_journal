@@ -37,6 +37,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
+  const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
 
   const handleSelectFile = useCallback((fileName: string) => {
     setPaneState(prev => ({
@@ -133,11 +134,26 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   // Render editor
   return (
     <div className="flex flex-col h-full w-full min-h-0 min-w-0">
-      {/* Tab bar */}
-      <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide flex-shrink-0"
+      {/* Tab bar - drop here to add to tabs */}
+      <div 
+        className={`flex items-center bg-ide-surface border-b overflow-x-auto scrollbar-hide flex-shrink-0 transition-colors ${
+          isTabBarDragOver ? 'border-green-500 bg-green-500/10' : 'border-ide-border'
+        }`}
+        onDragEnter={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          if (e.dataTransfer.types.includes('text/plain')) {
+            setIsTabBarDragOver(true)
+          }
+        }}
         onDragOver={(e) => {
           e.preventDefault()
           e.stopPropagation()
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsTabBarDragOver(false)
         }}
         onDrop={(e) => {
           e.preventDefault()
@@ -146,6 +162,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           if (draggedFile && files.some(f => f.name === draggedFile)) {
             handleDrop('center', draggedFile)
           }
+          setIsTabBarDragOver(false)
           setIsDraggingOver(false)
           setDropZone(null)
         }}
@@ -179,6 +196,12 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
             </div>
           )
         })}
+        {/* Drop indicator for tab bar */}
+        {isTabBarDragOver && (
+          <div className="flex items-center gap-1 px-3 py-1.5 text-xs text-green-400 border-l border-green-500/50">
+            <span>+ Drop to add tab</span>
+          </div>
+        )}
       </div>
 
       {/* Editor area with drop zones */}
