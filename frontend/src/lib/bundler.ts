@@ -18,14 +18,14 @@ export async function initBundler(): Promise<void> {
   initializing = (async () => {
     try {
       await esbuild.initialize({
-        wasmURL: 'https://unpkg.com/esbuild-wasm@0.24.0/esbuild.wasm',
+        wasmURL: 'https://unpkg.com/esbuild-wasm@0.27.4/esbuild.wasm',
         worker: true,
       })
     } catch (e: any) {
       // If worker fails, try without worker
       if (e.message?.includes('Worker') || e.message?.includes('go')) {
         await esbuild.initialize({
-          wasmURL: 'https://unpkg.com/esbuild-wasm@0.24.0/esbuild.wasm',
+          wasmURL: 'https://unpkg.com/esbuild-wasm@0.27.4/esbuild.wasm',
           worker: false,
         })
       } else {
