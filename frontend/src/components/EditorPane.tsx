@@ -161,34 +161,32 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   // Render split view - pass child states down
   if (paneState.type === 'split' && paneState.childStates) {
     return (
-      <div className="h-full w-full min-h-0 min-w-0">
-        <SplitPane direction={paneState.splitDirection || 'horizontal'} defaultSize={50}>
-          <EditorPane 
-            files={files} 
-            onFileChange={onFileChange} 
-            theme={theme} 
-            settings={settings}
-            initialActiveFile={paneState.childStates[0].activeFile || undefined}
-            initialOpenTabs={paneState.childStates[0].openTabs}
-            depth={depth + 1}
-          />
-          <EditorPane 
-            files={files} 
-            onFileChange={onFileChange} 
-            theme={theme} 
-            settings={settings}
-            initialActiveFile={paneState.childStates[1].activeFile || undefined}
-            initialOpenTabs={paneState.childStates[1].openTabs}
-            depth={depth + 1}
-          />
-        </SplitPane>
-      </div>
+      <SplitPane direction={paneState.splitDirection || 'horizontal'} defaultSize={50}>
+        <EditorPane 
+          files={files} 
+          onFileChange={onFileChange} 
+          theme={theme} 
+          settings={settings}
+          initialActiveFile={paneState.childStates[0].activeFile || undefined}
+          initialOpenTabs={paneState.childStates[0].openTabs}
+          depth={depth + 1}
+        />
+        <EditorPane 
+          files={files} 
+          onFileChange={onFileChange} 
+          theme={theme} 
+          settings={settings}
+          initialActiveFile={paneState.childStates[1].activeFile || undefined}
+          initialOpenTabs={paneState.childStates[1].openTabs}
+          depth={depth + 1}
+        />
+      </SplitPane>
     )
   }
 
   // Render editor
   return (
-    <div className="flex flex-col h-full w-full min-h-0 min-w-0">
+    <div className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
       {/* Tab bar - drop here to add to tabs */}
       <div 
         className={`flex items-center bg-ide-surface border-b overflow-x-auto scrollbar-hide flex-shrink-0 transition-colors ${
@@ -297,7 +295,8 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
 
       {/* Editor area with drop zones */}
       <div 
-        className="flex-1 relative min-h-0 min-w-0"
+        className="relative"
+        style={{ flex: '1 1 0', minHeight: 0, minWidth: 0, overflow: 'hidden' }}
         onDragEnter={(e) => {
           e.preventDefault()
           setIsDraggingOver(true)

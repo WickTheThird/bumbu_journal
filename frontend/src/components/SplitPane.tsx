@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect, ReactNode } from 'react'
 interface SplitPaneProps {
   children: [ReactNode, ReactNode]
   direction?: 'horizontal' | 'vertical'
-  defaultSize?: number // percentage
+  defaultSize?: number // percentage (0-100)
   minSize?: number // percentage
   maxSize?: number // percentage
   className?: string
@@ -13,8 +13,8 @@ export default function SplitPane({
   children,
   direction = 'horizontal',
   defaultSize = 50,
-  minSize = 20,
-  maxSize = 80,
+  minSize = 10,
+  maxSize = 90,
   className = '',
 }: SplitPaneProps) {
   const [size, setSize] = useState(defaultSize)
@@ -23,6 +23,7 @@ export default function SplitPane({
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(true)
   }, [])
 
@@ -34,9 +35,13 @@ export default function SplitPane({
       let newSize: number
 
       if (direction === 'horizontal') {
-        newSize = ((e.clientX - rect.left) / rect.width) * 100
+        // Account for handle width (4px)
+        const availableWidth = rect.width - 4
+        newSize = ((e.clientX - rect.left) / availableWidth) * 100
       } else {
-        newSize = ((e.clientY - rect.top) / rect.height) * 100
+        // Account for handle height (4px)
+        const availableHeight = rect.height - 4
+        newSize = ((e.clientY - rect.top) / availableHeight) * 100
       }
 
       newSize = Math.max(minSize, Math.min(maxSize, newSize))
@@ -71,15 +76,20 @@ export default function SplitPane({
     <div
       ref={containerRef}
       className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} ${className}`}
-      style={{ height: '100%', width: '100%' }}
+      style={{ 
+        height: '100%', 
+        width: '100%',
+        minHeight: 0,
+        minWidth: 0,
+      }}
     >
-      {/* First pane */}
+      {/* First pane - use flex with basis */}
       <div
+        className="overflow-hidden"
         style={{
-          [isHorizontal ? 'width' : 'height']: `${size}%`,
-          overflow: 'hidden',
-          minWidth: 0,
-          minHeight: 0,
+          flex: `${size} 1 0`,
+          minWidth: isHorizontal ? 50 : undefined,
+          minHeight: isHorizontal ? undefined : 30,
         }}
       >
         {children[0]}
@@ -88,19 +98,18 @@ export default function SplitPane({
       {/* Resize handle */}
       <div
         onMouseDown={handleMouseDown}
-        className={`resize-handle ${isHorizontal ? 'resize-handle-h' : 'resize-handle-v'} bg-ide-border hover:bg-purple-500/50 transition-colors flex-shrink-0`}
-        style={{
-          [isHorizontal ? 'width' : 'height']: '4px',
-        }}
+        className={`flex-shrink-0 bg-ide-border hover:bg-purple-500 active:bg-purple-600 transition-colors z-10 ${
+          isHorizontal ? 'cursor-col-resize w-1 hover:w-1' : 'cursor-row-resize h-1 hover:h-1'
+        }`}
       />
 
-      {/* Second pane */}
+      {/* Second pane - use remaining flex */}
       <div
+        className="overflow-hidden"
         style={{
-          [isHorizontal ? 'width' : 'height']: `${100 - size}%`,
-          overflow: 'hidden',
-          minWidth: 0,
-          minHeight: 0,
+          flex: `${100 - size} 1 0`,
+          minWidth: isHorizontal ? 50 : undefined,
+          minHeight: isHorizontal ? undefined : 30,
         }}
       >
         {children[1]}
