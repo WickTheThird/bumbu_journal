@@ -76,29 +76,24 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Monaco fixes - hover widgets above EVERYTHING */
-.monaco-hover,
-.monaco-editor .monaco-hover,
-.monaco-editor .suggest-widget,
-.monaco-editor .parameter-hints-widget,
-.monaco-editor .editor-widget,
-.monaco-editor .overlayWidgets,
-.monaco-editor .context-view,
-.monaco-editor .monaco-editor-hover,
-.overflowingContentWidgets {
-  z-index: 99999 !important;
-  position: relative;
+/* Monaco hover fix - use fixed positioning trick */
+.monaco-editor .overflowingContentWidgets {
+  position: fixed !important;
+  z-index: 999999 !important;
 }
 
-/* All other UI elements must be lower */
-aside, header, nav, .tab-bar, [class*="border-b"] {
-  z-index: 1 !important;
+.monaco-editor .monaco-hover {
+  z-index: 999999 !important;
 }
 
-/* Ensure monaco container is positioned */
-.monaco-editor {
-  position: relative;
-  z-index: 10;
+.monaco-editor .suggest-widget {
+  z-index: 999999 !important;
+}
+
+/* Editor container must not clip overflow */
+.monaco-editor,
+.monaco-editor .overflow-guard {
+  overflow: visible !important;
 }
 
 /* Resize handles */

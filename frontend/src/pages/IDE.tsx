@@ -63,6 +63,8 @@ export default function IDE() {
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
   const [splitFile, setSplitFile] = useState<string | null>(null) // For split editor view
+  const [draggedFile, setDraggedFile] = useState<string | null>(null)
+  const [dropZone, setDropZone] = useState<'left' | 'right' | null>(null)
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -606,29 +608,28 @@ declare module '*';
         
         {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar - scrollable on mobile, right-click for split */}
-          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide z-[2]">
+          {/* Tab bar - drag tabs to split */}
+          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide">
             {workspace.files.map((file) => (
-              <button
+              <div
                 key={file.name}
-                onClick={() => setActiveFile(file.name)}
-                onContextMenu={(e) => {
-                  e.preventDefault()
-                  if (file.name !== workspace.activeFile) {
-                    setSplitFile(splitFile === file.name ? null : file.name)
-                  }
+                draggable
+                onDragStart={() => setDraggedFile(file.name)}
+                onDragEnd={() => {
+                  setDraggedFile(null)
+                  setDropZone(null)
                 }}
-                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 ${
+                onClick={() => setActiveFile(file.name)}
+                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 cursor-grab active:cursor-grabbing ${
                   file.name === workspace.activeFile 
                     ? 'bg-ide-bg text-ide-text' 
                     : file.name === splitFile 
                       ? 'bg-purple-500/20 text-purple-400' 
                       : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
                 }`}
-                title={file.name === workspace.activeFile ? file.name : `${file.name} (right-click to split)`}
               >
                 <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : file.name === splitFile ? 'text-purple-400' : ''}`} />
-                <span>{file.name}</span>
+                <span className="select-none">{file.name.split('/').pop()}</span>
                 {file.name === splitFile && (
                   <span className="text-[10px] text-purple-400 ml-1">SPLIT</span>
                 )}
@@ -642,20 +643,69 @@ declare module '*';
                     }} 
                   />
                 )}
-              </button>
+              </div>
             ))}
             {splitFile && (
               <button
                 onClick={() => setSplitFile(null)}
                 className="px-2 py-1 text-xs text-purple-400 hover:text-purple-300 ml-auto"
               >
-                Close Split
+                × Close Split
               </button>
             )}
           </div>
           
           {/* Monaco Editor - with optional split view */}
-          <div style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}>
+          <div 
+            style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}
+            className="relative"
+            onDragOver={(e) => {
+              e.preventDefault()
+              if (!draggedFile || draggedFile === workspace.activeFile) return
+              const rect = e.currentTarget.getBoundingClientRect()
+              const x = e.clientX - rect.left
+              setDropZone(x < rect.width / 2 ? 'left' : 'right')
+            }}
+            onDragLeave={() => setDropZone(null)}
+            onDrop={() => {
+              if (draggedFile && draggedFile !== workspace.activeFile) {
+                setSplitFile(draggedFile)
+              }
+              setDraggedFile(null)
+              setDropZone(null)
+            }}
+          >
+            {/* Drop zone indicators */}
+            {draggedFile && draggedFile !== workspace.activeFile && (
+              <>
+                <div 
+                  className={`absolute inset-y-0 left-0 w-1/2 border-2 border-dashed transition-all pointer-events-none z-50 ${
+                    dropZone === 'left' ? 'border-purple-500 bg-purple-500/10' : 'border-transparent'
+                  }`}
+                >
+                  {dropZone === 'left' && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">
+                        Drop to open left
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div 
+                  className={`absolute inset-y-0 right-0 w-1/2 border-2 border-dashed transition-all pointer-events-none z-50 ${
+                    dropZone === 'right' ? 'border-purple-500 bg-purple-500/10' : 'border-transparent'
+                  }`}
+                >
+                  {dropZone === 'right' && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">
+                        Drop to open right
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
             {activeFile ? (
               splitFile && splitFile !== workspace.activeFile ? (
                 <SplitPane direction="horizontal" defaultSize={50}>
