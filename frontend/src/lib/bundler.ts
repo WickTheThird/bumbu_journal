@@ -58,9 +58,24 @@ export async function initBundler(): Promise<void> {
   if (initialized) return
   if (initializing) return initializing
   
-  initializing = esbuild.initialize({
-    wasmURL: 'https://unpkg.com/esbuild-wasm@0.20.1/esbuild.wasm',
-  })
+  initializing = (async () => {
+    try {
+      await esbuild.initialize({
+        wasmURL: 'https://unpkg.com/esbuild-wasm@0.24.0/esbuild.wasm',
+        worker: true,
+      })
+    } catch (e: any) {
+      // If worker fails, try without worker
+      if (e.message?.includes('Worker')) {
+        await esbuild.initialize({
+          wasmURL: 'https://unpkg.com/esbuild-wasm@0.24.0/esbuild.wasm',
+          worker: false,
+        })
+      } else {
+        throw e
+      }
+    }
+  })()
   
   await initializing
   initialized = true
