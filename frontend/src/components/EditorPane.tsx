@@ -2,10 +2,10 @@ import { useState, useCallback } from 'react'
 import Editor from '@monaco-editor/react'
 import { FileCode, X } from 'lucide-react'
 import SplitPane from './SplitPane'
-import { WorkspaceFile } from '../types/workspace'
+import { File } from '../types/workspace'
 
 interface EditorPaneProps {
-  files: WorkspaceFile[]
+  files: File[]
   onFileChange: (fileName: string, content: string) => void
   theme: 'light' | 'dark'
   settings: {
@@ -15,6 +15,8 @@ interface EditorPaneProps {
     minimap?: boolean
     lineNumbers?: boolean
   }
+  initialActiveFile?: string
+  initialOpenTabs?: string[]
   depth?: number
 }
 
@@ -26,11 +28,11 @@ interface PaneState {
   children?: [PaneState, PaneState]
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, depth = 0 }: EditorPaneProps) {
+export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0 }: EditorPaneProps) {
   const [paneState, setPaneState] = useState<PaneState>({
     type: 'editor',
-    activeFile: files[0]?.name || null,
-    openTabs: files.map(f => f.name),
+    activeFile: initialActiveFile || files[0]?.name || null,
+    openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name), // Start with first 3 files
   })
   
   const [draggedFile, setDraggedFile] = useState<string | null>(null)
@@ -79,12 +81,16 @@ export default function EditorPane({ files, onFileChange, theme, settings, depth
     setDropZone(null)
   }, [draggedFile])
 
-  const handleCloseSplit = useCallback((keepIndex: 0 | 1) => {
+  // Close split and keep one side
+  const closeSplit = useCallback((keepIndex: 0 | 1) => {
     setPaneState(prev => {
       if (prev.type !== 'split' || !prev.children) return prev
       return prev.children[keepIndex]
     })
   }, [])
+  
+  // Expose closeSplit for parent to use
+  void closeSplit // Mark as intentionally unused for now
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
 

@@ -1,8 +1,7 @@
 import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Editor from '@monaco-editor/react'
-import type { Monaco } from '@monaco-editor/react'
-import type { editor } from 'monaco-editor'
+// Monaco types for future use
+// import type { Monaco } from '@monaco-editor/react'
 import { 
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
   ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
@@ -26,7 +25,7 @@ import HTMLPreview from '../components/HTMLPreview'
 import SearchPanel from '../components/SearchPanel'
 import GitHubModal from '../components/GitHubModal'
 import SourceControlPanel from '../components/SourceControlPanel'
-import SplitPane from '../components/SplitPane'
+import EditorPane from '../components/EditorPane'
 import { GitHubRepo } from '../lib/github'
 
 export default function IDE() {
@@ -44,6 +43,13 @@ export default function IDE() {
   
   const [copied, setCopied] = useState(false)
   const [isSaved, setIsSaved] = useState(true)
+  
+  // Track save status when workspace changes
+  useEffect(() => {
+    setIsSaved(false)
+    const timer = setTimeout(() => setIsSaved(true), 1000)
+    return () => clearTimeout(timer)
+  }, [workspace])
   const [showNewFileModal, setShowNewFileModal] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -61,31 +67,14 @@ export default function IDE() {
   const [githubUser, setGithubUser] = useState<{ login: string } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
-  const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
-  const [splitFile, setSplitFile] = useState<string | null>(null) // For split editor view
-  const [splitDirection, setSplitDirection] = useState<'horizontal' | 'vertical'>('horizontal')
-  const [draggedFile, setDraggedFile] = useState<string | null>(null)
-  const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | null>(null)
-  const [openTabs, setOpenTabs] = useState<string[]>([]) // Track open tabs separately
+  // Editor ref removed - EditorPane manages its own editor
+  // Editor state is now managed by EditorPane component
   const [terminalHeight, setTerminalHeight] = useState(200)
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
   const [previewWidth, setPreviewWidth] = useState(400)
   const [isResizingPreview, setIsResizingPreview] = useState(false)
   
-  // Sync open tabs with workspace files
-  useEffect(() => {
-    if (workspace.files.length > 0 && openTabs.length === 0) {
-      setOpenTabs(workspace.files.map(f => f.name))
-    }
-  }, [workspace.files, openTabs.length])
-  
-  // Add file to open tabs when selected
-  const handleSelectFile = useCallback((fileName: string) => {
-    setActiveFile(fileName)
-    if (!openTabs.includes(fileName)) {
-      setOpenTabs(prev => [...prev, fileName])
-    }
-  }, [setActiveFile, openTabs])
+  // File selection now handled by EditorPane
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -161,16 +150,6 @@ export default function IDE() {
   }, [workspace, isLoading])
   
   const activeFile = workspace.files.find(f => f.name === workspace.activeFile)
-  
-  const handleEditorChange = useCallback((value: string | undefined) => {
-    if (value !== undefined && workspace.activeFile) {
-      setIsSaved(false)
-      updateFile(workspace.activeFile, value)
-      // Mark as saved after debounce (URL updates automatically)
-      const timer = setTimeout(() => setIsSaved(true), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [workspace.activeFile, updateFile])
   
   const handleShare = async () => {
     const url = getShareableURL(workspace)
@@ -261,147 +240,7 @@ export default function IDE() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleRun, saveToHash])
   
-  const handleEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    setEditorRef(editor)
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      handleRun()
-    })
-    
-    // Force hover widgets to render in fixed overlay (above all other elements)
-    editor.updateOptions({ fixedOverflowWidgets: true })
-    
-    // TypeScript compiler options for JSX
-    const compilerOptions = {
-      target: monaco.languages.typescript.ScriptTarget.ESNext,
-      module: monaco.languages.typescript.ModuleKind.ESNext,
-      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-      jsx: monaco.languages.typescript.JsxEmit.React,
-      allowSyntheticDefaultImports: true,
-      esModuleInterop: true,
-      allowNonTsExtensions: true,
-      allowJs: true,
-      strict: false,
-      skipLibCheck: true,
-      noEmit: true,
-    }
-    
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions)
-    
-    // Comprehensive React types with proper JSX support
-    const reactDts = `
-declare namespace React {
-  type CSSProperties = Record<string, string | number>;
-  type ReactNode = ReactElement | string | number | boolean | null | undefined;
-  interface ReactElement<P = any> { type: any; props: P; key: string | null; }
-  type FC<P = {}> = (props: P & { children?: ReactNode }) => ReactElement | null;
-  
-  function useState<T>(initial: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
-  function useEffect(effect: () => void | (() => void), deps?: readonly any[]): void;
-  function useCallback<T extends (...args: any[]) => any>(callback: T, deps: readonly any[]): T;
-  function useMemo<T>(factory: () => T, deps: readonly any[]): T;
-  function useRef<T>(initial: T): { current: T };
-  function useContext<T>(context: Context<T>): T;
-  function createElement(type: any, props?: any, ...children: any[]): ReactElement;
-  
-  const Fragment: symbol;
-  
-  interface Context<T> {
-    Provider: FC<{ value: T; children?: ReactNode }>;
-  }
-  
-  interface HTMLProps {
-    children?: ReactNode;
-    className?: string;
-    id?: string;
-    style?: CSSProperties;
-    onClick?: (e: any) => void;
-    onChange?: (e: any) => void;
-    onSubmit?: (e: any) => void;
-    onKeyDown?: (e: any) => void;
-    [key: string]: any;
-  }
-}
-
-declare module 'react' {
-  export = React;
-}
-
-declare module 'react-dom/client' {
-  export function createRoot(container: Element | null): { render(element: any): void };
-}
-
-declare namespace JSX {
-  interface Element extends React.ReactElement {}
-  interface IntrinsicElements {
-    [elemName: string]: React.HTMLProps;
-  }
-}
-`;
-
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(reactDts, 'file:///node_modules/@types/react/index.d.ts')
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(reactDts, 'file:///node_modules/@types/react/index.d.ts')
-    
-    // Add type declarations for common packages
-    const commonDts = `
-declare module 'vite' {
-  export function defineConfig(config: any): any;
-}
-
-declare module '@vitejs/plugin-react' {
-  const plugin: () => any;
-  export default plugin;
-}
-
-declare module 'framer-motion' {
-  export const motion: any;
-  export const AnimatePresence: any;
-  export function useAnimation(): any;
-  export function useMotionValue(initial: number): any;
-  export function useTransform(value: any, input: number[], output: any[]): any;
-}
-
-declare module 'zustand' {
-  export function create<T>(fn: (set: any, get: any) => T): () => T;
-}
-
-declare module 'axios' {
-  const axios: any;
-  export default axios;
-}
-
-declare module 'lodash' {
-  const _: any;
-  export default _;
-}
-
-declare module 'date-fns' {
-  export function format(date: Date, formatStr: string): string;
-  export function parseISO(dateString: string): Date;
-}
-
-declare module '*.css' {
-  const styles: { [className: string]: string };
-  export default styles;
-}
-
-declare module '*.svg' {
-  const content: string;
-  export default content;
-}
-
-declare module '*.png' {
-  const content: string;
-  export default content;
-}
-
-// Allow any other module import without errors
-declare module '*';
-`;
-
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(commonDts, 'file:///node_modules/@types/common/index.d.ts')
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(commonDts, 'file:///node_modules/@types/common/index.d.ts')
-  }
+  // Monaco editor setup moved to EditorPane component
   
   if (isLoading) {
     return (
@@ -635,7 +474,7 @@ declare module '*';
             <FileTree
               files={workspace.files}
               activeFile={workspace.activeFile}
-              onSelectFile={handleSelectFile}
+              onSelectFile={setActiveFile}
               onDeleteFile={deleteFile}
               onRenameFile={renameFile}
             />
@@ -680,254 +519,21 @@ declare module '*';
         
         {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar - drag tabs to split */}
-          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide">
-            {openTabs.filter(name => workspace.files.some(f => f.name === name)).map((fileName) => {
-              const file = workspace.files.find(f => f.name === fileName)
-              if (!file) return null
-              return (
-                <div
-                  key={file.name}
-                  draggable
-                  onDragStart={(e) => {
-                    setDraggedFile(file.name)
-                    e.dataTransfer.effectAllowed = 'move'
-                  }}
-                  onDragEnd={() => {
-                    setDraggedFile(null)
-                    setDropZone(null)
-                  }}
-                  onClick={() => setActiveFile(file.name)}
-                  className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 cursor-default ${
-                    file.name === workspace.activeFile 
-                      ? 'bg-ide-bg text-ide-text' 
-                      : file.name === splitFile 
-                        ? 'bg-purple-500/20 text-purple-400' 
-                        : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
-                  }`}
-                >
-                  <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : file.name === splitFile ? 'text-purple-400' : ''}`} />
-                  <span className="select-none">{file.name.split('/').pop()}</span>
-                  {file.name === splitFile && (
-                    <span className="text-[10px] text-purple-400 ml-1">SPLIT</span>
-                  )}
-                  <button
-                    className="w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded transition"
-                    onClick={(e) => { 
-                      e.stopPropagation()
-                      // Close this tab (remove from openTabs)
-                      const newOpenTabs = openTabs.filter(t => t !== file.name)
-                      
-                      // If closing split file, close split
-                      if (file.name === splitFile) {
-                        setSplitFile(null)
-                      }
-                      
-                      // If closing active file, switch to another
-                      if (file.name === workspace.activeFile) {
-                        const nextFile = splitFile !== file.name ? splitFile : newOpenTabs[0]
-                        if (nextFile) {
-                          setActiveFile(nextFile)
-                          if (splitFile === file.name) setSplitFile(null)
-                        }
-                      }
-                      
-                      setOpenTabs(newOpenTabs)
-                    }}
-                  >
-                    <X className="w-3 h-3 text-ide-muted hover:text-red-400" />
-                  </button>
-                </div>
-              )
-            })}
-            {splitFile && (
-              <div className="flex items-center ml-auto border-l border-ide-border">
-                <button
-                  onClick={() => setSplitDirection(d => d === 'horizontal' ? 'vertical' : 'horizontal')}
-                  className="px-2 py-1 text-xs text-ide-muted hover:text-ide-text"
-                  title="Toggle split direction"
-                >
-                  {splitDirection === 'horizontal' ? '⬌' : '⬍'}
-                </button>
-                <button
-                  onClick={() => setSplitFile(null)}
-                  className="px-2 py-1 text-xs text-purple-400 hover:text-purple-300"
-                >
-                  × Close Split
-                </button>
-              </div>
-            )}
-          </div>
-          
-          {/* Monaco Editor - with optional split view */}
-          <div 
-            style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}
-            className="relative"
-            onDragOver={(e) => {
-              e.preventDefault()
-              if (!draggedFile) return
-              const rect = e.currentTarget.getBoundingClientRect()
-              const x = e.clientX - rect.left
-              const y = e.clientY - rect.top
-              const xRatio = x / rect.width
-              const yRatio = y / rect.height
-              
-              // Determine which zone based on position
-              if (xRatio < 0.25) setDropZone('left')
-              else if (xRatio > 0.75) setDropZone('right')
-              else if (yRatio < 0.25) setDropZone('top')
-              else if (yRatio > 0.75) setDropZone('bottom')
-              else setDropZone(xRatio < 0.5 ? 'left' : 'right')
-            }}
-            onDragLeave={() => setDropZone(null)}
-            onDrop={() => {
-              if (draggedFile) {
-                setSplitFile(draggedFile)
-                // Set direction based on drop zone
-                if (dropZone === 'top' || dropZone === 'bottom') {
-                  setSplitDirection('vertical')
-                } else {
-                  setSplitDirection('horizontal')
-                }
-                // Add to open tabs if not already there
-                if (!openTabs.includes(draggedFile)) {
-                  setOpenTabs([...openTabs, draggedFile])
-                }
-              }
-              setDraggedFile(null)
-              setDropZone(null)
-            }}
-          >
-            {/* Drop zone indicators - show 4 zones */}
-            {draggedFile && dropZone && (
-              <>
-                {/* Left */}
-                <div className={`absolute inset-y-0 left-0 w-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
-                  dropZone === 'left' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'
-                }`}>
-                  {dropZone === 'left' && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">← Left</span>
-                    </div>
-                  )}
-                </div>
-                {/* Right */}
-                <div className={`absolute inset-y-0 right-0 w-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
-                  dropZone === 'right' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'
-                }`}>
-                  {dropZone === 'right' && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">Right →</span>
-                    </div>
-                  )}
-                </div>
-                {/* Top */}
-                <div className={`absolute inset-x-0 top-0 h-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
-                  dropZone === 'top' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'
-                }`}>
-                  {dropZone === 'top' && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-cyan-500 text-white px-3 py-1 rounded text-sm font-medium">↑ Top</span>
-                    </div>
-                  )}
-                </div>
-                {/* Bottom */}
-                <div className={`absolute inset-x-0 bottom-0 h-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
-                  dropZone === 'bottom' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'
-                }`}>
-                  {dropZone === 'bottom' && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-cyan-500 text-white px-3 py-1 rounded text-sm font-medium">↓ Bottom</span>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-            {activeFile ? (
-              splitFile ? (
-                <SplitPane direction={splitDirection} defaultSize={50}>
-                  <Editor
-                    height="100%"
-                    path={activeFile.name}
-                    language={activeFile.language}
-                    value={activeFile.content}
-                    onChange={handleEditorChange}
-                    onMount={handleEditorMount}
-                    theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
-                    options={{
-                      fontSize: workspace.settings?.fontSize || 14,
-                      tabSize: workspace.settings?.tabSize || 2,
-                      wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
-                      minimap: { enabled: workspace.settings?.minimap ?? false },
-                      lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                      fontLigatures: true,
-                      padding: { top: 16 },
-                      folding: true,
-                      glyphMargin: true,
-                      lineDecorationsWidth: 10,
-                      lineNumbersMinChars: 4,
-                    }}
-                  />
-                  <Editor
-                    height="100%"
-                    path={splitFile}
-                    language={workspace.files.find(f => f.name === splitFile)?.language || 'plaintext'}
-                    value={workspace.files.find(f => f.name === splitFile)?.content || ''}
-                    onChange={(value) => value !== undefined && updateFile(splitFile, value)}
-                    theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
-                    options={{
-                      fontSize: workspace.settings?.fontSize || 14,
-                      tabSize: workspace.settings?.tabSize || 2,
-                      wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
-                      minimap: { enabled: workspace.settings?.minimap ?? false },
-                      lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                      fontLigatures: true,
-                      padding: { top: 16 },
-                      folding: true,
-                      glyphMargin: true,
-                      lineDecorationsWidth: 10,
-                      lineNumbersMinChars: 4,
-                    }}
-                  />
-                </SplitPane>
-              ) : (
-                <Editor
-                  height="100%"
-                  path={activeFile.name}
-                  language={activeFile.language}
-                  value={activeFile.content}
-                  onChange={handleEditorChange}
-                  onMount={handleEditorMount}
-                  theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
-                  options={{
-                    fontSize: workspace.settings?.fontSize || 14,
-                    tabSize: workspace.settings?.tabSize || 2,
-                    wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
-                    minimap: { enabled: workspace.settings?.minimap ?? false },
-                    lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                    fontLigatures: true,
-                    padding: { top: 16 },
-                    folding: true,
-                    glyphMargin: true,
-                    lineDecorationsWidth: 10,
-                    lineNumbersMinChars: 4,
-                  }}
-                />
-              )
-            ) : (
-              <div className="h-full flex items-center justify-center text-ide-muted">
-                <p>No file selected</p>
-              </div>
-            )}
+          {/* EditorPane with nested split support */}
+          <div style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}>
+            <EditorPane
+              files={workspace.files}
+              onFileChange={updateFile}
+              theme={(workspace.settings?.theme || 'dark') as 'light' | 'dark'}
+              settings={{
+                fontSize: workspace.settings?.fontSize,
+                tabSize: workspace.settings?.tabSize,
+                wordWrap: workspace.settings?.wordWrap,
+                minimap: workspace.settings?.minimap,
+                lineNumbers: workspace.settings?.lineNumbers,
+              }}
+              initialActiveFile={workspace.activeFile}
+            />
           </div>
           {/* Terminal - resizable, at bottom of main */}
           {showTerminal && (
@@ -959,7 +565,7 @@ declare module '*';
               />
               <div style={{ width: previewWidth }} className="relative">
                 {/* Overlay to capture mouse during drag/resize */}
-                {(draggedFile || isResizingPreview || isResizingTerminal) && (
+                {(isResizingPreview || isResizingTerminal) && (
                   <div className="absolute inset-0 z-50" />
                 )}
                 <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
