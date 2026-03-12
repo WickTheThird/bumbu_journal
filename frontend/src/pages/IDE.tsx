@@ -4,9 +4,10 @@ import Editor from '@monaco-editor/react'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
-  Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen
+  Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen, User
 } from 'lucide-react'
+import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -55,6 +56,7 @@ export default function IDE() {
   const [showGitHub, setShowGitHub] = useState(false)
   const [showSourceControl, setShowSourceControl] = useState(false)
   const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
+  const [githubUser, setGithubUser] = useState<{ login: string } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -62,6 +64,7 @@ export default function IDE() {
   // Load workspace from hash on mount
   useEffect(() => {
     loadFromHash()
+    getCurrentUser().then(setGithubUser).catch(() => setGithubUser(null))
     
     // Listen for hash changes (back/forward navigation)
     const handleHashChange = () => loadFromHash()
@@ -362,18 +365,6 @@ export default function IDE() {
             <History className="w-4 h-4" />
           </button>
           
-          <button onClick={() => setShowSettings(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Settings">
-            <Settings className="w-4 h-4" />
-          </button>
-          
-          <button onClick={() => setShowGitHub(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="GitHub">
-            <Github className="w-4 h-4" />
-          </button>
-          
-          <button onClick={() => setShowSourceControl(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Source Control">
-            <GitBranch className="w-4 h-4" />
-          </button>
-          
           <button onClick={() => setShowImport(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Import Files">
             <Upload className="w-4 h-4" />
           </button>
@@ -411,13 +402,20 @@ export default function IDE() {
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-56 bg-ide-surface border-r border-ide-border flex-col">
+          {/* File tree header with actions */}
           <div className="p-3 border-b border-ide-border flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Files</span>
-            <button onClick={() => setShowNewFileModal(true)} className="p-1 rounded hover:bg-ide-border transition" title="New file">
-              <Plus className="w-4 h-4" />
-            </button>
+            <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Explorer</span>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setShowNewFileModal(true)} className="p-1 rounded hover:bg-ide-border transition" title="New File">
+                <Plus className="w-4 h-4" />
+              </button>
+              <button onClick={() => setShowGitHub(true)} className="p-1 rounded hover:bg-ide-border transition" title="Clone from GitHub">
+                <FolderGit2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           
+          {/* File tree */}
           <div className="flex-1 overflow-y-auto">
             <FileTree
               files={workspace.files}
@@ -426,6 +424,42 @@ export default function IDE() {
               onDeleteFile={deleteFile}
               onRenameFile={renameFile}
             />
+          </div>
+          
+          {/* Bottom bar - Settings & GitHub */}
+          <div className="border-t border-ide-border p-2 space-y-1">
+            <button 
+              onClick={() => setShowSourceControl(true)} 
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-ide-border/50 text-sm text-ide-muted hover:text-ide-text transition"
+            >
+              <GitBranch className="w-4 h-4" />
+              <span>Source Control</span>
+            </button>
+            <button 
+              onClick={() => setShowSettings(true)} 
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-ide-border/50 text-sm text-ide-muted hover:text-ide-text transition"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </button>
+            <button 
+              onClick={() => setShowGitHub(true)} 
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-ide-border/50 text-sm transition"
+            >
+              {githubUser ? (
+                <>
+                  <div className="w-4 h-4 rounded-full bg-ide-accent/20 flex items-center justify-center text-xs text-ide-accent">
+                    {githubUser.login[0].toUpperCase()}
+                  </div>
+                  <span className="text-ide-text">{githubUser.login}</span>
+                </>
+              ) : (
+                <>
+                  <Github className="w-4 h-4 text-ide-muted" />
+                  <span className="text-ide-muted">Connect GitHub</span>
+                </>
+              )}
+            </button>
           </div>
         </aside>
         
