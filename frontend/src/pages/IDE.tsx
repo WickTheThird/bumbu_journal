@@ -69,6 +69,8 @@ export default function IDE() {
   const [openTabs, setOpenTabs] = useState<string[]>([]) // Track open tabs separately
   const [terminalHeight, setTerminalHeight] = useState(200)
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
+  const [previewWidth, setPreviewWidth] = useState(400)
+  const [isResizingPreview, setIsResizingPreview] = useState(false)
   
   // Sync open tabs with workspace files
   useEffect(() => {
@@ -76,6 +78,14 @@ export default function IDE() {
       setOpenTabs(workspace.files.map(f => f.name))
     }
   }, [workspace.files, openTabs.length])
+  
+  // Add file to open tabs when selected
+  const handleSelectFile = useCallback((fileName: string) => {
+    setActiveFile(fileName)
+    if (!openTabs.includes(fileName)) {
+      setOpenTabs(prev => [...prev, fileName])
+    }
+  }, [setActiveFile, openTabs])
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -111,6 +121,30 @@ export default function IDE() {
       document.body.style.userSelect = ''
     }
   }, [isResizingTerminal])
+  
+  // Preview resize handling
+  useEffect(() => {
+    if (!isResizingPreview) return
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = window.innerWidth - e.clientX
+      setPreviewWidth(Math.max(200, Math.min(window.innerWidth * 0.7, newWidth)))
+    }
+    
+    const handleMouseUp = () => setIsResizingPreview(false)
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizingPreview])
   
   // Auto-save to hash with debounce
   useEffect(() => {
@@ -601,7 +635,7 @@ declare module '*';
             <FileTree
               files={workspace.files}
               activeFile={workspace.activeFile}
-              onSelectFile={setActiveFile}
+              onSelectFile={handleSelectFile}
               onDeleteFile={deleteFile}
               onRenameFile={renameFile}
             />
@@ -895,32 +929,37 @@ declare module '*';
               </div>
             )}
           </div>
+          {/* Terminal - resizable, at bottom of main */}
+          {showTerminal && (
+            <div className="flex flex-col border-t border-ide-border" style={{ height: terminalHeight }}>
+              {/* Resize handle */}
+              <div 
+                className="h-1 bg-ide-border hover:bg-purple-500 cursor-row-resize transition-colors"
+                onMouseDown={() => setIsResizingTerminal(true)}
+              />
+              <div className="flex-1 min-h-0">
+                <Terminal output={output} isRunning={isRunning} onClose={() => setShowTerminal(false)} />
+              </div>
+            </div>
+          )}
         </main>
         
-        {/* Terminal - resizable */}
-        {showTerminal && (
-          <div className="flex flex-col" style={{ height: terminalHeight }}>
-            {/* Resize handle */}
-            <div 
-              className="h-1 bg-ide-border hover:bg-purple-500 cursor-row-resize transition-colors"
-              onMouseDown={() => setIsResizingTerminal(true)}
-            />
-            <div className="flex-1 min-h-0">
-              <Terminal output={output} isRunning={isRunning} onClose={() => setShowTerminal(false)} />
-            </div>
-          </div>
-        )}
-        
-        {/* HTML Preview Panel - side panel on desktop, fullscreen on mobile */}
+        {/* HTML Preview Panel - side panel on desktop with resize handle */}
         {showPreview && canPreview && (
           <>
             {/* Mobile: fullscreen overlay */}
             <div className="md:hidden fixed inset-0 z-50 bg-ide-bg flex flex-col">
               <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
             </div>
-            {/* Desktop: side panel */}
-            <div className="hidden md:block w-1/2">
-              <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
+            {/* Desktop: side panel with resize */}
+            <div className="hidden md:flex">
+              <div 
+                className="w-1 bg-ide-border hover:bg-purple-500 cursor-col-resize transition-colors"
+                onMouseDown={() => setIsResizingPreview(true)}
+              />
+              <div style={{ width: previewWidth }}>
+                <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
+              </div>
             </div>
           </>
         )}
