@@ -265,6 +265,66 @@ declare namespace JSX {
 
     monaco.languages.typescript.typescriptDefaults.addExtraLib(reactDts, 'file:///node_modules/@types/react/index.d.ts')
     monaco.languages.typescript.javascriptDefaults.addExtraLib(reactDts, 'file:///node_modules/@types/react/index.d.ts')
+    
+    // Add type declarations for common packages
+    const commonDts = `
+declare module 'vite' {
+  export function defineConfig(config: any): any;
+}
+
+declare module '@vitejs/plugin-react' {
+  const plugin: () => any;
+  export default plugin;
+}
+
+declare module 'framer-motion' {
+  export const motion: any;
+  export const AnimatePresence: any;
+  export function useAnimation(): any;
+  export function useMotionValue(initial: number): any;
+  export function useTransform(value: any, input: number[], output: any[]): any;
+}
+
+declare module 'zustand' {
+  export function create<T>(fn: (set: any, get: any) => T): () => T;
+}
+
+declare module 'axios' {
+  const axios: any;
+  export default axios;
+}
+
+declare module 'lodash' {
+  const _: any;
+  export default _;
+}
+
+declare module 'date-fns' {
+  export function format(date: Date, formatStr: string): string;
+  export function parseISO(dateString: string): Date;
+}
+
+declare module '*.css' {
+  const styles: { [className: string]: string };
+  export default styles;
+}
+
+declare module '*.svg' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.png' {
+  const content: string;
+  export default content;
+}
+
+// Allow any other module import without errors
+declare module '*';
+`;
+
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(commonDts, 'file:///node_modules/@types/common/index.d.ts')
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(commonDts, 'file:///node_modules/@types/common/index.d.ts')
   }
   
   if (isLoading) {

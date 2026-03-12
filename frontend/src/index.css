@@ -76,9 +76,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Monaco fixes */
+/* Monaco fixes - hover widgets above EVERYTHING */
 .monaco-editor .monaco-hover,
 .monaco-editor .suggest-widget,
-.monaco-editor .parameter-hints-widget {
-  z-index: 1000 !important;
+.monaco-editor .parameter-hints-widget,
+.monaco-editor .editor-widget,
+.monaco-editor .overlayWidgets {
+  z-index: 99999 !important;
+}
+
+/* Sidebar must be lower */
+aside {
+  z-index: 1 !important;
 }
