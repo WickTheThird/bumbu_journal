@@ -140,8 +140,14 @@ export async function bundle(files: { name: string; content: string }[]): Promis
     fileMap.set(path, file.content)
   }
   
-  // Find entry point
-  const entryPoints = ['/index.tsx', '/index.ts', '/index.jsx', '/index.js', '/main.tsx', '/main.ts', '/main.jsx', '/main.js', '/App.tsx', '/App.jsx']
+  // Find entry point (check both root and src/ directories)
+  const entryPoints = [
+    '/src/main.tsx', '/src/main.ts', '/src/main.jsx', '/src/main.js',
+    '/src/index.tsx', '/src/index.ts', '/src/index.jsx', '/src/index.js',
+    '/index.tsx', '/index.ts', '/index.jsx', '/index.js',
+    '/main.tsx', '/main.ts', '/main.jsx', '/main.js',
+    '/src/App.tsx', '/src/App.jsx', '/App.tsx', '/App.jsx'
+  ]
   let entry: string | null = null
   
   for (const ep of entryPoints) {
@@ -168,11 +174,28 @@ export async function bundle(files: { name: string; content: string }[]): Promis
   // Collect imports for the importmap
   const npmImports = new Set<string>()
   
-  // Scan files for npm imports
+  // First check package.json for declared dependencies
+  const pkgJsonContent = fileMap.get('/package.json')
+  if (pkgJsonContent) {
+    try {
+      const pkgJson = JSON.parse(pkgJsonContent)
+      const deps = { ...pkgJson.dependencies, ...pkgJson.devDependencies }
+      for (const pkg of Object.keys(deps)) {
+        npmImports.add(pkg)
+      }
+    } catch (e) {
+      // Invalid JSON, will be caught by import scanning
+    }
+  }
+  
+  // Also scan files for npm imports (catches unlisted deps)
   for (const [, content] of fileMap) {
     const importMatches = content.matchAll(/import\s+(?:.*?\s+from\s+)?['"]([^.\/][^'"]*)['"]/g)
     for (const match of importMatches) {
       const pkg = match[1].split('/')[0]
+      if (pkg !== 'react' && pkg !== 'react-dom') {
+        // react/react-dom always included
+      }
       npmImports.add(pkg)
     }
   }

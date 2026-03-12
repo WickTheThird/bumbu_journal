@@ -8,6 +8,8 @@ export interface Template {
   workspace: Workspace
 }
 
+const defaultSettings = { theme: 'dark' as const, fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true }
+
 export const templates: Template[] = [
   {
     id: 'react-counter',
@@ -18,19 +20,78 @@ export const templates: Template[] = [
       version: 1,
       files: [
         {
-          name: 'index.tsx',
+          name: 'package.json',
+          content: `{
+  "name": "react-counter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'vite.config.ts',
+          content: `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+    open: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  }
+})`,
+          language: 'typescript',
+        },
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Counter</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'src/main.tsx',
           content: `import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 
-const root = createRoot(document.getElementById('root')!)
-root.render(<App />)
-`,
+createRoot(document.getElementById('root')!).render(<App />)`,
           language: 'typescript',
         },
         {
-          name: 'App.tsx',
-          content: `import React, { useState } from 'react'
+          name: 'src/App.tsx',
+          content: `import { useState } from 'react'
 
 export default function App() {
   const [count, setCount] = useState(0)
@@ -59,83 +120,79 @@ export default function App() {
         <p style={{ fontSize: '4rem', margin: '0 0 1rem' }}>{count}</p>
         
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button
-            onClick={() => setCount(c => c - 1)}
-            style={{
-              padding: '0.75rem 1.5rem',
-              fontSize: '1.25rem',
-              border: 'none',
-              borderRadius: '0.5rem',
-              background: '#ff6b6b',
-              color: 'white',
-              cursor: 'pointer',
-            }}
-          >
-            -
-          </button>
-          <button
-            onClick={() => setCount(0)}
-            style={{
-              padding: '0.75rem 1.5rem',
-              fontSize: '1.25rem',
-              border: 'none',
-              borderRadius: '0.5rem',
-              background: '#4ecdc4',
-              color: 'white',
-              cursor: 'pointer',
-            }}
-          >
-            Reset
-          </button>
-          <button
-            onClick={() => setCount(c => c + 1)}
-            style={{
-              padding: '0.75rem 1.5rem',
-              fontSize: '1.25rem',
-              border: 'none',
-              borderRadius: '0.5rem',
-              background: '#45b7d1',
-              color: 'white',
-              cursor: 'pointer',
-            }}
-          >
-            +
-          </button>
+          <button onClick={() => setCount(c => c - 1)} style={btnStyle('#ff6b6b')}>-</button>
+          <button onClick={() => setCount(0)} style={btnStyle('#4ecdc4')}>Reset</button>
+          <button onClick={() => setCount(c => c + 1)} style={btnStyle('#45b7d1')}>+</button>
         </div>
       </div>
     </div>
   )
 }
-`,
+
+const btnStyle = (bg: string) => ({
+  padding: '0.75rem 1.5rem',
+  fontSize: '1.25rem',
+  border: 'none',
+  borderRadius: '0.5rem',
+  background: bg,
+  color: 'white',
+  cursor: 'pointer',
+})`,
           language: 'typescript',
         },
       ],
-      activeFile: 'App.tsx',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
     },
   },
   {
     id: 'react-todo',
     name: 'React Todo',
-    description: 'Todo list with state management',
+    description: 'Todo list with TypeScript',
     icon: 'react',
     workspace: {
       version: 1,
       files: [
         {
-          name: 'index.tsx',
-          content: `import React from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App'
+          name: 'package.json',
+          content: `{
+  "name": "react-todo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'vite.config.ts',
+          content: `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-const root = createRoot(document.getElementById('root')!)
-root.render(<App />)
-`,
+export default defineConfig({
+  plugins: [react()],
+})`,
           language: 'typescript',
         },
         {
-          name: 'App.tsx',
-          content: `import React, { useState } from 'react'
+          name: 'src/main.tsx',
+          content: `import { createRoot } from 'react-dom/client'
+import App from './App'
+
+createRoot(document.getElementById('root')!).render(<App />)`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `import { useState } from 'react'
 
 interface Todo {
   id: number
@@ -196,13 +253,153 @@ export default function App() {
       </p>
     </div>
   )
-}
-`,
+}`,
           language: 'typescript',
         },
       ],
-      activeFile: 'App.tsx',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'react-framer',
+    name: 'React + Framer Motion',
+    description: 'Animations with framer-motion',
+    icon: 'react',
+    workspace: {
+      version: 1,
+      files: [
+        {
+          name: 'package.json',
+          content: `{
+  "name": "react-framer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "framer-motion": "^10.16.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'vite.config.ts',
+          content: `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/main.tsx',
+          content: `import { createRoot } from 'react-dom/client'
+import App from './App'
+
+createRoot(document.getElementById('root')!).render(<App />)`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+export default function App() {
+  const [items, setItems] = useState([1, 2, 3])
+  const [selected, setSelected] = useState<number | null>(null)
+
+  const addItem = () => setItems([...items, Date.now()])
+  const removeItem = (id: number) => setItems(items.filter(i => i !== id))
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0f172a', padding: '2rem', fontFamily: 'system-ui' }}>
+      <h1 style={{ color: 'white', textAlign: 'center', marginBottom: '2rem' }}>
+        Framer Motion Demo
+      </h1>
+      
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={addItem}
+          style={{
+            padding: '1rem 2rem',
+            background: '#7c3aed',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            fontSize: '1rem',
+            cursor: 'pointer',
+          }}
+        >
+          Add Card
+        </motion.button>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+        <AnimatePresence>
+          {items.map((id) => (
+            <motion.div
+              key={id}
+              layout
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+              whileHover={{ y: -5 }}
+              onClick={() => setSelected(selected === id ? null : id)}
+              style={{
+                width: selected === id ? '200px' : '150px',
+                height: selected === id ? '200px' : '150px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '1rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}
+            >
+              <motion.button
+                whileHover={{ scale: 1.2 }}
+                onClick={(e) => { e.stopPropagation(); removeItem(id) }}
+                style={{
+                  position: 'absolute',
+                  top: '0.5rem',
+                  right: '0.5rem',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                x
+              </motion.button>
+              <span style={{ color: 'white', fontSize: '1.5rem' }}>
+                {selected === id ? 'Selected!' : 'Click me'}
+              </span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
     },
   },
   {
@@ -325,13 +522,13 @@ animate();`,
         },
       ],
       activeFile: 'particles.js',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+      settings: defaultSettings,
     },
   },
   {
     id: 'portfolio',
     name: 'Portfolio',
-    description: 'Minimal portfolio with animations',
+    description: 'Minimal portfolio with CSS animations',
     icon: 'portfolio',
     workspace: {
       version: 1,
@@ -475,87 +672,78 @@ main { padding: 0 5%; }
         },
       ],
       activeFile: 'index.html',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+      settings: defaultSettings,
     },
   },
   {
-    id: 'python-algo',
-    name: 'Sorting Visualizer',
-    description: 'Step-by-step algorithm visualization',
-    icon: 'chart',
+    id: 'blank-react',
+    name: 'Blank React',
+    description: 'Empty React + Vite project',
+    icon: 'react',
     workspace: {
       version: 1,
       files: [
         {
-          name: 'sort.py',
-          content: `# Sorting Algorithm Visualizer
+          name: 'package.json',
+          content: `{
+  "name": "my-react-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'vite.config.ts',
+          content: `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-def visualize(arr, highlight=None, label=""):
-    """Print array with visual bars"""
-    max_val = max(arr) if arr else 1
-    print(f"\\n{label}")
-    for i, val in enumerate(arr):
-        bar = "#" * (val * 40 // max_val)
-        marker = " <-" if highlight and i in highlight else ""
-        print(f"{val:3d} |{bar}{marker}")
-    print("-" * 50)
+export default defineConfig({
+  plugins: [react()],
+})`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/main.tsx',
+          content: `import { createRoot } from 'react-dom/client'
+import App from './App'
 
-def bubble_sort(arr):
-    """Bubble Sort - O(n^2)"""
-    arr = arr.copy()
-    n = len(arr)
-    print("\\nBUBBLE SORT")
-    print("Repeatedly swap adjacent elements if wrong order")
-    
-    for i in range(n):
-        for j in range(n - i - 1):
-            if arr[j] > arr[j + 1]:
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                visualize(arr, {j, j+1}, f"Swapped {arr[j+1]} and {arr[j]}")
-    return arr
-
-def quick_sort(arr, depth=0):
-    """Quick Sort - O(n log n) average"""
-    if len(arr) <= 1:
-        return arr
-    
-    if depth == 0:
-        print("\\nQUICK SORT")
-        print("Pick pivot, partition around it, recurse")
-    
-    pivot = arr[len(arr) // 2]
-    left = [x for x in arr if x < pivot]
-    middle = [x for x in arr if x == pivot]
-    right = [x for x in arr if x > pivot]
-    
-    indent = "  " * depth
-    print(f"{indent}Pivot={pivot}: [{left}] [{middle}] [{right}]")
-    
-    return quick_sort(left, depth+1) + middle + quick_sort(right, depth+1)
-
-# Demo
-data = [64, 34, 25, 12, 22, 11, 90, 45]
-print("Original array:")
-visualize(data, label="Starting array")
-
-print("\\n" + "=" * 50)
-sorted_bubble = bubble_sort(data.copy())
-
-print("\\n" + "=" * 50)
-sorted_quick = quick_sort(data.copy())
-visualize(sorted_quick, label="Quick Sort Result")
-`,
-          language: 'python',
+createRoot(document.getElementById('root')!).render(<App />)`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `export default function App() {
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
+      <h1>Hello World</h1>
+      <p>Edit src/App.tsx to get started</p>
+    </div>
+  )
+}`,
+          language: 'typescript',
         },
       ],
-      activeFile: 'sort.py',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 4, wordWrap: true, minimap: true, lineNumbers: true },
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
     },
   },
   {
     id: 'blank-html',
-    name: 'HTML Starter',
-    description: 'Blank HTML/CSS/JS project',
+    name: 'Blank HTML',
+    description: 'Empty HTML/CSS/JS project',
     icon: 'file',
     workspace: {
       version: 1,
@@ -594,7 +782,7 @@ visualize(sorted_quick, label="Quick Sort Result")
         },
       ],
       activeFile: 'index.html',
-      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+      settings: defaultSettings,
     },
   },
 ]
