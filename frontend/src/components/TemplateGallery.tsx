@@ -27,7 +27,7 @@ export default function TemplateGallery({ isOpen, onClose }: TemplateGalleryProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.1s_ease-out]"
         onClick={onClose}
       />
       

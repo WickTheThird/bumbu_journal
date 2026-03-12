@@ -479,8 +479,8 @@ declare namespace JSX {
       </header>
       
       <div className="flex-1 flex overflow-hidden">
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:flex w-56 bg-ide-surface border-r border-ide-border flex-col">
+        {/* Desktop Sidebar - lower z-index so Monaco hovers appear above */}
+        <aside className="hidden md:flex w-56 bg-ide-surface border-r border-ide-border flex-col z-0 relative">
           {/* File tree header with actions */}
           <div className="p-3 border-b border-ide-border flex items-center justify-between">
             <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Explorer</span>

@@ -1,5 +1,23 @@
 /* HashIDE Cyberpunk Design System */
 
+/* Faster animations globally */
+* {
+  transition-duration: 0.1s !important;
+}
+
+/* Monaco hover widget z-index fix */
+.monaco-editor .monaco-hover {
+  z-index: 100 !important;
+}
+
+.monaco-editor .suggest-widget {
+  z-index: 100 !important;
+}
+
+.monaco-editor .parameter-hints-widget {
+  z-index: 100 !important;
+}
+
 :root {
   /* Void backgrounds */
   --void-black: #0A0A0F;
@@ -23,7 +41,7 @@
   --glow-lg: 0 0 20px;
 }
 
-/* Scanline overlay */
+/* Scanline overlay - static for performance */
 .scanlines {
   pointer-events: none;
   position: fixed;
@@ -33,15 +51,10 @@
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 4px
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
   );
-  animation: scanlines 0.5s linear infinite;
-}
-
-@keyframes scanlines {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 4px; }
+  /* No animation - static scanlines are faster */
 }
 
 /* CRT flicker */
