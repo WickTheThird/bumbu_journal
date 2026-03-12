@@ -248,14 +248,35 @@ export default function GitHubModal({ isOpen, onClose }: GitHubModalProps) {
               </p>
               
               {!user && (
-                <button
-                  onClick={handleStartAuth}
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-ide-border hover:bg-ide-border/50 text-sm transition"
-                >
-                  <Github className="w-4 h-4" />
-                  Login with GitHub for higher rate limits
-                </button>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-ide-muted mb-1.5">Personal Access Token (optional)</label>
+                    <input
+                      type="password"
+                      placeholder="ghp_xxxxxxxxxxxx"
+                      className="w-full px-3 py-2 bg-ide-bg border border-ide-border rounded-lg focus:border-ide-accent focus:outline-none text-sm font-mono"
+                      onBlur={(e) => {
+                        if (e.target.value) {
+                          localStorage.setItem('github_token', e.target.value)
+                          checkAuth()
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
+                          localStorage.setItem('github_token', (e.target as HTMLInputElement).value)
+                          checkAuth()
+                        }
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-ide-muted">
+                    Get a token at{' '}
+                    <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=HashIDE" target="_blank" rel="noopener noreferrer" className="text-ide-accent hover:underline">
+                      github.com/settings/tokens
+                    </a>
+                    {' '}(select "public_repo" scope). Stored locally, never shared.
+                  </p>
+                </div>
               )}
             </div>
           )}
