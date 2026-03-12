@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { 
   Share2, Lock, Zap, Terminal, GitBranch, ArrowRight,
   Hash, Layers, Menu, X, Linkedin, Mail, ExternalLink,
-  Code2, Globe, Cpu
+  Code2, Globe, Cpu, Atom, Package
 } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 
@@ -78,7 +78,7 @@ export default function Landing() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs text-zinc-400">Now with Python execution via Pyodide</span>
+            <span className="text-xs text-zinc-400">Now with React + JSX bundling via esbuild</span>
           </div>
           
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
@@ -90,8 +90,8 @@ export default function Landing() {
           </h1>
           
           <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            A browser-based editor where your entire workspace is compressed into the URL. 
-            Share code by sharing a link.
+            Build and share working web apps directly from your browser.
+            Full React apps that live inside a URL. No servers. No setup.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -224,24 +224,24 @@ export default function Landing() {
           <p className="text-xs text-zinc-600 uppercase tracking-wider mb-8">Built with modern technologies</p>
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 text-zinc-600">
             <div className="flex items-center gap-2">
-              <Cpu className="w-5 h-5" />
-              <span className="text-sm font-medium">Pyodide</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Code2 className="w-5 h-5" />
-              <span className="text-sm font-medium">Monaco Editor</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              <span className="text-sm font-medium">Vite</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5" />
+              <Atom className="w-5 h-5" />
               <span className="text-sm font-medium">React</span>
             </div>
             <div className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              <span className="text-sm font-medium">LZ-String</span>
+              <Package className="w-5 h-5" />
+              <span className="text-sm font-medium">esbuild-wasm</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              <span className="text-sm font-medium">esm.sh</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Code2 className="w-5 h-5" />
+              <span className="text-sm font-medium">Monaco</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Cpu className="w-5 h-5" />
+              <span className="text-sm font-medium">Pyodide</span>
             </div>
           </div>
         </div>
@@ -266,9 +266,9 @@ export default function Landing() {
               description="Workspace is compressed with LZ-String and stored in the URL hash. No database, no accounts."
             />
             <FeatureCard
-              icon={<Zap className="w-5 h-5" />}
-              title="Instant execution"
-              description="Python runs client-side via Pyodide. JavaScript and HTML execute in sandboxed iframes."
+              icon={<Atom className="w-5 h-5" />}
+              title="React in the browser"
+              description="JSX/TSX compiles via esbuild-wasm. npm packages load from esm.sh. Full React apps, no build step."
             />
             <FeatureCard
               icon={<Share2 className="w-5 h-5" />}
@@ -358,10 +358,10 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Start with a template
+              Examples that just work
             </h2>
             <p className="text-zinc-400 max-w-xl mx-auto">
-              Pick a starting point and make it yours.
+              Click any template → instant working app. Edit, share, make it yours.
             </p>
           </div>
           <TemplateGallery />
