@@ -952,12 +952,16 @@ declare module '*';
               <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
             </div>
             {/* Desktop: side panel with resize */}
-            <div className="hidden md:flex">
+            <div className="hidden md:flex relative">
               <div 
                 className="w-1 bg-ide-border hover:bg-purple-500 cursor-col-resize transition-colors"
                 onMouseDown={() => setIsResizingPreview(true)}
               />
-              <div style={{ width: previewWidth }}>
+              <div style={{ width: previewWidth }} className="relative">
+                {/* Overlay to capture mouse during drag/resize */}
+                {(draggedFile || isResizingPreview || isResizingTerminal) && (
+                  <div className="absolute inset-0 z-50" />
+                )}
                 <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
               </div>
             </div>
