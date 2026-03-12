@@ -77,7 +77,7 @@ function TreeItem({
 }: { 
   node: TreeNode
   depth: number
-  activeFile: string | null
+  activeFile: string | null | undefined
   expandedFolders: Set<string>
   onToggleFolder: (path: string) => void
   onSelectFile: (name: string) => void
