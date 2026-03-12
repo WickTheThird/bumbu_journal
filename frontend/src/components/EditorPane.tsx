@@ -198,11 +198,17 @@ function PaneRenderer({
       const currentTabs = (n.openTabs && n.openTabs.length > 0) ? n.openTabs : [files[0]?.name].filter(Boolean) as string[]
       const currentActive = n.activeFile || currentTabs[0] || null
       
-      const existingEditor = createEditorNode(currentActive, currentTabs)
+      // Keep the same ID for existing content, create new ID only for the dragged file
+      const existingEditor: PaneNode = {
+        id: n.id, // Preserve original ID to avoid remount
+        type: 'editor',
+        activeFile: currentActive,
+        openTabs: currentTabs,
+      }
       const newEditor = createEditorNode(draggedFile, [draggedFile])
       
       return {
-        id: generatePaneId(), // New ID for split to force fresh render
+        id: generatePaneId(), // Split container gets new ID
         type: 'split',
         direction,
         children: isFirst ? [newEditor, existingEditor] : [existingEditor, newEditor],
@@ -215,6 +221,7 @@ function PaneRenderer({
     return (
       <SplitPane direction={node.direction || 'horizontal'} defaultSize={50}>
         <PaneRenderer
+          key={node.children[0].id}
           node={node.children[0]}
           files={files}
           onFileChange={onFileChange}
@@ -223,6 +230,7 @@ function PaneRenderer({
           onUpdateNode={onUpdateNode}
         />
         <PaneRenderer
+          key={node.children[1].id}
           node={node.children[1]}
           files={files}
           onFileChange={onFileChange}
@@ -384,7 +392,7 @@ function PaneRenderer({
 
         {currentFile ? (
           <Editor
-            key={`${node.id}-editor`}
+            key={node.id}
             height="100%"
             path={currentFile.name}
             language={currentFile.language}
