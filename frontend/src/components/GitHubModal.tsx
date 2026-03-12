@@ -78,6 +78,7 @@ export default function GitHubModal({ isOpen, onClose }: GitHubModalProps) {
       
       // Load into workspace
       setWorkspace({
+        version: 1,
         files: files.map(f => ({
           name: f.name,
           content: f.content,
