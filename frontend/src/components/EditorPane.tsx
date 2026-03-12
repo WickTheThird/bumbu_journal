@@ -105,48 +105,25 @@ function PaneRenderer({
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
   const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
 
-  // Track if component is mounted to avoid state updates after unmount
-  const isMountedRef = useRef(true)
-  
-  // Cleanup editor on unmount
+  // Simple cleanup on unmount - no delays
   useEffect(() => {
-    isMountedRef.current = true
     return () => {
-      isMountedRef.current = false
-      // Delay disposal to let pending operations complete
-      const editor = editorRef.current
-      if (editor) {
+      if (editorRef.current) {
+        try { editorRef.current.dispose() } catch (e) { /* ignore */ }
         editorRef.current = null
-        // Use setTimeout to let Monaco finish pending operations
-        setTimeout(() => {
-          try { 
-            editor.dispose() 
-          } catch (e) { 
-            // Silently ignore disposal errors
-          }
-        }, 100)
       }
     }
   }, [])
 
   const handleEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    // Only store ref if component is still mounted
-    if (isMountedRef.current) {
-      editorRef.current = editor
-    } else {
-      // Component unmounted during editor init - dispose immediately
-      try { editor.dispose() } catch (e) { /* ignore */ }
-      return
-    }
+    editorRef.current = editor
     
-    // Configure Monaco (only once, on first editor)
+    // Configure Monaco
     try {
       monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
       monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
       monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
-    } catch (e) {
-      // Ignore config errors
-    }
+    } catch (e) { /* ignore */ }
   }, [])
 
   // Handle tab selection
@@ -217,11 +194,15 @@ function PaneRenderer({
     editorRef.current = null
     
     onUpdateNode(node.id, (n) => {
-      const existingEditor = createEditorNode(n.activeFile || null, n.openTabs || [])
+      // Preserve current tabs, default to at least one file if empty
+      const currentTabs = (n.openTabs && n.openTabs.length > 0) ? n.openTabs : [files[0]?.name].filter(Boolean) as string[]
+      const currentActive = n.activeFile || currentTabs[0] || null
+      
+      const existingEditor = createEditorNode(currentActive, currentTabs)
       const newEditor = createEditorNode(draggedFile, [draggedFile])
       
       return {
-        id: n.id, // Keep same ID for the split
+        id: generatePaneId(), // New ID for split to force fresh render
         type: 'split',
         direction,
         children: isFirst ? [newEditor, existingEditor] : [existingEditor, newEditor],
