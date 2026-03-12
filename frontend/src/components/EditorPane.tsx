@@ -85,8 +85,40 @@ const updateNodeInTree = (
   return tree
 }
 
+// Props type for PaneRenderer
+interface PaneRendererProps {
+  node: PaneNode
+  files: File[]
+  onFileChange: (fileName: string, content: string) => void
+  theme: 'light' | 'dark'
+  settings: EditorPaneProps['settings']
+  onUpdateNode: (nodeId: string, updater: (node: PaneNode) => PaneNode | null) => void
+}
+
+// Custom comparison - only re-render if node structure changed
+const panePropsAreEqual = (prev: PaneRendererProps, next: PaneRendererProps): boolean => {
+  // Always re-render if node id/type changed
+  if (prev.node.id !== next.node.id || prev.node.type !== next.node.type) return false
+  
+  // For editors, check tabs and active file
+  if (prev.node.type === 'editor' && next.node.type === 'editor') {
+    if (prev.node.activeFile !== next.node.activeFile) return false
+    if (prev.node.openTabs?.length !== next.node.openTabs?.length) return false
+    if (prev.node.openTabs?.join(',') !== next.node.openTabs?.join(',')) return false
+  }
+  
+  // Theme/settings changes need re-render
+  if (prev.theme !== next.theme) return false
+  if (prev.settings !== next.settings) return false
+  
+  // Files content changes should NOT trigger re-render of structure
+  // The Monaco editor handles its own content updates
+  
+  return true
+}
+
 // Inner component that renders a single pane (controlled by parent)
-// Memoized to prevent unnecessary re-renders
+// Memoized with custom comparison to prevent unnecessary re-renders
 const PaneRenderer = memo(function PaneRenderer({
   node,
   files,
@@ -94,14 +126,7 @@ const PaneRenderer = memo(function PaneRenderer({
   theme,
   settings,
   onUpdateNode,
-}: {
-  node: PaneNode
-  files: File[]
-  onFileChange: (fileName: string, content: string) => void
-  theme: 'light' | 'dark'
-  settings: EditorPaneProps['settings']
-  onUpdateNode: (nodeId: string, updater: (node: PaneNode) => PaneNode | null) => void
-}) {
+}: PaneRendererProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   
   // Drag state (local to this pane)
@@ -428,7 +453,7 @@ const PaneRenderer = memo(function PaneRenderer({
       </div>
     </div>
   )
-})
+}, panePropsAreEqual)
 
 // Main EditorPane component - manages the entire pane tree
 export default function EditorPane({ 
