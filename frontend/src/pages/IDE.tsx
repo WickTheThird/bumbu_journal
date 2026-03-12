@@ -63,10 +63,19 @@ export default function IDE() {
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
   const [splitFile, setSplitFile] = useState<string | null>(null) // For split editor view
+  const [splitDirection, setSplitDirection] = useState<'horizontal' | 'vertical'>('horizontal')
   const [draggedFile, setDraggedFile] = useState<string | null>(null)
-  const [dropZone, setDropZone] = useState<'left' | 'right' | null>(null)
+  const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | null>(null)
+  const [openTabs, setOpenTabs] = useState<string[]>([]) // Track open tabs separately
   const [terminalHeight, setTerminalHeight] = useState(200)
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
+  
+  // Sync open tabs with workspace files
+  useEffect(() => {
+    if (workspace.files.length > 0 && openTabs.length === 0) {
+      setOpenTabs(workspace.files.map(f => f.name))
+    }
+  }, [workspace.files, openTabs.length])
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -639,63 +648,80 @@ declare module '*';
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Tab bar - drag tabs to split */}
           <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide">
-            {workspace.files.map((file) => (
-              <div
-                key={file.name}
-                draggable
-                onDragStart={(e) => {
-                  setDraggedFile(file.name)
-                  e.dataTransfer.effectAllowed = 'move'
-                }}
-                onDragEnd={() => {
-                  setDraggedFile(null)
-                  setDropZone(null)
-                }}
-                onClick={() => setActiveFile(file.name)}
-                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 cursor-default ${
-                  file.name === workspace.activeFile 
-                    ? 'bg-ide-bg text-ide-text' 
-                    : file.name === splitFile 
-                      ? 'bg-purple-500/20 text-purple-400' 
-                      : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
-                }`}
-              >
-                <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : file.name === splitFile ? 'text-purple-400' : ''}`} />
-                <span className="select-none">{file.name.split('/').pop()}</span>
-                {file.name === splitFile && (
-                  <span className="text-[10px] text-purple-400 ml-1">SPLIT</span>
-                )}
-                <button
-                  className="w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded transition"
-                  onClick={(e) => { 
-                    e.stopPropagation()
-                    // Just close the split if this file is in split view
-                    if (file.name === splitFile) {
-                      setSplitFile(null)
-                    }
-                    // If this is the active file, switch to split file or first other file
-                    if (file.name === workspace.activeFile) {
-                      if (splitFile && splitFile !== file.name) {
-                        setActiveFile(splitFile)
-                        setSplitFile(null)
-                      } else {
-                        const otherFile = workspace.files.find(f => f.name !== file.name)
-                        if (otherFile) setActiveFile(otherFile.name)
-                      }
-                    }
+            {openTabs.filter(name => workspace.files.some(f => f.name === name)).map((fileName) => {
+              const file = workspace.files.find(f => f.name === fileName)
+              if (!file) return null
+              return (
+                <div
+                  key={file.name}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedFile(file.name)
+                    e.dataTransfer.effectAllowed = 'move'
                   }}
+                  onDragEnd={() => {
+                    setDraggedFile(null)
+                    setDropZone(null)
+                  }}
+                  onClick={() => setActiveFile(file.name)}
+                  className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 cursor-default ${
+                    file.name === workspace.activeFile 
+                      ? 'bg-ide-bg text-ide-text' 
+                      : file.name === splitFile 
+                        ? 'bg-purple-500/20 text-purple-400' 
+                        : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
+                  }`}
                 >
-                  <X className="w-3 h-3 text-ide-muted hover:text-red-400" />
+                  <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : file.name === splitFile ? 'text-purple-400' : ''}`} />
+                  <span className="select-none">{file.name.split('/').pop()}</span>
+                  {file.name === splitFile && (
+                    <span className="text-[10px] text-purple-400 ml-1">SPLIT</span>
+                  )}
+                  <button
+                    className="w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded transition"
+                    onClick={(e) => { 
+                      e.stopPropagation()
+                      // Close this tab (remove from openTabs)
+                      const newOpenTabs = openTabs.filter(t => t !== file.name)
+                      
+                      // If closing split file, close split
+                      if (file.name === splitFile) {
+                        setSplitFile(null)
+                      }
+                      
+                      // If closing active file, switch to another
+                      if (file.name === workspace.activeFile) {
+                        const nextFile = splitFile !== file.name ? splitFile : newOpenTabs[0]
+                        if (nextFile) {
+                          setActiveFile(nextFile)
+                          if (splitFile === file.name) setSplitFile(null)
+                        }
+                      }
+                      
+                      setOpenTabs(newOpenTabs)
+                    }}
+                  >
+                    <X className="w-3 h-3 text-ide-muted hover:text-red-400" />
+                  </button>
+                </div>
+              )
+            })}
+            {splitFile && (
+              <div className="flex items-center ml-auto border-l border-ide-border">
+                <button
+                  onClick={() => setSplitDirection(d => d === 'horizontal' ? 'vertical' : 'horizontal')}
+                  className="px-2 py-1 text-xs text-ide-muted hover:text-ide-text"
+                  title="Toggle split direction"
+                >
+                  {splitDirection === 'horizontal' ? '⬌' : '⬍'}
+                </button>
+                <button
+                  onClick={() => setSplitFile(null)}
+                  className="px-2 py-1 text-xs text-purple-400 hover:text-purple-300"
+                >
+                  × Close Split
                 </button>
               </div>
-            ))}
-            {splitFile && (
-              <button
-                onClick={() => setSplitFile(null)}
-                className="px-2 py-1 text-xs text-purple-400 hover:text-purple-300 ml-auto"
-              >
-                × Close Split
-              </button>
             )}
           </div>
           
@@ -708,44 +734,76 @@ declare module '*';
               if (!draggedFile) return
               const rect = e.currentTarget.getBoundingClientRect()
               const x = e.clientX - rect.left
-              setDropZone(x < rect.width / 2 ? 'left' : 'right')
+              const y = e.clientY - rect.top
+              const xRatio = x / rect.width
+              const yRatio = y / rect.height
+              
+              // Determine which zone based on position
+              if (xRatio < 0.25) setDropZone('left')
+              else if (xRatio > 0.75) setDropZone('right')
+              else if (yRatio < 0.25) setDropZone('top')
+              else if (yRatio > 0.75) setDropZone('bottom')
+              else setDropZone(xRatio < 0.5 ? 'left' : 'right')
             }}
             onDragLeave={() => setDropZone(null)}
             onDrop={() => {
               if (draggedFile) {
-                // Allow splitting same file for viewing different parts
                 setSplitFile(draggedFile)
+                // Set direction based on drop zone
+                if (dropZone === 'top' || dropZone === 'bottom') {
+                  setSplitDirection('vertical')
+                } else {
+                  setSplitDirection('horizontal')
+                }
+                // Add to open tabs if not already there
+                if (!openTabs.includes(draggedFile)) {
+                  setOpenTabs([...openTabs, draggedFile])
+                }
               }
               setDraggedFile(null)
               setDropZone(null)
             }}
           >
-            {/* Drop zone indicators - only show when dragging AND over the editor */}
+            {/* Drop zone indicators - show 4 zones */}
             {draggedFile && dropZone && (
               <>
-                <div 
-                  className={`absolute inset-y-0 left-0 w-1/2 border-2 border-dashed pointer-events-none z-50 ${
-                    dropZone === 'left' ? 'border-purple-500 bg-purple-500/20' : 'border-purple-500/30 bg-transparent'
-                  }`}
-                >
+                {/* Left */}
+                <div className={`absolute inset-y-0 left-0 w-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
+                  dropZone === 'left' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'
+                }`}>
                   {dropZone === 'left' && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
-                        Open in left panel
-                      </span>
+                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">← Left</span>
                     </div>
                   )}
                 </div>
-                <div 
-                  className={`absolute inset-y-0 right-0 w-1/2 border-2 border-dashed pointer-events-none z-50 ${
-                    dropZone === 'right' ? 'border-purple-500 bg-purple-500/20' : 'border-purple-500/30 bg-transparent'
-                  }`}
-                >
+                {/* Right */}
+                <div className={`absolute inset-y-0 right-0 w-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
+                  dropZone === 'right' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'
+                }`}>
                   {dropZone === 'right' && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
-                        Open in right panel
-                      </span>
+                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">Right →</span>
+                    </div>
+                  )}
+                </div>
+                {/* Top */}
+                <div className={`absolute inset-x-0 top-0 h-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
+                  dropZone === 'top' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'
+                }`}>
+                  {dropZone === 'top' && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="bg-cyan-500 text-white px-3 py-1 rounded text-sm font-medium">↑ Top</span>
+                    </div>
+                  )}
+                </div>
+                {/* Bottom */}
+                <div className={`absolute inset-x-0 bottom-0 h-1/4 border-2 border-dashed pointer-events-none z-50 transition-all ${
+                  dropZone === 'bottom' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'
+                }`}>
+                  {dropZone === 'bottom' && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="bg-cyan-500 text-white px-3 py-1 rounded text-sm font-medium">↓ Bottom</span>
                     </div>
                   )}
                 </div>
@@ -753,7 +811,7 @@ declare module '*';
             )}
             {activeFile ? (
               splitFile ? (
-                <SplitPane direction="horizontal" defaultSize={50}>
+                <SplitPane direction={splitDirection} defaultSize={50}>
                   <Editor
                     height="100%"
                     path={activeFile.name}
