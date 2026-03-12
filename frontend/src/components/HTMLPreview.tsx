@@ -73,6 +73,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_self">
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
     ${css || ''}
@@ -111,6 +112,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_self">
   <script type="importmap">
 ${importMap}
   <\/script>
@@ -187,7 +189,7 @@ ${importMap}
           key={refreshKey}
           srcDoc={srcdoc}
           className="flex-1 w-full bg-white"
-          sandbox="allow-scripts"
+          sandbox="allow-scripts allow-same-origin"
           title="Preview"
         />
       )}
