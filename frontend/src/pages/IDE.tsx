@@ -242,11 +242,9 @@ export default function IDE() {
             <button onClick={() => { setShowGitHub(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Github className="w-4 h-4" /> GitHub
             </button>
-            {sourceRepo && (
-              <button onClick={() => { setShowSourceControl(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
-                <GitBranch className="w-4 h-4" /> Source Control
-              </button>
-            )}
+            <button onClick={() => { setShowSourceControl(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <GitBranch className="w-4 h-4" /> Source Control
+            </button>
             <button onClick={() => { setShowImport(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Upload className="w-4 h-4" /> Import
             </button>
@@ -372,11 +370,9 @@ export default function IDE() {
             <Github className="w-4 h-4" />
           </button>
           
-          {sourceRepo && (
-            <button onClick={() => setShowSourceControl(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Source Control">
-              <GitBranch className="w-4 h-4" />
-            </button>
-          )}
+          <button onClick={() => setShowSourceControl(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Source Control">
+            <GitBranch className="w-4 h-4" />
+          </button>
           
           <button onClick={() => setShowImport(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Import Files">
             <Upload className="w-4 h-4" />

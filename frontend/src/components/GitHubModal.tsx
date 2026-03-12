@@ -137,15 +137,11 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
     
     try {
       // 1. Fork the repo
-      const fork = await forkRepo(sourceRepo)
+      const fork = await forkRepo(sourceRepo.owner, sourceRepo.repo)
       
       // 2. Create a new branch
       const branchName = prBranch || `hashide-${Date.now()}`
-      await createBranch(
-        { owner: fork.owner, repo: fork.repo, branch: sourceRepo.branch },
-        branchName,
-        sourceRepo.branch
-      )
+      await createBranch(fork.owner, fork.repo, branchName, sourceRepo.branch)
       
       // 3. Push all files
       for (const file of workspace.files) {
@@ -159,15 +155,16 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
       }
       
       // 4. Create PR
-      const url = await createPullRequest(
-        sourceRepo,
-        fork.owner,
-        branchName,
+      const result = await createPullRequest(
+        sourceRepo.owner,
+        sourceRepo.repo,
+        `${fork.owner}:${branchName}`,
+        sourceRepo.branch,
         prTitle || 'Changes from HashIDE',
         prBody || 'This PR was created using HashIDE.'
       )
       
-      setPrUrl(url)
+      setPrUrl(result.html_url)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create PR')
     } finally {

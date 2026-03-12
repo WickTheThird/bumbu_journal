@@ -270,8 +270,8 @@ export function logout(): void {
 /**
  * Fork a repository
  */
-export async function forkRepo(repo: GitHubRepo): Promise<{ owner: string; repo: string }> {
-  const response = await fetch(`${GITHUB_API}/repos/${repo.owner}/${repo.repo}/forks`, {
+export async function forkRepo(owner: string, repoName: string): Promise<{ owner: string; repo: string }> {
+  const response = await fetch(`${GITHUB_API}/repos/${owner}/${repoName}/forks`, {
     method: 'POST',
     headers: getHeaders(),
   })
@@ -331,10 +331,10 @@ export async function createOrUpdateFile(
 /**
  * Create a new branch
  */
-export async function createBranch(repo: GitHubRepo, newBranch: string, fromBranch: string): Promise<void> {
+export async function createBranch(owner: string, repoName: string, newBranch: string, fromBranch: string = 'main'): Promise<void> {
   // Get SHA of source branch
   const refResponse = await fetch(
-    `${GITHUB_API}/repos/${repo.owner}/${repo.repo}/git/ref/heads/${fromBranch}`,
+    `${GITHUB_API}/repos/${owner}/${repoName}/git/ref/heads/${fromBranch}`,
     { headers: getHeaders() }
   )
   
@@ -347,7 +347,7 @@ export async function createBranch(repo: GitHubRepo, newBranch: string, fromBran
   
   // Create new branch
   const response = await fetch(
-    `${GITHUB_API}/repos/${repo.owner}/${repo.repo}/git/refs`,
+    `${GITHUB_API}/repos/${owner}/${repoName}/git/refs`,
     {
       method: 'POST',
       headers: getHeaders(),
@@ -364,25 +364,43 @@ export async function createBranch(repo: GitHubRepo, newBranch: string, fromBran
 }
 
 /**
+ * Push multiple files to a branch
+ */
+export async function pushFiles(
+  owner: string,
+  repoName: string,
+  branch: string,
+  files: { path: string; content: string }[],
+  message: string
+): Promise<void> {
+  const repo: GitHubRepo = { owner, repo: repoName, branch }
+  
+  for (const file of files) {
+    await createOrUpdateFile(repo, file.path, file.content, message, branch)
+  }
+}
+
+/**
  * Create a pull request
  */
 export async function createPullRequest(
-  originalRepo: GitHubRepo,
-  forkOwner: string,
-  branch: string,
+  originalOwner: string,
+  originalRepoName: string,
+  head: string,
+  base: string,
   title: string,
   body: string
-): Promise<string> {
+): Promise<{ html_url: string }> {
   const response = await fetch(
-    `${GITHUB_API}/repos/${originalRepo.owner}/${originalRepo.repo}/pulls`,
+    `${GITHUB_API}/repos/${originalOwner}/${originalRepoName}/pulls`,
     {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
         title,
         body,
-        head: `${forkOwner}:${branch}`,
-        base: originalRepo.branch,
+        head,
+        base,
       }),
     }
   )
@@ -393,5 +411,5 @@ export async function createPullRequest(
   }
   
   const data = await response.json()
-  return data.html_url
+  return { html_url: data.html_url }
 }
