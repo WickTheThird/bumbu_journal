@@ -226,11 +226,7 @@ const PaneRenderer = memo(function PaneRenderer({
 
   // Handle drop to create split or add tab
   const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {
-    console.log('[handleDrop] zone:', zone, 'file:', draggedFile, 'nodeId:', node.id)
-    if (!draggedFile || !files.some(f => f.name === draggedFile)) {
-      console.log('[handleDrop] Invalid file, aborting')
-      return
-    }
+    if (!draggedFile || !files.some(f => f.name === draggedFile)) return
     
     if (zone === 'center') {
       // Add to tabs
@@ -267,8 +263,6 @@ const PaneRenderer = memo(function PaneRenderer({
       }
     })
   }, [node.id, files, onUpdateNode])
-
-  console.log('[PaneRenderer] Rendering node:', node.id, node.type, node.type === 'editor' ? `tabs: ${node.openTabs?.length}` : `children: ${node.children?.length}`)
 
   // Render split
   if (node.type === 'split' && node.children) {
@@ -496,14 +490,12 @@ export default function EditorPane({
   filesRef.current = files
   
   // Single source of truth: the pane tree
-  const [paneTree, setPaneTree] = useState<PaneNode>(() => {
-    const tree = createEditorNode(
+  const [paneTree, setPaneTree] = useState<PaneNode>(() => 
+    createEditorNode(
       initialActiveFile || files[0]?.name || null,
       initialOpenTabs || files.slice(0, 3).map(f => f.name)
     )
-    console.log('[EditorPane] Initial tree:', JSON.stringify(tree))
-    return tree
-  })
+  )
 
   // Handle external file selection
   useEffect(() => {
@@ -533,14 +525,18 @@ export default function EditorPane({
   // Update a node in the tree - stable reference (no deps that change)
   const handleUpdateNode = useCallback((nodeId: string, updater: (node: PaneNode) => PaneNode | null) => {
     setPaneTree(prev => {
-      console.log('[EditorPane] Updating node:', nodeId)
       const result = updateNodeInTree(prev, nodeId, updater)
-      console.log('[EditorPane] Result:', result ? 'valid' : 'NULL')
       // If root becomes null (all panes closed), create a new empty editor
       if (result === null) {
         const currentFiles = filesRef.current
         return createEditorNode(currentFiles[0]?.name || null, currentFiles.slice(0, 1).map(f => f.name))
       }
+      
+      // Force window resize event to trigger Monaco layout updates
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, 50)
+      
       return result
     })
   }, []) // Empty deps - uses filesRef instead
