@@ -226,7 +226,11 @@ const PaneRenderer = memo(function PaneRenderer({
 
   // Handle drop to create split or add tab
   const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {
-    if (!draggedFile || !files.some(f => f.name === draggedFile)) return
+    console.log('[handleDrop] zone:', zone, 'file:', draggedFile, 'nodeId:', node.id)
+    if (!draggedFile || !files.some(f => f.name === draggedFile)) {
+      console.log('[handleDrop] Invalid file, aborting')
+      return
+    }
     
     if (zone === 'center') {
       // Add to tabs
