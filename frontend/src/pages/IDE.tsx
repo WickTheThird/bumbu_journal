@@ -4,9 +4,10 @@ import Editor from '@monaco-editor/react'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
-  Hash, Share2, Plus, Trash2, FileCode, X,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen
+  Hash, Share2, Plus, FileCode, X,
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen
 } from 'lucide-react'
+import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
 import { execute, ExecutionResult, ProjectFile } from '../lib/sandbox'
@@ -38,8 +39,6 @@ export default function IDE() {
   const [copied, setCopied] = useState(false)
   const [isSaved, setIsSaved] = useState(true)
   const [showNewFileModal, setShowNewFileModal] = useState(false)
-  const [renamingFile, setRenamingFile] = useState<string | null>(null)
-  const [renameValue, setRenameValue] = useState('')
   const [showTerminal, setShowTerminal] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -108,19 +107,6 @@ export default function IDE() {
   const handleDownload = async () => {
     await downloadWorkspaceAsZip(workspace)
     setShowMobileMenu(false)
-  }
-  
-  const handleRename = (oldName: string) => {
-    if (renameValue.trim() && renameValue !== oldName) {
-      renameFile(oldName, renameValue.trim())
-    }
-    setRenamingFile(null)
-    setRenameValue('')
-  }
-  
-  const startRename = (fileName: string) => {
-    setRenamingFile(fileName)
-    setRenameValue(fileName)
   }
   
   const handleRun = useCallback(async () => {
@@ -412,45 +398,14 @@ export default function IDE() {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto py-2">
-            {workspace.files.map((file) => (
-              <div
-                key={file.name}
-                className={`group flex items-center gap-2 px-3 py-1.5 cursor-pointer transition ${
-                  file.name === workspace.activeFile ? 'bg-ide-accent/10 text-ide-accent' : 'hover:bg-ide-border/50'
-                }`}
-                onClick={() => renamingFile !== file.name && setActiveFile(file.name)}
-              >
-                <FileCode className="w-4 h-4 flex-shrink-0" />
-                {renamingFile === file.name ? (
-                  <input
-                    type="text"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRename(file.name)
-                      if (e.key === 'Escape') { setRenamingFile(null); setRenameValue(''); }
-                    }}
-                    onBlur={() => handleRename(file.name)}
-                    className="flex-1 text-sm bg-ide-bg border border-ide-accent rounded px-1 outline-none"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <span className="text-sm truncate flex-1">{file.name}</span>
-                )}
-                {renamingFile !== file.name && (
-                  <button onClick={(e) => { e.stopPropagation(); startRename(file.name); }} className="opacity-0 group-hover:opacity-100 p-1 hover:text-ide-accent transition" title="Rename">
-                    <Pencil className="w-3 h-3" />
-                  </button>
-                )}
-                {workspace.files.length > 1 && renamingFile !== file.name && (
-                  <button onClick={(e) => { e.stopPropagation(); deleteFile(file.name); }} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition">
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            <FileTree
+              files={workspace.files}
+              activeFile={workspace.activeFile}
+              onSelectFile={setActiveFile}
+              onDeleteFile={deleteFile}
+              onRenameFile={renameFile}
+            />
           </div>
         </aside>
         

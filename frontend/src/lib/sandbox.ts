@@ -127,6 +127,7 @@ interface PyodideInterface {
   setStderr: (options: { batched: (text: string) => void }) => void
   FS: {
     mkdir: (path: string) => void
+    rmdir: (path: string) => void
     writeFile: (path: string, content: string) => void
     readdir: (path: string) => string[]
     unlink: (path: string) => void
@@ -198,25 +199,57 @@ export async function executePython(
       // Directory may already exist, that's fine
     }
     
-    // Step 2: Clear old files from project directory
-    try {
-      const existingFiles = pyodide.FS.readdir(PROJECT_DIR)
-      for (const file of existingFiles) {
-        if (file !== '.' && file !== '..') {
+    // Step 2: Clear old files from project directory (recursive)
+    const clearDir = (dirPath: string) => {
+      try {
+        const entries = pyodide.FS.readdir(dirPath)
+        for (const entry of entries) {
+          if (entry !== '.' && entry !== '..') {
+            const fullPath = `${dirPath}/${entry}`
+            try {
+              const stat = pyodide.FS.stat(fullPath)
+              if (stat.isDirectory()) {
+                clearDir(fullPath)
+                pyodide.FS.rmdir(fullPath)
+              } else {
+                pyodide.FS.unlink(fullPath)
+              }
+            } catch {
+              // Ignore errors
+            }
+          }
+        }
+      } catch {
+        // Directory might not exist
+      }
+    }
+    clearDir(PROJECT_DIR)
+    
+    // Step 3: Write all project files to virtual filesystem (with folder support)
+    for (const file of files) {
+      const filePath = `${PROJECT_DIR}/${file.name}`
+      
+      // Create parent directories if needed (e.g., "utils/helpers.py" needs "utils" folder)
+      const parts = file.name.split('/')
+      if (parts.length > 1) {
+        let currentPath = PROJECT_DIR
+        for (let i = 0; i < parts.length - 1; i++) {
+          currentPath += '/' + parts[i]
           try {
-            pyodide.FS.unlink(`${PROJECT_DIR}/${file}`)
+            pyodide.FS.mkdir(currentPath)
+            // Create __init__.py for Python package support
+            const initPath = `${currentPath}/__init__.py`
+            try {
+              pyodide.FS.stat(initPath)
+            } catch {
+              pyodide.FS.writeFile(initPath, '# Auto-generated package init\n')
+            }
           } catch {
-            // Ignore errors removing files
+            // Directory may already exist
           }
         }
       }
-    } catch {
-      // Directory might not exist yet
-    }
-    
-    // Step 3: Write all project files to virtual filesystem
-    for (const file of files) {
-      const filePath = `${PROJECT_DIR}/${file.name}`
+      
       console.log('[Python] Writing file:', filePath)
       pyodide.FS.writeFile(filePath, file.content)
     }
