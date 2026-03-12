@@ -9,6 +9,7 @@ export default function Landing() {
   const [showTemplates, setShowTemplates] = useState(false)
   const [showGitHub, setShowGitHub] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [demoCount, setDemoCount] = useState(0)
   const heroRef = useRef<HTMLDivElement>(null)
 
   // Mouse tracking for grid highlight
@@ -203,7 +204,7 @@ export default function Landing() {
                     <span className="text-gray-500">{'<'}</span>
                     <span className="text-cyan-400">h1</span>
                     <span className="text-gray-500">{'>'}</span>
-                    <span className="text-gray-300">Count: {'{count}'}</span>
+                    <span className="text-gray-300">Count: {'{'}{demoCount}{'}'}</span>
                     <span className="text-gray-500">{'</'}</span>
                     <span className="text-cyan-400">h1</span>
                     <span className="text-gray-500">{'>'}</span>
@@ -231,15 +232,18 @@ export default function Landing() {
                 </pre>
               </div>
               
-              {/* Preview */}
+              {/* Preview - Interactive! */}
               <div className="hidden lg:block w-72 bg-white border-l border-white/5">
                 <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-200 text-xs text-gray-500">
                   <Play className="w-3 h-3" />
                   Preview
                 </div>
                 <div className="p-6 text-center">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-4">Count: 0</h1>
-                  <button className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-4">Count: {demoCount}</h1>
+                  <button 
+                    onClick={() => setDemoCount(c => c + 1)}
+                    className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition cursor-pointer"
+                  >
                     Increment
                   </button>
                 </div>

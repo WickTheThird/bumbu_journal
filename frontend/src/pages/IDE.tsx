@@ -585,11 +585,11 @@ declare namespace JSX {
                   fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                   fontLigatures: true,
                   padding: { top: 16 },
-                  // Mobile optimizations
-                  folding: false,
-                  glyphMargin: false,
-                  lineDecorationsWidth: 0,
-                  lineNumbersMinChars: 3,
+                  // Better spacing
+                  folding: true,
+                  glyphMargin: true,
+                  lineDecorationsWidth: 10,
+                  lineNumbersMinChars: 4,
                 }}
               />
             ) : (

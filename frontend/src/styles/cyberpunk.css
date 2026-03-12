@@ -1,22 +1,6 @@
 /* HashIDE Cyberpunk Design System */
 
-/* Faster animations globally */
-* {
-  transition-duration: 0.1s !important;
-}
-
-/* Monaco hover widget z-index fix */
-.monaco-editor .monaco-hover {
-  z-index: 100 !important;
-}
-
-.monaco-editor .suggest-widget {
-  z-index: 100 !important;
-}
-
-.monaco-editor .parameter-hints-widget {
-  z-index: 100 !important;
-}
+/* Don't override Monaco transitions */
 
 :root {
   /* Void backgrounds */
