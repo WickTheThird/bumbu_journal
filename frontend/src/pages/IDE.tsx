@@ -215,12 +215,16 @@ export default function IDE() {
       esModuleInterop: true,
     })
     
-    // Disable some diagnostics for JSX files
+    // Disable TypeScript validation - bundler handles actual compilation
+    // This removes all red squiggles while keeping syntax highlighting
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: false,
-      noSyntaxValidation: false,
-      // Ignore JSX-related errors
-      diagnosticCodesToIgnore: [2304, 2503, 7026, 7027, 7028, 17004]
+      noSemanticValidation: true,
+      noSyntaxValidation: true,
+    })
+    
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: true,
+      noSyntaxValidation: true,
     })
     
     // Add React types declaration
