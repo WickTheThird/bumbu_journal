@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, memo } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
@@ -46,6 +46,7 @@ const createEditorNode = (activeFile: string | null, openTabs: string[]): PaneNo
 })
 
 // Find and update a node in the tree by ID
+// Returns same reference if nothing changed (important for React reconciliation)
 const updateNodeInTree = (
   tree: PaneNode,
   nodeId: string,
@@ -56,25 +57,28 @@ const updateNodeInTree = (
   }
   
   if (tree.type === 'split' && tree.children) {
-    const newChildren: [PaneNode | null, PaneNode | null] = [
-      updateNodeInTree(tree.children[0], nodeId, updater),
-      updateNodeInTree(tree.children[1], nodeId, updater),
-    ]
+    const child0 = updateNodeInTree(tree.children[0], nodeId, updater)
+    const child1 = updateNodeInTree(tree.children[1], nodeId, updater)
     
     // If one child is null (removed), return the other child (collapse)
-    if (newChildren[0] === null && newChildren[1] !== null) {
-      return newChildren[1]
+    if (child0 === null && child1 !== null) {
+      return child1
     }
-    if (newChildren[1] === null && newChildren[0] !== null) {
-      return newChildren[0]
+    if (child1 === null && child0 !== null) {
+      return child0
     }
-    if (newChildren[0] === null && newChildren[1] === null) {
+    if (child0 === null && child1 === null) {
       return null
+    }
+    
+    // IMPORTANT: Only create new object if children actually changed
+    if (child0 === tree.children[0] && child1 === tree.children[1]) {
+      return tree // No change, return same reference
     }
     
     return {
       ...tree,
-      children: [newChildren[0]!, newChildren[1]!],
+      children: [child0, child1],
     }
   }
   
@@ -82,7 +86,8 @@ const updateNodeInTree = (
 }
 
 // Inner component that renders a single pane (controlled by parent)
-function PaneRenderer({
+// Memoized to prevent unnecessary re-renders
+const PaneRenderer = memo(function PaneRenderer({
   node,
   files,
   onFileChange,
@@ -419,7 +424,7 @@ function PaneRenderer({
       </div>
     </div>
   )
-}
+})
 
 // Main EditorPane component - manages the entire pane tree
 export default function EditorPane({ 
