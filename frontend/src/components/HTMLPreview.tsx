@@ -73,8 +73,8 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <base target="_self">
   <style>
+    html { scroll-behavior: smooth; }
     body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
     ${css || ''}
   </style>
@@ -82,6 +82,24 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 <body>
   ${html || ''}
   ${js ? `<script>${js}<\/script>` : ''}
+  <script>
+    // Handle anchor links within srcdoc iframe
+    document.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      if (link) {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        } else if (href && !href.startsWith('javascript:')) {
+          e.preventDefault();
+          // External links open in new tab
+          window.open(href, '_blank', 'noopener');
+        }
+      }
+    });
+  <\/script>
 </body>
 </html>`
   }, [html, css, js, refreshKey, isFrameworkProject])
@@ -112,11 +130,11 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <base target="_self">
   <script type="importmap">
 ${importMap}
   <\/script>
   <style>
+    html { scroll-behavior: smooth; }
     body { font-family: system-ui, sans-serif; margin: 0; }
     #root { min-height: 100vh; }
     ${cssContent}
@@ -124,6 +142,23 @@ ${importMap}
 </head>
 <body>
   ${bodyContent.includes('id="root"') ? bodyContent : '<div id="root"></div>'}
+  <script>
+    // Handle anchor links within srcdoc iframe
+    document.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      if (link) {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        } else if (href && !href.startsWith('javascript:')) {
+          e.preventDefault();
+          window.open(href, '_blank', 'noopener');
+        }
+      }
+    });
+  <\/script>
   <script type="module">
     ${bundledCode}
   <\/script>
