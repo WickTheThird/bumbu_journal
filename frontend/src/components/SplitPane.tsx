@@ -35,13 +35,9 @@ export default function SplitPane({
       let newSize: number
 
       if (direction === 'horizontal') {
-        // Account for handle width (4px)
-        const availableWidth = rect.width - 4
-        newSize = ((e.clientX - rect.left) / availableWidth) * 100
+        newSize = ((e.clientX - rect.left) / rect.width) * 100
       } else {
-        // Account for handle height (4px)
-        const availableHeight = rect.height - 4
-        newSize = ((e.clientY - rect.top) / availableHeight) * 100
+        newSize = ((e.clientY - rect.top) / rect.height) * 100
       }
 
       newSize = Math.max(minSize, Math.min(maxSize, newSize))
@@ -72,50 +68,40 @@ export default function SplitPane({
 
   const isHorizontal = direction === 'horizontal'
 
+  // Use CSS Grid for more predictable sizing
+  const gridTemplate = isHorizontal 
+    ? `${size}% 4px ${100 - size}%`
+    : `${size}% 4px ${100 - size}%`
+
   return (
     <div
       ref={containerRef}
-      className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} ${className}`}
+      className={className}
       style={{ 
+        display: 'grid',
+        gridTemplateColumns: isHorizontal ? gridTemplate : '1fr',
+        gridTemplateRows: isHorizontal ? '1fr' : gridTemplate,
         height: '100%', 
         width: '100%',
-        minHeight: 0,
-        minWidth: 0,
+        overflow: 'hidden',
       }}
     >
       {/* First pane */}
-      <div
-        className="overflow-hidden"
-        style={{
-          flex: `${size} 1 0%`,
-          minWidth: isHorizontal ? 50 : undefined,
-          minHeight: isHorizontal ? undefined : 30,
-          height: isHorizontal ? '100%' : undefined,
-          width: isHorizontal ? undefined : '100%',
-        }}
-      >
+      <div style={{ overflow: 'hidden', minWidth: 0, minHeight: 0 }}>
         {children[0]}
       </div>
 
       {/* Resize handle */}
       <div
         onMouseDown={handleMouseDown}
-        className={`flex-shrink-0 bg-ide-border hover:bg-purple-500 active:bg-purple-600 transition-colors z-10 ${
-          isHorizontal ? 'cursor-col-resize w-1 hover:w-1' : 'cursor-row-resize h-1 hover:h-1'
+        className={`bg-ide-border hover:bg-purple-500 active:bg-purple-600 transition-colors z-10 ${
+          isHorizontal ? 'cursor-col-resize' : 'cursor-row-resize'
         }`}
+        style={{ minWidth: 0, minHeight: 0 }}
       />
 
       {/* Second pane */}
-      <div
-        className="overflow-hidden"
-        style={{
-          flex: `${100 - size} 1 0%`,
-          minWidth: isHorizontal ? 50 : undefined,
-          minHeight: isHorizontal ? undefined : 30,
-          height: isHorizontal ? '100%' : undefined,
-          width: isHorizontal ? undefined : '100%',
-        }}
-      >
+      <div style={{ overflow: 'hidden', minWidth: 0, minHeight: 0 }}>
         {children[1]}
       </div>
     </div>
