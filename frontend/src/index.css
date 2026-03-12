@@ -76,24 +76,18 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Monaco hover fix - use fixed positioning trick */
-.monaco-editor .overflowingContentWidgets {
-  position: fixed !important;
+/* Monaco fixed overflow widgets - renders hovers above everything */
+.overflowingContentWidgets {
   z-index: 999999 !important;
 }
 
-.monaco-editor .monaco-hover {
+.monaco-hover {
   z-index: 999999 !important;
 }
 
-.monaco-editor .suggest-widget {
+.monaco-editor .suggest-widget,
+.monaco-editor .parameter-hints-widget {
   z-index: 999999 !important;
-}
-
-/* Editor container must not clip overflow */
-.monaco-editor,
-.monaco-editor .overflow-guard {
-  overflow: visible !important;
 }
 
 /* Resize handles */

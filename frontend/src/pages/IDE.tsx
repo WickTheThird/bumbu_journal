@@ -224,6 +224,9 @@ export default function IDE() {
       handleRun()
     })
     
+    // Force hover widgets to render in fixed overlay (above all other elements)
+    editor.updateOptions({ fixedOverflowWidgets: true })
+    
     // TypeScript compiler options for JSX
     const compilerOptions = {
       target: monaco.languages.typescript.ScriptTarget.ESNext,
