@@ -187,11 +187,58 @@ export default function IDE() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleRun, saveToHash])
   
-  const handleEditorMount = (editor: editor.IStandaloneCodeEditor, _monaco: Monaco) => {
+  const handleEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     setEditorRef(editor)
-    editor.addCommand(_monaco.KeyMod.CtrlCmd | _monaco.KeyCode.Enter, () => {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       handleRun()
     })
+    
+    // Configure TypeScript/JavaScript for JSX support
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      module: monaco.languages.typescript.ModuleKind.ESNext,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+      jsxImportSource: 'react',
+      allowSyntheticDefaultImports: true,
+      esModuleInterop: true,
+      allowNonTsExtensions: true,
+      strict: false,
+      noEmit: true,
+    })
+    
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      module: monaco.languages.typescript.ModuleKind.ESNext,
+      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+      allowSyntheticDefaultImports: true,
+      esModuleInterop: true,
+    })
+    
+    // Add React types declaration
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(
+      `declare module 'react' {
+        export function useState<T>(initial: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
+        export function useEffect(effect: () => void | (() => void), deps?: any[]): void;
+        export function useCallback<T extends Function>(callback: T, deps: any[]): T;
+        export function useMemo<T>(factory: () => T, deps: any[]): T;
+        export function useRef<T>(initial: T): { current: T };
+        export const Fragment: any;
+        export default any;
+      }
+      declare module 'react-dom/client' {
+        export function createRoot(container: Element): { render(element: any): void };
+      }
+      declare global {
+        namespace JSX {
+          interface Element {}
+          interface IntrinsicElements {
+            [elemName: string]: any;
+          }
+        }
+      }`,
+      'react.d.ts'
+    )
   }
   
   if (isLoading) {

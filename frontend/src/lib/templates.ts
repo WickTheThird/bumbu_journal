@@ -798,7 +798,7 @@ import App from './App'
 const root = createRoot(document.getElementById('root')!)
 root.render(<App />)
 `,
-          language: 'typescript',
+          language: 'typescriptreact',
         },
         {
           name: 'App.tsx',
@@ -883,7 +883,7 @@ export default function App() {
   )
 }
 `,
-          language: 'typescript',
+          language: 'typescriptreact',
         },
       ],
       activeFile: 'App.tsx',
@@ -907,7 +907,7 @@ import App from './App'
 const root = createRoot(document.getElementById('root')!)
 root.render(<App />)
 `,
-          language: 'typescript',
+          language: 'typescriptreact',
         },
         {
           name: 'App.tsx',
@@ -1040,7 +1040,7 @@ export default function App() {
   )
 }
 `,
-          language: 'typescript',
+          language: 'typescriptreact',
         },
       ],
       activeFile: 'App.tsx',
