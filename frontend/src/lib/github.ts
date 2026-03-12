@@ -6,6 +6,7 @@
 
 const GITHUB_API = 'https://api.github.com'
 const GITHUB_CLIENT_ID = 'Ov23liFlSKXnYuNkre0F'
+const OAUTH_PROXY = 'https://hashide-oauth.bumbufilip22.workers.dev'
 
 export interface GitHubFile {
   name: string
@@ -169,10 +170,10 @@ interface TokenResponse {
 }
 
 /**
- * Start device flow - get user code
+ * Start device flow - get user code (via CORS proxy)
  */
 export async function startDeviceFlow(): Promise<DeviceCodeResponse> {
-  const response = await fetch('https://github.com/login/device/code', {
+  const response = await fetch(`${OAUTH_PROXY}/device/code`, {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
@@ -192,13 +193,13 @@ export async function startDeviceFlow(): Promise<DeviceCodeResponse> {
 }
 
 /**
- * Poll for access token
+ * Poll for access token (via CORS proxy)
  */
 export async function pollForToken(deviceCode: string, interval: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const poll = async () => {
       try {
-        const response = await fetch('https://github.com/login/oauth/access_token', {
+        const response = await fetch(`${OAUTH_PROXY}/oauth/access_token`, {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
