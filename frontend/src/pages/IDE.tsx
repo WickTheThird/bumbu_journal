@@ -667,9 +667,17 @@ declare module '*';
                     className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition hidden sm:block" 
                     onClick={(e) => { 
                       e.stopPropagation()
-                      if (file.name === splitFile) setSplitFile(null)
-                      deleteFile(file.name)
+                      // Close tab, don't delete file - if it's the split file, close split
+                      if (file.name === splitFile) {
+                        setSplitFile(null)
+                      } else if (file.name === workspace.activeFile) {
+                        // Switch to another file if closing active
+                        const otherFile = workspace.files.find(f => f.name !== file.name)
+                        if (otherFile) setActiveFile(otherFile.name)
+                      }
+                      // Don't delete, just close from view (user can reopen from explorer)
                     }} 
+                    title="Close tab"
                   />
                 )}
               </div>
@@ -704,31 +712,31 @@ declare module '*';
               setDropZone(null)
             }}
           >
-            {/* Drop zone indicators */}
-            {draggedFile && draggedFile !== workspace.activeFile && (
+            {/* Drop zone indicators - only show when dragging AND over the editor */}
+            {draggedFile && draggedFile !== workspace.activeFile && dropZone && (
               <>
                 <div 
-                  className={`absolute inset-y-0 left-0 w-1/2 border-2 border-dashed transition-all pointer-events-none z-50 ${
-                    dropZone === 'left' ? 'border-purple-500 bg-purple-500/10' : 'border-transparent'
+                  className={`absolute inset-y-0 left-0 w-1/2 border-2 border-dashed pointer-events-none z-50 ${
+                    dropZone === 'left' ? 'border-purple-500 bg-purple-500/20' : 'border-purple-500/30 bg-transparent'
                   }`}
                 >
                   {dropZone === 'left' && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">
-                        Drop to open left
+                      <span className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
+                        Open in left panel
                       </span>
                     </div>
                   )}
                 </div>
                 <div 
-                  className={`absolute inset-y-0 right-0 w-1/2 border-2 border-dashed transition-all pointer-events-none z-50 ${
-                    dropZone === 'right' ? 'border-purple-500 bg-purple-500/10' : 'border-transparent'
+                  className={`absolute inset-y-0 right-0 w-1/2 border-2 border-dashed pointer-events-none z-50 ${
+                    dropZone === 'right' ? 'border-purple-500 bg-purple-500/20' : 'border-purple-500/30 bg-transparent'
                   }`}
                 >
                   {dropZone === 'right' && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="bg-purple-500 text-white px-3 py-1 rounded text-sm font-medium">
-                        Drop to open right
+                      <span className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
+                        Open in right panel
                       </span>
                     </div>
                   )}
