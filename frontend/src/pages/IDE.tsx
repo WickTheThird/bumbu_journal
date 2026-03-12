@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Menu, FolderOpen
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
 } from 'lucide-react'
 import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
