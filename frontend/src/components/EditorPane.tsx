@@ -173,11 +173,18 @@ export default function EditorPane({
       editorRef.current = null
     }
     
-    setSplitState({ direction })
-    setSplitChildFiles(isFirst 
+    // Set up initial child state tracking
+    const newChildFiles: [string[], string[]] = isFirst 
       ? [[draggedFile], openTabs]
       : [openTabs, [draggedFile]]
-    )
+    
+    childStateRef.current = {
+      0: { tabs: newChildFiles[0], active: newChildFiles[0][0] || null },
+      1: { tabs: newChildFiles[1], active: newChildFiles[1][0] || null }
+    }
+    
+    setSplitState({ direction })
+    setSplitChildFiles(newChildFiles)
   }, [files, openTabs])
 
   // Called when a child pane reports its state (on every tab change)
@@ -190,21 +197,32 @@ export default function EditorPane({
     const otherIndex = childIndex === 0 ? 1 : 0
     const otherState = childStateRef.current[otherIndex]
     
-    setSplitState(null)
+    // Determine new tabs and active file
+    let newTabs: string[] = []
+    let newActive: string | null = null
     
-    // Restore with the other child's current tabs
     if (otherState.tabs.length > 0) {
-      setOpenTabs(otherState.tabs)
-      setActiveFile(otherState.active || otherState.tabs[0])
+      newTabs = otherState.tabs
+      newActive = otherState.active || otherState.tabs[0]
     } else {
       // Fallback to initial files if other child also empty
       const fallbackFiles = splitChildFiles[otherIndex]
       if (fallbackFiles.length > 0) {
-        setOpenTabs(fallbackFiles)
-        setActiveFile(fallbackFiles[0])
+        newTabs = fallbackFiles
+        newActive = fallbackFiles[0]
       }
     }
-  }, [splitChildFiles])
+    
+    // Update state atomically
+    setSplitState(null)
+    setOpenTabs(newTabs)
+    setActiveFile(newActive)
+    
+    // Report our new state to parent (if we're in a nested split)
+    if (onStateChange) {
+      onStateChange(newTabs, newActive)
+    }
+  }, [splitChildFiles, onStateChange])
 
   const handleEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor
