@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://wickthethird.github.io/bumbu_journal/sitemap.xml
+Sitemap: https://bumbuindustries.com/sitemap.xml
