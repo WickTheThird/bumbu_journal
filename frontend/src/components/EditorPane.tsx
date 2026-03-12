@@ -20,6 +20,7 @@ interface EditorPaneProps {
   initialOpenTabs?: string[]
   depth?: number
   externalSelectFile?: string | null // File selected from outside (e.g., file explorer)
+  onPaneClose?: () => void // Called when pane should close (no tabs left)
 }
 
 interface PaneState {
@@ -30,7 +31,7 @@ interface PaneState {
   childStates?: [PaneState, PaneState]
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile }: EditorPaneProps) {
+export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onPaneClose }: EditorPaneProps) {
   const paneId = useId() // Unique ID for this pane instance
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   
@@ -84,13 +85,20 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const handleCloseTab = useCallback((fileName: string) => {
     setPaneState(prev => {
       const newTabs = prev.openTabs.filter(t => t !== fileName)
+      
+      // If no tabs left and we have a close handler (we're in a split), close this pane
+      if (newTabs.length === 0 && onPaneClose) {
+        // Defer to avoid state update during render
+        setTimeout(() => onPaneClose(), 0)
+      }
+      
       return {
         ...prev,
         openTabs: newTabs,
         activeFile: prev.activeFile === fileName ? (newTabs[0] || null) : prev.activeFile,
       }
     })
-  }, [])
+  }, [onPaneClose])
 
   // Reorder tabs within this pane
   const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
@@ -173,6 +181,16 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     })
   }, [])
 
+  // Handle child pane closing - collapse split and keep the other child
+  const handleChildClose = useCallback((closedIndex: 0 | 1) => {
+    setPaneState(prev => {
+      if (prev.type !== 'split' || !prev.childStates) return prev
+      // Keep the other child's state
+      const keepIndex = closedIndex === 0 ? 1 : 0
+      return prev.childStates[keepIndex]
+    })
+  }, [])
+
   // Render split view - pass child states down
   if (paneState.type === 'split' && paneState.childStates) {
     // Dispose current editor before rendering split
@@ -192,6 +210,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialActiveFile={paneState.childStates[0].activeFile || undefined}
           initialOpenTabs={paneState.childStates[0].openTabs}
           depth={depth + 1}
+          onPaneClose={() => handleChildClose(0)}
         />
         <EditorPane 
           key={`${paneId}-split-1`}
@@ -202,6 +221,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialActiveFile={paneState.childStates[1].activeFile || undefined}
           initialOpenTabs={paneState.childStates[1].openTabs}
           depth={depth + 1}
+          onPaneClose={() => handleChildClose(1)}
         />
       </SplitPane>
     )
