@@ -272,7 +272,9 @@ const PaneRenderer = memo(function PaneRenderer({
 
   // Render split
   if (node.type === 'split' && node.children) {
+    console.log('[PaneRenderer] Rendering SPLIT', node.id, 'direction:', node.direction)
     return (
+      <div style={{ height: '100%', width: '100%', border: '2px solid red' }}>
       <SplitPane direction={node.direction || 'horizontal'} defaultSize={50}>
         <PaneRenderer
           key={node.children[0].id}
@@ -293,6 +295,7 @@ const PaneRenderer = memo(function PaneRenderer({
           onUpdateNode={onUpdateNode}
         />
       </SplitPane>
+      </div>
     )
   }
 
