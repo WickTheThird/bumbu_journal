@@ -577,7 +577,7 @@ declare namespace JSX {
                   fontSize: workspace.settings?.fontSize || 14,
                   tabSize: workspace.settings?.tabSize || 2,
                   wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
-                  minimap: { enabled: false }, // Disable minimap on all devices for cleaner look
+                  minimap: { enabled: workspace.settings?.minimap ?? false },
                   lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
