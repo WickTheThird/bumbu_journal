@@ -3,7 +3,7 @@ import { FileCode, Folder, FolderOpen, ChevronRight, ChevronDown, Trash2, Pencil
 
 interface FileTreeProps {
   files: { name: string; content: string }[]
-  activeFile: string | null
+  activeFile: string | null | undefined
   onSelectFile: (name: string) => void
   onDeleteFile: (name: string) => void
   onRenameFile: (oldName: string, newName: string) => void

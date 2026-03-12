@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
-  Hash, Share2, Plus, FileCode, X,
+  Hash, Share2, Plus, FileCode, X, Trash2,
   ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen
 } from 'lucide-react'
 import FileTree from '../components/FileTree'
