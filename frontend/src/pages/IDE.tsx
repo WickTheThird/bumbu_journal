@@ -5,7 +5,7 @@ import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
   Hash, Share2, Plus, Trash2, FileCode, X,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Pencil, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen
 } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -48,6 +48,8 @@ export default function IDE() {
   const [showCommandPalette, setShowCommandPalette] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -92,18 +94,20 @@ export default function IDE() {
     const url = getShareableURL(workspace)
     await navigator.clipboard.writeText(url)
     setCopied(true)
+    setShowMobileMenu(false)
     setTimeout(() => setCopied(false), 2000)
   }
   
   const handleShareTwitter = () => {
     const url = getShareableURL(workspace)
-    const text = `Check out my code on HashIDE - the IDE that lives in a link! 🚀`
+    const text = `Check out my code on HashIDE!`
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
     window.open(twitterUrl, '_blank')
   }
   
   const handleDownload = async () => {
     await downloadWorkspaceAsZip(workspace)
+    setShowMobileMenu(false)
   }
   
   const handleRename = (oldName: string) => {
@@ -125,12 +129,13 @@ export default function IDE() {
     setShowTerminal(true)
     setIsRunning(true)
     setOutput(null)
+    setShowMobileMenu(false)
     
     try {
       console.log('[IDE] Executing:', activeFile.language, activeFile.content.substring(0, 50))
       const result = await execute(activeFile.content, activeFile.language || 'plaintext')
       console.log('[IDE] Execution result:', result)
-      setIsRunning(false) // Set running false BEFORE setting output
+      setIsRunning(false)
       setOutput(result)
     } catch (e) {
       console.error('[IDE] Execution error:', e)
@@ -147,29 +152,23 @@ export default function IDE() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // ? to show keyboard shortcuts
       if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-        // Don't trigger if typing in an input
         if (document.activeElement?.tagName !== 'INPUT') {
           setShowShortcuts(prev => !prev)
         }
       }
-      // Ctrl/Cmd + P to open command palette
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault()
         setShowCommandPalette(true)
       }
-      // Ctrl/Cmd + Shift + F to search in files
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'f') {
         e.preventDefault()
         setShowSearch(true)
       }
-      // Ctrl/Cmd + Enter to run
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault()
         handleRun()
       }
-      // Ctrl/Cmd + S to save (hash is already auto-saved, just prevent default)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault()
         saveToHash()
@@ -182,8 +181,6 @@ export default function IDE() {
   
   const handleEditorMount = (editor: editor.IStandaloneCodeEditor, _monaco: Monaco) => {
     setEditorRef(editor)
-    
-    // Add run command to editor
     editor.addCommand(_monaco.KeyMod.CtrlCmd | _monaco.KeyCode.Enter, () => {
       handleRun()
     })
@@ -203,143 +200,200 @@ export default function IDE() {
   const canRun = activeFile && ['javascript', 'typescript', 'python'].includes(activeFile.language || '')
   const canPreview = activeFile && ['html', 'css', 'javascript'].includes(activeFile.language || '')
   
-  // Get HTML/CSS/JS content for preview
   const htmlFile = workspace.files.find(f => f.name.endsWith('.html'))
   const cssFile = workspace.files.find(f => f.name.endsWith('.css'))
   const jsFile = workspace.files.find(f => f.name.endsWith('.js') && !f.name.endsWith('.test.js'))
   
   return (
     <div className="h-screen flex flex-col bg-ide-bg">
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowMobileMenu(false)} />
+          <div className="absolute right-0 top-0 bottom-0 w-64 bg-ide-surface border-l border-ide-border p-4 space-y-2">
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-semibold">Menu</span>
+              <button onClick={() => setShowMobileMenu(false)} className="p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {canRun && (
+              <button onClick={handleRun} disabled={isRunning} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-green-600/20 text-green-400">
+                <Play className="w-4 h-4" /> Run Code
+              </button>
+            )}
+            {canPreview && (
+              <button onClick={() => { setShowPreview(!showPreview); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+                <Eye className="w-4 h-4" /> {showPreview ? 'Hide' : 'Show'} Preview
+              </button>
+            )}
+            <button onClick={() => { setShowTerminal(!showTerminal); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <TerminalIcon className="w-4 h-4" /> {showTerminal ? 'Hide' : 'Show'} Terminal
+            </button>
+            <button onClick={handleShare} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />} {copied ? 'Copied!' : 'Share Link'}
+            </button>
+            <button onClick={handleShareTwitter} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <Twitter className="w-4 h-4" /> Share on Twitter
+            </button>
+            <hr className="border-ide-border" />
+            <button onClick={() => { setShowNewFileModal(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <Plus className="w-4 h-4" /> New File
+            </button>
+            <button onClick={() => { setShowImport(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <Upload className="w-4 h-4" /> Import Files
+            </button>
+            <button onClick={handleDownload} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <Download className="w-4 h-4" /> Download ZIP
+            </button>
+            <hr className="border-ide-border" />
+            <button onClick={() => { setShowSettings(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <Settings className="w-4 h-4" /> Settings
+            </button>
+            <button onClick={() => { setShowHistory(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <History className="w-4 h-4" /> History
+            </button>
+            <button onClick={() => { setShowSearch(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+              <SearchIcon className="w-4 h-4" /> Search Files
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Mobile Sidebar Overlay */}
+      {showSidebar && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowSidebar(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-64 bg-ide-surface border-r border-ide-border flex flex-col">
+            <div className="p-3 border-b border-ide-border flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Files</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowNewFileModal(true)} className="p-1 rounded hover:bg-ide-border transition" title="New file">
+                  <Plus className="w-4 h-4" />
+                </button>
+                <button onClick={() => setShowSidebar(false)} className="p-1 rounded hover:bg-ide-border transition">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto py-2">
+              {workspace.files.map((file) => (
+                <div
+                  key={file.name}
+                  className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition ${
+                    file.name === workspace.activeFile ? 'bg-ide-accent/10 text-ide-accent' : 'hover:bg-ide-border/50'
+                  }`}
+                  onClick={() => { setActiveFile(file.name); setShowSidebar(false); }}
+                >
+                  <FileCode className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm truncate flex-1">{file.name}</span>
+                  {workspace.files.length > 1 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteFile(file.name); }}
+                      className="p-1 hover:text-red-400 transition"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Toolbar */}
-      <header className="flex items-center justify-between px-4 py-2 bg-ide-surface border-b border-ide-border">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2 text-ide-muted hover:text-ide-text transition">
-            <ChevronLeft className="w-4 h-4" />
+      <header className="flex items-center justify-between px-2 sm:px-4 py-2 bg-ide-surface border-b border-ide-border">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Mobile file drawer toggle */}
+          <button onClick={() => setShowSidebar(true)} className="md:hidden p-1.5 rounded-lg hover:bg-ide-border/50 transition">
+            <FolderOpen className="w-5 h-5" />
+          </button>
+          
+          <Link to="/" className="flex items-center gap-1 sm:gap-2 text-ide-muted hover:text-ide-text transition">
+            <ChevronLeft className="w-4 h-4 hidden sm:block" />
             <Hash className="w-5 h-5 text-ide-accent" />
-            <span className="font-semibold">HashIDE</span>
+            <span className="font-semibold hidden sm:inline">HashIDE</span>
           </Link>
         </div>
         
-        <div className="flex items-center gap-2">
-          {error && (
-            <span className="text-red-400 text-sm mr-4">{error}</span>
-          )}
+        {/* Desktop toolbar */}
+        <div className="hidden md:flex items-center gap-2">
+          {error && <span className="text-red-400 text-sm mr-4">{error}</span>}
           
           {canRun && (
-            <button
-              onClick={handleRun}
-              disabled={isRunning}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600/30 disabled:opacity-50 transition"
-              title="Run (Ctrl+Enter)"
-            >
-              <Play className="w-4 h-4" />
-              Run
+            <button onClick={handleRun} disabled={isRunning} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600/30 disabled:opacity-50 transition" title="Run (Ctrl+Enter)">
+              <Play className="w-4 h-4" /> Run
             </button>
           )}
           
           {canPreview && (
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${
-                showPreview 
-                  ? 'bg-blue-600/20 text-blue-400' 
-                  : 'bg-ide-border/50 text-ide-muted hover:text-ide-text'
-              }`}
-              title="Live Preview"
-            >
-              <Eye className="w-4 h-4" />
-              Preview
+            <button onClick={() => setShowPreview(!showPreview)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${showPreview ? 'bg-blue-600/20 text-blue-400' : 'bg-ide-border/50 text-ide-muted hover:text-ide-text'}`} title="Live Preview">
+              <Eye className="w-4 h-4" /> Preview
             </button>
           )}
           
-          <button
-            onClick={() => setShowTerminal(!showTerminal)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${
-              showTerminal 
-                ? 'bg-ide-accent/20 text-ide-accent' 
-                : 'bg-ide-border/50 text-ide-muted hover:text-ide-text'
-            }`}
-            title="Toggle Terminal"
-          >
+          <button onClick={() => setShowTerminal(!showTerminal)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${showTerminal ? 'bg-ide-accent/20 text-ide-accent' : 'bg-ide-border/50 text-ide-muted hover:text-ide-text'}`} title="Toggle Terminal">
             <TerminalIcon className="w-4 h-4" />
           </button>
           
-          <button
-            onClick={() => setShowSearch(true)}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
-            title="Search Files (Ctrl+Shift+F)"
-          >
+          <button onClick={() => setShowSearch(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Search Files (Ctrl+Shift+F)">
             <SearchIcon className="w-4 h-4" />
           </button>
           
-          <button
-            onClick={() => setShowShortcuts(true)}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
-            title="Keyboard Shortcuts (?)"
-          >
+          <button onClick={() => setShowShortcuts(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Keyboard Shortcuts (?)">
             <Keyboard className="w-4 h-4" />
           </button>
           
-          <button
-            onClick={() => setShowHistory(true)}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
-            title="Version History"
-          >
+          <button onClick={() => setShowHistory(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Version History">
             <History className="w-4 h-4" />
           </button>
           
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
-            title="Settings"
-          >
+          <button onClick={() => setShowSettings(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Settings">
             <Settings className="w-4 h-4" />
           </button>
           
-          <button
-            onClick={() => setShowImport(true)}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
-            title="Import Files"
-          >
+          <button onClick={() => setShowImport(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Import Files">
             <Upload className="w-4 h-4" />
           </button>
           
-          <button
-            onClick={handleDownload}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition"
-            title="Download as ZIP"
-          >
+          <button onClick={handleDownload} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Download as ZIP">
             <Download className="w-4 h-4" />
           </button>
           
-          <button 
-            onClick={handleShare}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition"
-          >
+          <button onClick={handleShare} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition">
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             {copied ? 'Copied!' : 'Share'}
           </button>
           
-          <button 
-            onClick={handleShareTwitter}
-            className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-[#1DA1F2] transition"
-            title="Share on Twitter/X"
-          >
+          <button onClick={handleShareTwitter} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-[#1DA1F2] transition" title="Share on Twitter/X">
             <Twitter className="w-4 h-4" />
+          </button>
+        </div>
+        
+        {/* Mobile toolbar */}
+        <div className="flex md:hidden items-center gap-2">
+          {canRun && (
+            <button onClick={handleRun} disabled={isRunning} className="p-2 rounded-lg bg-green-600/20 text-green-400">
+              <Play className="w-4 h-4" />
+            </button>
+          )}
+          <button onClick={handleShare} className="p-2 rounded-lg bg-ide-accent/10 text-ide-accent">
+            {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+          </button>
+          <button onClick={() => setShowMobileMenu(true)} className="p-2 rounded-lg hover:bg-ide-border/50 transition">
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </header>
       
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - File Explorer */}
-        <aside className="w-56 bg-ide-surface border-r border-ide-border flex flex-col">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex w-56 bg-ide-surface border-r border-ide-border flex-col">
           <div className="p-3 border-b border-ide-border flex items-center justify-between">
             <span className="text-xs uppercase tracking-wide text-ide-muted font-semibold">Files</span>
-            <button 
-              onClick={() => setShowNewFileModal(true)}
-              className="p-1 rounded hover:bg-ide-border transition"
-              title="New file"
-            >
+            <button onClick={() => setShowNewFileModal(true)} className="p-1 rounded hover:bg-ide-border transition" title="New file">
               <Plus className="w-4 h-4" />
             </button>
           </div>
@@ -349,9 +403,7 @@ export default function IDE() {
               <div
                 key={file.name}
                 className={`group flex items-center gap-2 px-3 py-1.5 cursor-pointer transition ${
-                  file.name === workspace.activeFile 
-                    ? 'bg-ide-accent/10 text-ide-accent' 
-                    : 'hover:bg-ide-border/50'
+                  file.name === workspace.activeFile ? 'bg-ide-accent/10 text-ide-accent' : 'hover:bg-ide-border/50'
                 }`}
                 onClick={() => renamingFile !== file.name && setActiveFile(file.name)}
               >
@@ -363,10 +415,7 @@ export default function IDE() {
                     onChange={(e) => setRenameValue(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleRename(file.name)
-                      if (e.key === 'Escape') {
-                        setRenamingFile(null)
-                        setRenameValue('')
-                      }
+                      if (e.key === 'Escape') { setRenamingFile(null); setRenameValue(''); }
                     }}
                     onBlur={() => handleRename(file.name)}
                     className="flex-1 text-sm bg-ide-bg border border-ide-accent rounded px-1 outline-none"
@@ -377,25 +426,12 @@ export default function IDE() {
                   <span className="text-sm truncate flex-1">{file.name}</span>
                 )}
                 {renamingFile !== file.name && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      startRename(file.name)
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-ide-accent transition"
-                    title="Rename"
-                  >
+                  <button onClick={(e) => { e.stopPropagation(); startRename(file.name); }} className="opacity-0 group-hover:opacity-100 p-1 hover:text-ide-accent transition" title="Rename">
                     <Pencil className="w-3 h-3" />
                   </button>
                 )}
                 {workspace.files.length > 1 && renamingFile !== file.name && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteFile(file.name)
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition"
-                  >
+                  <button onClick={(e) => { e.stopPropagation(); deleteFile(file.name); }} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 )}
@@ -406,28 +442,20 @@ export default function IDE() {
         
         {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar */}
-          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto">
+          {/* Tab bar - scrollable on mobile */}
+          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide">
             {workspace.files.map((file) => (
               <button
                 key={file.name}
                 onClick={() => setActiveFile(file.name)}
-                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition ${
-                  file.name === workspace.activeFile 
-                    ? 'bg-ide-bg text-ide-text' 
-                    : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
+                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 ${
+                  file.name === workspace.activeFile ? 'bg-ide-bg text-ide-text' : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
                 }`}
               >
                 <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : ''}`} />
                 <span>{file.name}</span>
                 {workspace.files.length > 1 && (
-                  <X
-                    className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteFile(file.name)
-                    }}
-                  />
+                  <X className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition hidden sm:block" onClick={(e) => { e.stopPropagation(); deleteFile(file.name); }} />
                 )}
               </button>
             ))}
@@ -447,13 +475,18 @@ export default function IDE() {
                   fontSize: workspace.settings?.fontSize || 14,
                   tabSize: workspace.settings?.tabSize || 2,
                   wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
-                  minimap: { enabled: workspace.settings?.minimap ?? true },
+                  minimap: { enabled: false }, // Disable minimap on all devices for cleaner look
                   lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
                   fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                   fontLigatures: true,
                   padding: { top: 16 },
+                  // Mobile optimizations
+                  folding: false,
+                  glyphMargin: false,
+                  lineDecorationsWidth: 0,
+                  lineNumbersMinChars: 3,
                 }}
               />
             ) : (
@@ -465,88 +498,44 @@ export default function IDE() {
           
           {/* Terminal */}
           {showTerminal && (
-            <Terminal
-              output={output}
-              isRunning={isRunning}
-              onClose={() => setShowTerminal(false)}
-              onRun={handleRun}
-            />
+            <Terminal output={output} isRunning={isRunning} onClose={() => setShowTerminal(false)} onRun={handleRun} />
           )}
         </main>
         
-        {/* HTML Preview Panel */}
+        {/* HTML Preview Panel - hidden on mobile */}
         {showPreview && htmlFile && (
-          <div className="w-1/2">
-            <HTMLPreview
-              html={htmlFile.content}
-              css={cssFile?.content}
-              js={jsFile?.content}
-              isOpen={showPreview}
-              onClose={() => setShowPreview(false)}
-            />
+          <div className="hidden md:block w-1/2">
+            <HTMLPreview html={htmlFile.content} css={cssFile?.content} js={jsFile?.content} isOpen={showPreview} onClose={() => setShowPreview(false)} />
           </div>
         )}
       </div>
       
-      {/* Status bar */}
-      <footer className="flex items-center justify-between px-4 py-1 bg-ide-surface border-t border-ide-border text-xs text-ide-muted">
-        <div className="flex items-center gap-4">
+      {/* Status bar - simplified on mobile */}
+      <footer className="flex items-center justify-between px-2 sm:px-4 py-1 bg-ide-surface border-t border-ide-border text-xs text-ide-muted">
+        <div className="flex items-center gap-2 sm:gap-4">
           <span className="flex items-center gap-1">
-            {isSaved ? (
-              <Cloud className="w-3 h-3 text-green-400" />
-            ) : (
-              <CloudOff className="w-3 h-3 text-yellow-400 animate-pulse" />
-            )}
-            {isSaved ? 'Saved' : 'Saving...'}
+            {isSaved ? <Cloud className="w-3 h-3 text-green-400" /> : <CloudOff className="w-3 h-3 text-yellow-400 animate-pulse" />}
+            <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Saving...'}</span>
           </span>
           <span>{activeFile?.language || 'plaintext'}</span>
-          <span>{workspace.files.length} file{workspace.files.length !== 1 ? 's' : ''}</span>
+          <span className="hidden sm:inline">{workspace.files.length} file{workspace.files.length !== 1 ? 's' : ''}</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-4">
           <span className="text-ide-muted/50">Ctrl+Enter to run</span>
           <span>UTF-8</span>
-          <span>Tab Size: {workspace.settings?.tabSize || 2}</span>
-          <a 
-            href="https://www.linkedin.com/in/filip-bumbu-410741262" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-ide-accent transition"
-          >
-            Made by Filip Bumbu
+          <a href="https://www.linkedin.com/in/filip-bumbu-410741262" target="_blank" rel="noopener noreferrer" className="hover:text-ide-accent transition">
+            Filip Bumbu
           </a>
         </div>
       </footer>
       
-      {/* Settings Panel */}
+      {/* Modals */}
       <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
-      
-      {/* History Panel */}
       <HistoryPanel isOpen={showHistory} onClose={() => setShowHistory(false)} />
-      
-      {/* Keyboard Shortcuts */}
       <KeyboardShortcuts isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
-      
-      {/* Import Modal */}
       <ImportModal isOpen={showImport} onClose={() => setShowImport(false)} />
-      
-      {/* Command Palette */}
-      <CommandPalette
-        isOpen={showCommandPalette}
-        onClose={() => setShowCommandPalette(false)}
-        onRun={handleRun}
-        onSettings={() => setShowSettings(true)}
-        onHistory={() => setShowHistory(true)}
-        onImport={() => setShowImport(true)}
-        onDownload={handleDownload}
-        onShare={handleShare}
-        onShortcuts={() => setShowShortcuts(true)}
-        onNewFile={() => setShowNewFileModal(true)}
-      />
-      
-      {/* New File Modal */}
+      <CommandPalette isOpen={showCommandPalette} onClose={() => setShowCommandPalette(false)} onRun={handleRun} onSettings={() => setShowSettings(true)} onHistory={() => setShowHistory(true)} onImport={() => setShowImport(true)} onDownload={handleDownload} onShare={handleShare} onShortcuts={() => setShowShortcuts(true)} onNewFile={() => setShowNewFileModal(true)} />
       <NewFileModal isOpen={showNewFileModal} onClose={() => setShowNewFileModal(false)} />
-      
-      {/* Search Panel */}
       <SearchPanel isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   )
