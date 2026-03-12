@@ -1,17 +1,41 @@
-This is a project where I will learn the following:
+# HashIDE
 
+A browser-based code editor where your entire workspace is stored in the URL hash. Write Python, JavaScript, and HTML. Share code by sharing a link.
 
-# Git stuff
-1. `git init` -> ai pornit git in repo ul tau
-2. `git commit` -> un punct in istorie cu schimbarile tale
-3. `git push` -> publish your changes
-4. `git status` -> statutul schimbarilor tale
-5. `git add` -> adaugi schimbarile
+**Live:** https://bumbuindustries.com
 
-## CLI stuff
+## Features
 
-1. `mkdir` -> creaza un folder nou
-2. `touch` -> creaza un fisier nou
-3. `cd` -> navigeaza prin foldere
-4. `ls` -> sa vezi continutul unui folder
-5. `clear` -> cureti ecranul
+- URL-based workspace storage (no backend required)
+- Python execution via Pyodide with multi-file import support
+- Monaco Editor (VS Code's editor)
+- Multi-file projects
+- Sandboxed code execution
+- Mobile-friendly
+
+## Tech Stack
+
+- React + TypeScript
+- Vite
+- Monaco Editor
+- Pyodide (Python in WebAssembly)
+- Tailwind CSS
+- LZ-String (compression)
+
+## Development
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## License
+
+MIT License - Filip Bumbu
