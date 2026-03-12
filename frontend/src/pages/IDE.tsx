@@ -215,29 +215,50 @@ export default function IDE() {
       esModuleInterop: true,
     })
     
+    // Disable some diagnostics for JSX files
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+      // Ignore JSX-related errors
+      diagnosticCodesToIgnore: [2304, 2503, 7026, 7027, 7028, 17004]
+    })
+    
     // Add React types declaration
     monaco.languages.typescript.typescriptDefaults.addExtraLib(
-      `declare module 'react' {
-        export function useState<T>(initial: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
-        export function useEffect(effect: () => void | (() => void), deps?: any[]): void;
-        export function useCallback<T extends Function>(callback: T, deps: any[]): T;
-        export function useMemo<T>(factory: () => T, deps: any[]): T;
-        export function useRef<T>(initial: T): { current: T };
-        export const Fragment: any;
-        export default any;
+      `
+      declare namespace React {
+        type ReactNode = any;
+        type FC<P = {}> = (props: P) => ReactNode;
+        function useState<T>(initial: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
+        function useEffect(effect: () => void | (() => void), deps?: any[]): void;
+        function useCallback<T extends (...args: any[]) => any>(callback: T, deps: any[]): T;
+        function useMemo<T>(factory: () => T, deps: any[]): T;
+        function useRef<T>(initial: T): { current: T };
+        const Fragment: any;
       }
+      
+      declare module 'react' {
+        export = React;
+        export as namespace React;
+      }
+      
       declare module 'react-dom/client' {
-        export function createRoot(container: Element): { render(element: any): void };
+        export function createRoot(container: Element | null): { render(element: any): void };
       }
-      declare global {
-        namespace JSX {
-          interface Element {}
-          interface IntrinsicElements {
-            [elemName: string]: any;
-          }
+      
+      declare namespace JSX {
+        interface Element extends React.ReactNode {}
+        interface IntrinsicElements {
+          div: any; span: any; p: any; h1: any; h2: any; h3: any; h4: any; h5: any; h6: any;
+          a: any; button: any; input: any; form: any; label: any; select: any; option: any; textarea: any;
+          ul: any; ol: any; li: any; table: any; tr: any; td: any; th: any; thead: any; tbody: any;
+          img: any; video: any; audio: any; canvas: any; svg: any; path: any;
+          header: any; footer: any; nav: any; main: any; section: any; article: any; aside: any;
+          [elemName: string]: any;
         }
-      }`,
-      'react.d.ts'
+      }
+      `,
+      'file:///node_modules/@types/react/index.d.ts'
     )
   }
   
