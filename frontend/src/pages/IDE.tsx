@@ -26,6 +26,7 @@ import HTMLPreview from '../components/HTMLPreview'
 import SearchPanel from '../components/SearchPanel'
 import GitHubModal from '../components/GitHubModal'
 import SourceControlPanel from '../components/SourceControlPanel'
+import SplitPane from '../components/SplitPane'
 import { GitHubRepo } from '../lib/github'
 
 export default function IDE() {
@@ -61,6 +62,7 @@ export default function IDE() {
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
+  const [splitFile, setSplitFile] = useState<string | null>(null) // For split editor view
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -604,54 +606,136 @@ declare module '*';
         
         {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Tab bar - scrollable on mobile */}
-          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide">
+          {/* Tab bar - scrollable on mobile, right-click for split */}
+          <div className="flex items-center bg-ide-surface border-b border-ide-border overflow-x-auto scrollbar-hide z-[2]">
             {workspace.files.map((file) => (
               <button
                 key={file.name}
                 onClick={() => setActiveFile(file.name)}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  if (file.name !== workspace.activeFile) {
+                    setSplitFile(splitFile === file.name ? null : file.name)
+                  }
+                }}
                 className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 ${
-                  file.name === workspace.activeFile ? 'bg-ide-bg text-ide-text' : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
+                  file.name === workspace.activeFile 
+                    ? 'bg-ide-bg text-ide-text' 
+                    : file.name === splitFile 
+                      ? 'bg-purple-500/20 text-purple-400' 
+                      : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
                 }`}
+                title={file.name === workspace.activeFile ? file.name : `${file.name} (right-click to split)`}
               >
-                <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : ''}`} />
+                <FileCode className={`w-3.5 h-3.5 ${file.name === workspace.activeFile ? 'text-ide-accent' : file.name === splitFile ? 'text-purple-400' : ''}`} />
                 <span>{file.name}</span>
+                {file.name === splitFile && (
+                  <span className="text-[10px] text-purple-400 ml-1">SPLIT</span>
+                )}
                 {workspace.files.length > 1 && (
-                  <X className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition hidden sm:block" onClick={(e) => { e.stopPropagation(); deleteFile(file.name); }} />
+                  <X 
+                    className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition hidden sm:block" 
+                    onClick={(e) => { 
+                      e.stopPropagation()
+                      if (file.name === splitFile) setSplitFile(null)
+                      deleteFile(file.name)
+                    }} 
+                  />
                 )}
               </button>
             ))}
+            {splitFile && (
+              <button
+                onClick={() => setSplitFile(null)}
+                className="px-2 py-1 text-xs text-purple-400 hover:text-purple-300 ml-auto"
+              >
+                Close Split
+              </button>
+            )}
           </div>
           
-          {/* Monaco Editor */}
+          {/* Monaco Editor - with optional split view */}
           <div style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}>
             {activeFile ? (
-              <Editor
-                height="100%"
-                path={activeFile.name}
-                language={activeFile.language}
-                value={activeFile.content}
-                onChange={handleEditorChange}
-                onMount={handleEditorMount}
-                theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
-                options={{
-                  fontSize: workspace.settings?.fontSize || 14,
-                  tabSize: workspace.settings?.tabSize || 2,
-                  wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
-                  minimap: { enabled: workspace.settings?.minimap ?? false },
-                  lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                  fontLigatures: true,
-                  padding: { top: 16 },
-                  // Better spacing
-                  folding: true,
-                  glyphMargin: true,
-                  lineDecorationsWidth: 10,
-                  lineNumbersMinChars: 4,
-                }}
-              />
+              splitFile && splitFile !== workspace.activeFile ? (
+                <SplitPane direction="horizontal" defaultSize={50}>
+                  <Editor
+                    height="100%"
+                    path={activeFile.name}
+                    language={activeFile.language}
+                    value={activeFile.content}
+                    onChange={handleEditorChange}
+                    onMount={handleEditorMount}
+                    theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
+                    options={{
+                      fontSize: workspace.settings?.fontSize || 14,
+                      tabSize: workspace.settings?.tabSize || 2,
+                      wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
+                      minimap: { enabled: workspace.settings?.minimap ?? false },
+                      lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                      fontLigatures: true,
+                      padding: { top: 16 },
+                      folding: true,
+                      glyphMargin: true,
+                      lineDecorationsWidth: 10,
+                      lineNumbersMinChars: 4,
+                    }}
+                  />
+                  <Editor
+                    height="100%"
+                    path={splitFile}
+                    language={workspace.files.find(f => f.name === splitFile)?.language || 'plaintext'}
+                    value={workspace.files.find(f => f.name === splitFile)?.content || ''}
+                    onChange={(value) => value !== undefined && updateFile(splitFile, value)}
+                    theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
+                    options={{
+                      fontSize: workspace.settings?.fontSize || 14,
+                      tabSize: workspace.settings?.tabSize || 2,
+                      wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
+                      minimap: { enabled: workspace.settings?.minimap ?? false },
+                      lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                      fontLigatures: true,
+                      padding: { top: 16 },
+                      folding: true,
+                      glyphMargin: true,
+                      lineDecorationsWidth: 10,
+                      lineNumbersMinChars: 4,
+                    }}
+                  />
+                </SplitPane>
+              ) : (
+                <Editor
+                  height="100%"
+                  path={activeFile.name}
+                  language={activeFile.language}
+                  value={activeFile.content}
+                  onChange={handleEditorChange}
+                  onMount={handleEditorMount}
+                  theme={workspace.settings?.theme === 'light' ? 'vs' : 'vs-dark'}
+                  options={{
+                    fontSize: workspace.settings?.fontSize || 14,
+                    tabSize: workspace.settings?.tabSize || 2,
+                    wordWrap: workspace.settings?.wordWrap ? 'on' : 'off',
+                    minimap: { enabled: workspace.settings?.minimap ?? false },
+                    lineNumbers: workspace.settings?.lineNumbers ?? true ? 'on' : 'off',
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                    fontLigatures: true,
+                    padding: { top: 16 },
+                    folding: true,
+                    glyphMargin: true,
+                    lineDecorationsWidth: 10,
+                    lineNumbersMinChars: 4,
+                  }}
+                />
+              )
             ) : (
               <div className="h-full flex items-center justify-center text-ide-muted">
                 <p>No file selected</p>

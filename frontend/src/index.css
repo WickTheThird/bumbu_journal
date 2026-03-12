@@ -77,15 +77,43 @@
 }
 
 /* Monaco fixes - hover widgets above EVERYTHING */
+.monaco-hover,
 .monaco-editor .monaco-hover,
 .monaco-editor .suggest-widget,
 .monaco-editor .parameter-hints-widget,
 .monaco-editor .editor-widget,
-.monaco-editor .overlayWidgets {
+.monaco-editor .overlayWidgets,
+.monaco-editor .context-view,
+.monaco-editor .monaco-editor-hover,
+.overflowingContentWidgets {
   z-index: 99999 !important;
+  position: relative;
 }
 
-/* Sidebar must be lower */
-aside {
+/* All other UI elements must be lower */
+aside, header, nav, .tab-bar, [class*="border-b"] {
   z-index: 1 !important;
+}
+
+/* Ensure monaco container is positioned */
+.monaco-editor {
+  position: relative;
+  z-index: 10;
+}
+
+/* Resize handles */
+.resize-handle {
+  background: transparent;
+  transition: background 0.15s;
+}
+.resize-handle:hover {
+  background: rgba(168, 85, 247, 0.3);
+}
+.resize-handle-h {
+  cursor: col-resize;
+  width: 4px;
+}
+.resize-handle-v {
+  cursor: row-resize;
+  height: 4px;
 }
