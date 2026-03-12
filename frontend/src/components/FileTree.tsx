@@ -116,6 +116,13 @@ function TreeItem({
           isActive ? 'bg-ide-accent/10 text-ide-accent' : 'hover:bg-ide-border/50'
         }`}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        draggable={!node.isFolder}
+        onDragStart={(e) => {
+          if (!node.isFolder) {
+            e.dataTransfer.setData('text/plain', node.path)
+            e.dataTransfer.effectAllowed = 'move'
+          }
+        }}
         onClick={() => node.isFolder ? onToggleFolder(node.path) : onSelectFile(node.path)}
       >
         {node.isFolder ? (
