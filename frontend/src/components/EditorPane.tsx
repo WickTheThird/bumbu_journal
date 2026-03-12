@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useId, useRef, useMemo } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
@@ -44,9 +44,6 @@ const createEditorNode = (activeFile: string | null, openTabs: string[]): PaneNo
   activeFile,
   openTabs,
 })
-
-// Deep clone a pane node
-const cloneNode = (node: PaneNode): PaneNode => JSON.parse(JSON.stringify(node))
 
 // Find and update a node in the tree by ID
 const updateNodeInTree = (
