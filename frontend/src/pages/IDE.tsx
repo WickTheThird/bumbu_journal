@@ -503,11 +503,18 @@ export default function IDE() {
           )}
         </main>
         
-        {/* HTML Preview Panel - hidden on mobile */}
+        {/* HTML Preview Panel - side panel on desktop, fullscreen on mobile */}
         {showPreview && htmlFile && (
-          <div className="hidden md:block w-1/2">
-            <HTMLPreview html={htmlFile.content} css={cssFile?.content} js={jsFile?.content} isOpen={showPreview} onClose={() => setShowPreview(false)} />
-          </div>
+          <>
+            {/* Mobile: fullscreen overlay */}
+            <div className="md:hidden fixed inset-0 z-50 bg-ide-bg flex flex-col">
+              <HTMLPreview html={htmlFile.content} css={cssFile?.content} js={jsFile?.content} isOpen={showPreview} onClose={() => setShowPreview(false)} />
+            </div>
+            {/* Desktop: side panel */}
+            <div className="hidden md:block w-1/2">
+              <HTMLPreview html={htmlFile.content} css={cssFile?.content} js={jsFile?.content} isOpen={showPreview} onClose={() => setShowPreview(false)} />
+            </div>
+          </>
         )}
       </div>
       
