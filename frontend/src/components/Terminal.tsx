@@ -1,14 +1,14 @@
-import { X, Play, Loader2 } from 'lucide-react'
+import { X, Loader2 } from 'lucide-react'
 import type { ExecutionResult } from '../lib/sandbox'
 
 interface TerminalProps {
   output: ExecutionResult | null
   isRunning: boolean
   onClose: () => void
-  onRun: () => void
+  onRun?: () => void // Made optional, not used anymore
 }
 
-export default function Terminal({ output, isRunning, onClose, onRun }: TerminalProps) {
+export default function Terminal({ output, isRunning, onClose }: TerminalProps) {
   // Determine what text to show
   let displayText = ''
   let textColor = '#e2e8f0'
@@ -28,87 +28,39 @@ export default function Terminal({ output, isRunning, onClose, onRun }: Terminal
       textColor = '#64748b'
     }
   } else {
-    displayText = 'Press Run or Ctrl+Enter to execute'
+    displayText = 'Press Ctrl+Enter to execute'
     textColor = '#64748b'
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#12121a',
-      borderTop: '1px solid #1e1e2e',
-      height: '200px',
-      minHeight: '200px',
-    }}>
+    <div className="flex flex-col bg-[#12121a] h-full min-h-0">
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '8px 16px',
-        borderBottom: '1px solid #1e1e2e',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+      <div className="flex items-center justify-between px-4 py-2 border-b border-ide-border">
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-ide-muted font-semibold uppercase">
             Output
           </span>
-          {output && (
-            <span style={{ fontSize: '12px', color: output.success ? '#4ade80' : '#f87171' }}>
+          {isRunning && (
+            <Loader2 className="w-3 h-3 animate-spin text-ide-muted" />
+          )}
+          {output && !isRunning && (
+            <span className={`text-xs ${output.success ? 'text-green-400' : 'text-red-400'}`}>
               {output.success ? '✓' : '✗'} {(output.duration / 1000).toFixed(2)}s
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={onRun}
-            disabled={isRunning}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
-              fontSize: '12px',
-              borderRadius: '4px',
-              backgroundColor: '#16a34a',
-              color: 'white',
-              border: 'none',
-              cursor: isRunning ? 'not-allowed' : 'pointer',
-              opacity: isRunning ? 0.5 : 1,
-            }}
-          >
-            {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
-            Run
-          </button>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '4px',
-              borderRadius: '4px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#64748b',
-            }}
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="p-1 rounded hover:bg-ide-border transition text-ide-muted hover:text-ide-text"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
       
       {/* Output area */}
-      <pre style={{
-        flex: 1,
-        overflow: 'auto',
-        padding: '16px',
-        margin: 0,
-        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-        fontSize: '14px',
-        lineHeight: '1.5',
-        color: textColor,
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word',
-      }}>
+      <pre className="flex-1 overflow-auto p-4 m-0 font-mono text-sm leading-relaxed whitespace-pre-wrap break-words"
+        style={{ color: textColor }}
+      >
         {displayText}
       </pre>
     </div>

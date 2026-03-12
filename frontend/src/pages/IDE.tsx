@@ -65,6 +65,8 @@ export default function IDE() {
   const [splitFile, setSplitFile] = useState<string | null>(null) // For split editor view
   const [draggedFile, setDraggedFile] = useState<string | null>(null)
   const [dropZone, setDropZone] = useState<'left' | 'right' | null>(null)
+  const [terminalHeight, setTerminalHeight] = useState(200)
+  const [isResizingTerminal, setIsResizingTerminal] = useState(false)
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -76,6 +78,30 @@ export default function IDE() {
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [loadFromHash])
+  
+  // Terminal resize handling
+  useEffect(() => {
+    if (!isResizingTerminal) return
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const newHeight = window.innerHeight - e.clientY
+      setTerminalHeight(Math.max(100, Math.min(window.innerHeight * 0.6, newHeight)))
+    }
+    
+    const handleMouseUp = () => setIsResizingTerminal(false)
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.body.style.cursor = 'row-resize'
+    document.body.style.userSelect = 'none'
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizingTerminal])
   
   // Auto-save to hash with debounce
   useEffect(() => {
@@ -792,12 +818,21 @@ declare module '*';
               </div>
             )}
           </div>
-          
-          {/* Terminal */}
-          {showTerminal && (
-            <Terminal output={output} isRunning={isRunning} onClose={() => setShowTerminal(false)} onRun={handleRun} />
-          )}
         </main>
+        
+        {/* Terminal - resizable */}
+        {showTerminal && (
+          <div className="flex flex-col" style={{ height: terminalHeight }}>
+            {/* Resize handle */}
+            <div 
+              className="h-1 bg-ide-border hover:bg-purple-500 cursor-row-resize transition-colors"
+              onMouseDown={() => setIsResizingTerminal(true)}
+            />
+            <div className="flex-1 min-h-0">
+              <Terminal output={output} isRunning={isRunning} onClose={() => setShowTerminal(false)} />
+            </div>
+          </div>
+        )}
         
         {/* HTML Preview Panel - side panel on desktop, fullscreen on mobile */}
         {showPreview && canPreview && (
