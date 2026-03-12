@@ -218,44 +218,45 @@ export default function IDE() {
               </button>
             </div>
             
-            {canRun && (
-              <button onClick={handleRun} disabled={isRunning} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-green-600/20 text-green-400">
-                <Play className="w-4 h-4" /> Run Code
-              </button>
-            )}
+            {/* View options */}
+            <p className="text-xs text-ide-muted uppercase tracking-wide px-1 pt-2">View</p>
+            <button onClick={() => { setShowTerminal(!showTerminal); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <TerminalIcon className="w-4 h-4" /> {showTerminal ? 'Hide Terminal' : 'Show Terminal'}
+            </button>
             {canPreview && (
-              <button onClick={() => { setShowPreview(!showPreview); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-                <Eye className="w-4 h-4" /> {showPreview ? 'Hide' : 'Show'} Preview
+              <button onClick={() => { setShowPreview(!showPreview); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+                <Eye className="w-4 h-4" /> {showPreview ? 'Hide Preview' : 'Show Preview'}
               </button>
             )}
-            <button onClick={() => { setShowTerminal(!showTerminal); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-              <TerminalIcon className="w-4 h-4" /> {showTerminal ? 'Hide' : 'Show'} Terminal
-            </button>
-            <button onClick={handleShare} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-              {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />} {copied ? 'Copied!' : 'Share Link'}
-            </button>
-            <button onClick={handleShareTwitter} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-              <Twitter className="w-4 h-4" /> Share on Twitter
-            </button>
-            <hr className="border-ide-border" />
-            <button onClick={() => { setShowNewFileModal(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+            
+            {/* File actions */}
+            <p className="text-xs text-ide-muted uppercase tracking-wide px-1 pt-4">Files</p>
+            <button onClick={() => { setShowNewFileModal(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Plus className="w-4 h-4" /> New File
             </button>
-            <button onClick={() => { setShowImport(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-              <Upload className="w-4 h-4" /> Import Files
+            <button onClick={() => { setShowImport(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <Upload className="w-4 h-4" /> Import
             </button>
-            <button onClick={handleDownload} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+            <button onClick={handleDownload} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Download className="w-4 h-4" /> Download ZIP
             </button>
-            <hr className="border-ide-border" />
-            <button onClick={() => { setShowSettings(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
+            
+            {/* Tools */}
+            <p className="text-xs text-ide-muted uppercase tracking-wide px-1 pt-4">Tools</p>
+            <button onClick={() => { setShowSearch(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <SearchIcon className="w-4 h-4" /> Search in Files
+            </button>
+            <button onClick={() => { setShowHistory(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <History className="w-4 h-4" /> Version History
+            </button>
+            <button onClick={() => { setShowSettings(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Settings className="w-4 h-4" /> Settings
             </button>
-            <button onClick={() => { setShowHistory(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-              <History className="w-4 h-4" /> History
-            </button>
-            <button onClick={() => { setShowSearch(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-ide-border/50">
-              <SearchIcon className="w-4 h-4" /> Search Files
+            
+            {/* Share */}
+            <p className="text-xs text-ide-muted uppercase tracking-wide px-1 pt-4">Share</p>
+            <button onClick={handleShareTwitter} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <Twitter className="w-4 h-4" /> Post on Twitter
             </button>
           </div>
         </div>
