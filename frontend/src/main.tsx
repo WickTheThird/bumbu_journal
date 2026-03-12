@@ -31,6 +31,25 @@ self.MonacoEnvironment = {
 // Use locally bundled Monaco
 loader.config({ monaco })
 
+// Suppress Monaco's disposal errors (they're noisy but harmless)
+const originalConsoleError = console.error
+console.error = (...args) => {
+  const msg = args[0]?.toString?.() || ''
+  // Skip Monaco disposal errors
+  if (msg.includes('DisposableStore') || msg.includes('Canceled')) {
+    return
+  }
+  originalConsoleError.apply(console, args)
+}
+
+// Also suppress unhandled promise rejections from Monaco
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason?.toString?.() || ''
+  if (reason.includes('Canceled') || reason.includes('disposed')) {
+    event.preventDefault()
+  }
+})
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
