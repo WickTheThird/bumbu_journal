@@ -567,6 +567,7 @@ declare namespace JSX {
             {activeFile ? (
               <Editor
                 height="100%"
+                path={activeFile.name}
                 language={activeFile.language}
                 value={activeFile.content}
                 onChange={handleEditorChange}
