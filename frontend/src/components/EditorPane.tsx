@@ -105,21 +105,48 @@ function PaneRenderer({
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
   const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
 
+  // Track if component is mounted to avoid state updates after unmount
+  const isMountedRef = useRef(true)
+  
   // Cleanup editor on unmount
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
-      if (editorRef.current) {
-        try { editorRef.current.dispose() } catch (e) { /* ignore */ }
+      isMountedRef.current = false
+      // Delay disposal to let pending operations complete
+      const editor = editorRef.current
+      if (editor) {
         editorRef.current = null
+        // Use setTimeout to let Monaco finish pending operations
+        setTimeout(() => {
+          try { 
+            editor.dispose() 
+          } catch (e) { 
+            // Silently ignore disposal errors
+          }
+        }, 100)
       }
     }
   }, [])
 
   const handleEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    editorRef.current = editor
-    monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
-    monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
-    monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
+    // Only store ref if component is still mounted
+    if (isMountedRef.current) {
+      editorRef.current = editor
+    } else {
+      // Component unmounted during editor init - dispose immediately
+      try { editor.dispose() } catch (e) { /* ignore */ }
+      return
+    }
+    
+    // Configure Monaco (only once, on first editor)
+    try {
+      monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
+      monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
+      monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
+    } catch (e) {
+      // Ignore config errors
+    }
   }, [])
 
   // Handle tab selection
@@ -186,11 +213,8 @@ function PaneRenderer({
     const direction = (zone === 'left' || zone === 'right') ? 'horizontal' : 'vertical'
     const isFirst = zone === 'left' || zone === 'top'
     
-    // Dispose current editor
-    if (editorRef.current) {
-      try { editorRef.current.dispose() } catch (e) { /* ignore */ }
-      editorRef.current = null
-    }
+    // Clear editor ref (disposal will happen in cleanup effect)
+    editorRef.current = null
     
     onUpdateNode(node.id, (n) => {
       const existingEditor = createEditorNode(n.activeFile || null, n.openTabs || [])
