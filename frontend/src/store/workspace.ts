@@ -153,9 +153,9 @@ function detectLanguage(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase()
   const map: Record<string, string> = {
     js: 'javascript',
-    jsx: 'javascript',
+    jsx: 'javascriptreact',
     ts: 'typescript',
-    tsx: 'typescript',
+    tsx: 'typescriptreact',
     py: 'python',
     rs: 'rust',
     go: 'go',
