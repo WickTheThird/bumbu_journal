@@ -7,6 +7,7 @@ import {
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
   ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
 } from 'lucide-react'
+import '../styles/cyberpunk.css'
 import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
