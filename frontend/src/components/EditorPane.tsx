@@ -38,6 +38,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
+  const [tabDropIndex, setTabDropIndex] = useState<number | null>(null) // For reordering tabs
 
   const handleSelectFile = useCallback((fileName: string) => {
     setPaneState(prev => ({
@@ -55,6 +56,26 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
         openTabs: newTabs,
         activeFile: prev.activeFile === fileName ? (newTabs[0] || null) : prev.activeFile,
       }
+    })
+  }, [])
+
+  // Reorder tabs within this pane
+  const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
+    setPaneState(prev => {
+      const currentIndex = prev.openTabs.indexOf(draggedFile)
+      if (currentIndex === -1) {
+        // File not in tabs yet, insert it
+        const newTabs = [...prev.openTabs]
+        newTabs.splice(dropIndex, 0, draggedFile)
+        return { ...prev, openTabs: newTabs, activeFile: draggedFile }
+      }
+      if (currentIndex === dropIndex) return prev
+      
+      // Remove from current position and insert at new position
+      const newTabs = prev.openTabs.filter(t => t !== draggedFile)
+      const adjustedIndex = dropIndex > currentIndex ? dropIndex - 1 : dropIndex
+      newTabs.splice(adjustedIndex, 0, draggedFile)
+      return { ...prev, openTabs: newTabs }
     })
   }, [])
 
@@ -154,48 +175,84 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           e.preventDefault()
           e.stopPropagation()
           setIsTabBarDragOver(false)
+          setTabDropIndex(null)
         }}
         onDrop={(e) => {
           e.preventDefault()
           e.stopPropagation()
           const draggedFile = e.dataTransfer.getData('text/plain')
           if (draggedFile && files.some(f => f.name === draggedFile)) {
-            handleDrop('center', draggedFile)
+            if (tabDropIndex !== null) {
+              // Reorder/insert at specific position
+              handleReorderTab(draggedFile, tabDropIndex)
+            } else {
+              // Add to end of tabs
+              handleDrop('center', draggedFile)
+            }
           }
           setIsTabBarDragOver(false)
           setIsDraggingOver(false)
           setDropZone(null)
+          setTabDropIndex(null)
         }}
       >
-        {paneState.openTabs.filter(name => files.some(f => f.name === name)).map(fileName => {
+        {paneState.openTabs.filter(name => files.some(f => f.name === name)).map((fileName, index) => {
           const file = files.find(f => f.name === fileName)
           if (!file) return null
           return (
-            <div
-              key={file.name}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', file.name)
-                e.dataTransfer.effectAllowed = 'move'
-              }}
-              onClick={() => handleSelectFile(file.name)}
-              className={`group flex items-center gap-2 px-3 py-1.5 border-r border-ide-border text-xs whitespace-nowrap cursor-default flex-shrink-0 ${
-                file.name === paneState.activeFile 
-                  ? 'bg-ide-bg text-ide-text' 
-                  : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
-              }`}
-            >
-              <FileCode className={`w-3 h-3 flex-shrink-0 ${file.name === paneState.activeFile ? 'text-ide-accent' : ''}`} />
-              <span className="select-none">{file.name.split('/').pop()}</span>
-              <button
-                className="w-3 h-3 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:text-red-400 flex-shrink-0"
-                onClick={(e) => { e.stopPropagation(); handleCloseTab(file.name) }}
+            <div key={file.name} className="flex items-center flex-shrink-0">
+              {/* Drop indicator before tab */}
+              {tabDropIndex === index && (
+                <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5" />
+              )}
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', file.name)
+                  e.dataTransfer.effectAllowed = 'move'
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  const midpoint = rect.left + rect.width / 2
+                  // Set drop index based on which half of tab we're over
+                  setTabDropIndex(e.clientX < midpoint ? index : index + 1)
+                }}
+                onDragLeave={() => setTabDropIndex(null)}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  const draggedFile = e.dataTransfer.getData('text/plain')
+                  if (draggedFile && tabDropIndex !== null) {
+                    handleReorderTab(draggedFile, tabDropIndex)
+                  }
+                  setTabDropIndex(null)
+                  setIsTabBarDragOver(false)
+                }}
+                onClick={() => handleSelectFile(file.name)}
+                className={`group flex items-center gap-2 px-3 py-1.5 border-r border-ide-border text-xs whitespace-nowrap cursor-default ${
+                  file.name === paneState.activeFile 
+                    ? 'bg-ide-bg text-ide-text' 
+                    : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
+                }`}
               >
-                <X className="w-2.5 h-2.5" />
-              </button>
+                <FileCode className={`w-3 h-3 flex-shrink-0 ${file.name === paneState.activeFile ? 'text-ide-accent' : ''}`} />
+                <span className="select-none">{file.name.split('/').pop()}</span>
+                <button
+                  className="w-3 h-3 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:text-red-400 flex-shrink-0"
+                  onClick={(e) => { e.stopPropagation(); handleCloseTab(file.name) }}
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
             </div>
           )
         })}
+        {/* Drop indicator at end of tabs */}
+        {tabDropIndex === paneState.openTabs.length && (
+          <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5 flex-shrink-0" />
+        )}
         {/* Drop indicator for tab bar */}
         {isTabBarDragOver && (
           <div className="flex items-center gap-1 px-3 py-1.5 text-xs text-green-400 border-l border-green-500/50">
