@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import Editor from '@monaco-editor/react'
+import { useState, useCallback, useEffect } from 'react'
+import Editor, { Monaco } from '@monaco-editor/react'
 import { FileCode, X } from 'lucide-react'
 import SplitPane from './SplitPane'
 import { File } from '../types/workspace'
@@ -18,6 +18,7 @@ interface EditorPaneProps {
   initialActiveFile?: string
   initialOpenTabs?: string[]
   depth?: number
+  externalSelectFile?: string | null // File selected from outside (e.g., file explorer)
 }
 
 interface PaneState {
@@ -28,12 +29,31 @@ interface PaneState {
   childStates?: [PaneState, PaneState]
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0 }: EditorPaneProps) {
+export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile }: EditorPaneProps) {
   const [paneState, setPaneState] = useState<PaneState>({
     type: 'editor',
     activeFile: initialActiveFile || files[0]?.name || null,
     openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
   })
+  
+  // Handle external file selection (from file explorer) - only at root level
+  useEffect(() => {
+    if (depth === 0 && externalSelectFile && files.some(f => f.name === externalSelectFile)) {
+      setPaneState(prev => {
+        if (prev.type === 'split') {
+          // If split, update first child (or we could add to focused pane)
+          return prev // For now, don't change split state from external
+        }
+        return {
+          ...prev,
+          activeFile: externalSelectFile,
+          openTabs: prev.openTabs.includes(externalSelectFile) 
+            ? prev.openTabs 
+            : [...prev.openTabs, externalSelectFile],
+        }
+      })
+    }
+  }, [externalSelectFile, depth, files])
   
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
@@ -123,6 +143,20 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   }
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
+  
+  // Configure Monaco on mount - disable strict CSS validation
+  const handleEditorMount = useCallback((_editor: unknown, monaco: Monaco) => {
+    // Disable CSS validation (it doesn't understand modern CSS well)
+    monaco.languages.css?.cssDefaults?.setOptions({
+      validate: false,
+    })
+    monaco.languages.css?.scssDefaults?.setOptions({
+      validate: false,
+    })
+    monaco.languages.css?.lessDefaults?.setOptions({
+      validate: false,
+    })
+  }, [])
 
   // Render split view - pass child states down
   if (paneState.type === 'split' && paneState.childStates) {
@@ -365,6 +399,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
             language={activeFile.language}
             value={activeFile.content}
             onChange={(value) => value !== undefined && onFileChange(activeFile.name, value)}
+            onMount={handleEditorMount}
             theme={theme === 'light' ? 'vs' : 'vs-dark'}
             options={{
               fontSize: settings.fontSize || 14,

@@ -533,6 +533,7 @@ export default function IDE() {
                 lineNumbers: workspace.settings?.lineNumbers,
               }}
               initialActiveFile={workspace.activeFile}
+              externalSelectFile={workspace.activeFile}
             />
           </div>
           {/* Terminal - resizable, at bottom of main */}
