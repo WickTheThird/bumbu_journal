@@ -390,9 +390,9 @@ function getLanguage(filename: string): string {
   const map: Record<string, string> = {
     py: 'python',
     js: 'javascript',
+    jsx: 'javascript',
     ts: 'typescript',
-    tsx: 'typescriptreact',
-    jsx: 'javascriptreact',
+    tsx: 'typescript',
     html: 'html',
     css: 'css',
     json: 'json',
