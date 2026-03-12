@@ -206,11 +206,17 @@ export default function IDE() {
   }
   
   const canRun = activeFile && ['javascript', 'typescript', 'python'].includes(activeFile.language || '')
-  const canPreview = activeFile && ['html', 'css', 'javascript'].includes(activeFile.language || '')
   
+  // Check if project has framework files (React/Vue)
+  const hasFrameworkFiles = workspace.files.some(f => 
+    f.name.endsWith('.tsx') || f.name.endsWith('.jsx')
+  )
   const htmlFile = workspace.files.find(f => f.name.endsWith('.html'))
   const cssFile = workspace.files.find(f => f.name.endsWith('.css'))
   const jsFile = workspace.files.find(f => f.name.endsWith('.js') && !f.name.endsWith('.test.js'))
+  
+  // Can preview if has HTML file OR has framework files
+  const canPreview = htmlFile || hasFrameworkFiles
   
   return (
     <div className="h-screen flex flex-col bg-ide-bg">
@@ -526,15 +532,15 @@ export default function IDE() {
         </main>
         
         {/* HTML Preview Panel - side panel on desktop, fullscreen on mobile */}
-        {showPreview && htmlFile && (
+        {showPreview && canPreview && (
           <>
             {/* Mobile: fullscreen overlay */}
             <div className="md:hidden fixed inset-0 z-50 bg-ide-bg flex flex-col">
-              <HTMLPreview html={htmlFile.content} css={cssFile?.content} js={jsFile?.content} isOpen={showPreview} onClose={() => setShowPreview(false)} />
+              <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
             </div>
             {/* Desktop: side panel */}
             <div className="hidden md:block w-1/2">
-              <HTMLPreview html={htmlFile.content} css={cssFile?.content} js={jsFile?.content} isOpen={showPreview} onClose={() => setShowPreview(false)} />
+              <HTMLPreview html={htmlFile?.content} css={cssFile?.content} js={jsFile?.content} files={workspace.files} isOpen={showPreview} onClose={() => setShowPreview(false)} />
             </div>
           </>
         )}

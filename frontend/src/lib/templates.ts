@@ -782,6 +782,272 @@ print("=" * 40)
     },
   },
   {
+    id: 'react-counter',
+    name: 'React Counter',
+    description: 'Interactive counter with hooks',
+    icon: 'react',
+    workspace: {
+      version: 1,
+      files: [
+        {
+          name: 'index.tsx',
+          content: `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App'
+
+const root = createRoot(document.getElementById('root')!)
+root.render(<App />)
+`,
+          language: 'typescript',
+        },
+        {
+          name: 'App.tsx',
+          content: `import React, { useState } from 'react'
+
+export default function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      fontFamily: 'system-ui, sans-serif',
+      color: 'white',
+    }}>
+      <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+        HashIDE + React ⚛️
+      </h1>
+      
+      <div style={{
+        background: 'rgba(255,255,255,0.1)',
+        padding: '2rem 3rem',
+        borderRadius: '1rem',
+        textAlign: 'center',
+      }}>
+        <p style={{ fontSize: '4rem', margin: '0 0 1rem' }}>{count}</p>
+        
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            onClick={() => setCount(c => c - 1)}
+            style={{
+              padding: '0.75rem 1.5rem',
+              fontSize: '1.25rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              background: '#ff6b6b',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            −
+          </button>
+          <button
+            onClick={() => setCount(0)}
+            style={{
+              padding: '0.75rem 1.5rem',
+              fontSize: '1.25rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              background: '#4ecdc4',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            Reset
+          </button>
+          <button
+            onClick={() => setCount(c => c + 1)}
+            style={{
+              padding: '0.75rem 1.5rem',
+              fontSize: '1.25rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              background: '#45b7d1',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+      
+      <p style={{ marginTop: '2rem', opacity: 0.7 }}>
+        Edit App.tsx to customize this app
+      </p>
+    </div>
+  )
+}
+`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'App.tsx',
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+    },
+  },
+  {
+    id: 'react-todo',
+    name: 'React Todo App',
+    description: 'Todo list with local state',
+    icon: 'react',
+    workspace: {
+      version: 1,
+      files: [
+        {
+          name: 'index.tsx',
+          content: `import React from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App'
+
+const root = createRoot(document.getElementById('root')!)
+root.render(<App />)
+`,
+          language: 'typescript',
+        },
+        {
+          name: 'App.tsx',
+          content: `import React, { useState } from 'react'
+
+interface Todo {
+  id: number
+  text: string
+  completed: boolean
+}
+
+export default function App() {
+  const [todos, setTodos] = useState<Todo[]>([
+    { id: 1, text: 'Learn React', completed: true },
+    { id: 2, text: 'Build with HashIDE', completed: false },
+    { id: 3, text: 'Share your project', completed: false },
+  ])
+  const [input, setInput] = useState('')
+
+  const addTodo = () => {
+    if (!input.trim()) return
+    setTodos([...todos, {
+      id: Date.now(),
+      text: input,
+      completed: false,
+    }])
+    setInput('')
+  }
+
+  const toggleTodo = (id: number) => {
+    setTodos(todos.map(t =>
+      t.id === id ? { ...t, completed: !t.completed } : t
+    ))
+  }
+
+  const deleteTodo = (id: number) => {
+    setTodos(todos.filter(t => t.id !== id))
+  }
+
+  return (
+    <div style={{
+      maxWidth: '500px',
+      margin: '2rem auto',
+      padding: '2rem',
+      fontFamily: 'system-ui, sans-serif',
+    }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        ✅ Todo App
+      </h1>
+      
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addTodo()}
+          placeholder="Add a new task..."
+          style={{
+            flex: 1,
+            padding: '0.75rem 1rem',
+            fontSize: '1rem',
+            border: '2px solid #e2e8f0',
+            borderRadius: '0.5rem',
+            outline: 'none',
+          }}
+        />
+        <button
+          onClick={addTodo}
+          style={{
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            background: '#7c3aed',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+          }}
+        >
+          Add
+        </button>
+      </div>
+      
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {todos.map(todo => (
+          <li
+            key={todo.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.75rem',
+              marginBottom: '0.5rem',
+              background: '#f8fafc',
+              borderRadius: '0.5rem',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => toggleTodo(todo.id)}
+              style={{ width: '1.25rem', height: '1.25rem' }}
+            />
+            <span style={{
+              flex: 1,
+              textDecoration: todo.completed ? 'line-through' : 'none',
+              color: todo.completed ? '#94a3b8' : 'inherit',
+            }}>
+              {todo.text}
+            </span>
+            <button
+              onClick={() => deleteTodo(todo.id)}
+              style={{
+                padding: '0.25rem 0.5rem',
+                background: 'transparent',
+                border: 'none',
+                color: '#ef4444',
+                cursor: 'pointer',
+                fontSize: '1.25rem',
+              }}
+            >
+              ×
+            </button>
+          </li>
+        ))}
+      </ul>
+      
+      <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '2rem' }}>
+        {todos.filter(t => !t.completed).length} tasks remaining
+      </p>
+    </div>
+  )
+}
+`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'App.tsx',
+      settings: { theme: 'dark', fontSize: 14, tabSize: 2, wordWrap: true, minimap: true, lineNumbers: true },
+    },
+  },
+  {
     id: 'blank',
     name: 'Blank Workspace',
     description: 'Start from scratch',

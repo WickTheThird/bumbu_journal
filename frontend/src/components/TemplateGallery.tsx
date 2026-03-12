@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { templates, Template } from '../lib/templates'
 import { encodeWorkspace } from '../lib/hash'
-import { ArrowRight, FileCode, BarChart3, Sparkles, Plug, Briefcase, Dice5, File } from 'lucide-react'
+import { ArrowRight, FileCode, BarChart3, Sparkles, Plug, Briefcase, Dice5, File, Atom } from 'lucide-react'
 
 const iconMap: Record<string, React.ReactNode> = {
   canvas: <FileCode className="w-6 h-6" />,
@@ -11,6 +11,7 @@ const iconMap: Record<string, React.ReactNode> = {
   portfolio: <Briefcase className="w-6 h-6" />,
   game: <Dice5 className="w-6 h-6" />,
   file: <File className="w-6 h-6" />,
+  react: <Atom className="w-6 h-6" />,
 }
 
 interface TemplateCardProps {
