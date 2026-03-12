@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
-  Share2, Lock, Zap, Terminal, GitBranch, ArrowRight,
+  Share2, Lock, Terminal, GitBranch, ArrowRight,
   Hash, Layers, Menu, X, Linkedin, Mail, ExternalLink,
   Code2, Globe, Cpu, Atom, Package
 } from 'lucide-react'
