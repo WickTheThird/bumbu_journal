@@ -19,11 +19,12 @@ import { useWorkspaceStore } from '../store/workspace'
 interface GitHubModalProps {
   isOpen: boolean
   onClose: () => void
+  onImport?: (repo: GitHubRepo) => void
 }
 
 type Mode = 'import' | 'auth' | 'contribute'
 
-export default function GitHubModal({ isOpen, onClose }: GitHubModalProps) {
+export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalProps) {
   const [mode, setMode] = useState<Mode>('import')
   const [repoUrl, setRepoUrl] = useState('')
   const [loading, setLoading] = useState(false)
@@ -89,6 +90,7 @@ export default function GitHubModal({ isOpen, onClose }: GitHubModalProps) {
       })
       
       setSourceRepo(parsed)
+      onImport?.(parsed)
       onClose()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to import')

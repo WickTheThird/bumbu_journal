@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { 
-  Hash, Share2, Plus, FileCode, X, Trash2, Github,
+  Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch,
   ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Cloud, CloudOff, Menu, FolderOpen
 } from 'lucide-react'
 import FileTree from '../components/FileTree'
@@ -23,6 +23,8 @@ import NewFileModal from '../components/NewFileModal'
 import HTMLPreview from '../components/HTMLPreview'
 import SearchPanel from '../components/SearchPanel'
 import GitHubModal from '../components/GitHubModal'
+import SourceControlPanel from '../components/SourceControlPanel'
+import { GitHubRepo } from '../lib/github'
 
 export default function IDE() {
   const { 
@@ -51,6 +53,8 @@ export default function IDE() {
   const [showSidebar, setShowSidebar] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showGitHub, setShowGitHub] = useState(false)
+  const [showSourceControl, setShowSourceControl] = useState(false)
+  const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [, setEditorRef] = useState<editor.IStandaloneCodeEditor | null>(null)
@@ -238,6 +242,11 @@ export default function IDE() {
             <button onClick={() => { setShowGitHub(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Github className="w-4 h-4" /> GitHub
             </button>
+            {sourceRepo && (
+              <button onClick={() => { setShowSourceControl(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+                <GitBranch className="w-4 h-4" /> Source Control
+              </button>
+            )}
             <button onClick={() => { setShowImport(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
               <Upload className="w-4 h-4" /> Import
             </button>
@@ -362,6 +371,12 @@ export default function IDE() {
           <button onClick={() => setShowGitHub(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="GitHub">
             <Github className="w-4 h-4" />
           </button>
+          
+          {sourceRepo && (
+            <button onClick={() => setShowSourceControl(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Source Control">
+              <GitBranch className="w-4 h-4" />
+            </button>
+          )}
           
           <button onClick={() => setShowImport(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Import Files">
             <Upload className="w-4 h-4" />
@@ -522,7 +537,8 @@ export default function IDE() {
       <CommandPalette isOpen={showCommandPalette} onClose={() => setShowCommandPalette(false)} onRun={handleRun} onSettings={() => setShowSettings(true)} onHistory={() => setShowHistory(true)} onImport={() => setShowImport(true)} onDownload={handleDownload} onShare={handleShare} onShortcuts={() => setShowShortcuts(true)} onNewFile={() => setShowNewFileModal(true)} />
       <NewFileModal isOpen={showNewFileModal} onClose={() => setShowNewFileModal(false)} />
       <SearchPanel isOpen={showSearch} onClose={() => setShowSearch(false)} />
-      <GitHubModal isOpen={showGitHub} onClose={() => setShowGitHub(false)} />
+      <GitHubModal isOpen={showGitHub} onClose={() => setShowGitHub(false)} onImport={setSourceRepo} />
+      <SourceControlPanel isOpen={showSourceControl} onClose={() => setShowSourceControl(false)} sourceRepo={sourceRepo} />
     </div>
   )
 }
