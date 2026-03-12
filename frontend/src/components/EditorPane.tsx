@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useId } from 'react'
+import { useState, useCallback, useEffect, useId, useRef } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
@@ -19,118 +19,126 @@ interface EditorPaneProps {
   initialActiveFile?: string
   initialOpenTabs?: string[]
   depth?: number
-  externalSelectFile?: string | null // File selected from outside (e.g., file explorer)
-  onPaneClose?: () => void // Called when pane should close (no tabs left)
+  externalSelectFile?: string | null
+  onPaneEmpty?: () => void // Called when pane has no tabs (for split collapse)
 }
 
-interface PaneState {
-  type: 'editor' | 'split'
-  activeFile: string | null
-  openTabs: string[]
-  splitDirection?: 'horizontal' | 'vertical'
-  childStates?: [PaneState, PaneState]
+interface SplitState {
+  direction: 'horizontal' | 'vertical'
+  // We don't store child states - children manage their own
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onPaneClose }: EditorPaneProps) {
-  const paneId = useId() // Unique ID for this pane instance
-  const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
+export default function EditorPane({ 
+  files, 
+  onFileChange, 
+  theme, 
+  settings, 
+  initialActiveFile, 
+  initialOpenTabs, 
+  depth = 0, 
+  externalSelectFile,
+  onPaneEmpty 
+}: EditorPaneProps) {
+  const paneId = useId()
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   
-  const [paneState, setPaneState] = useState<PaneState>({
-    type: 'editor',
-    activeFile: initialActiveFile || files[0]?.name || null,
-    openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
-  })
+  // Editor state
+  const [activeFile, setActiveFile] = useState<string | null>(
+    initialActiveFile || files[0]?.name || null
+  )
+  const [openTabs, setOpenTabs] = useState<string[]>(
+    initialOpenTabs || files.slice(0, 3).map(f => f.name)
+  )
   
-  // Cleanup editor on unmount
-  useEffect(() => {
-    return () => {
-      if (editorInstance) {
-        editorInstance.dispose()
-      }
-    }
-  }, [editorInstance])
+  // Split state - null means no split
+  const [splitState, setSplitState] = useState<SplitState | null>(null)
+  const [splitChildFiles, setSplitChildFiles] = useState<[string[], string[]]>([[], []])
   
-  // Handle external file selection (from file explorer) - only at root level
-  useEffect(() => {
-    if (depth === 0 && externalSelectFile && files.some(f => f.name === externalSelectFile)) {
-      setPaneState(prev => {
-        if (prev.type === 'split') {
-          // If split, update first child (or we could add to focused pane)
-          return prev // For now, don't change split state from external
-        }
-        return {
-          ...prev,
-          activeFile: externalSelectFile,
-          openTabs: prev.openTabs.includes(externalSelectFile) 
-            ? prev.openTabs 
-            : [...prev.openTabs, externalSelectFile],
-        }
-      })
-    }
-  }, [externalSelectFile, depth, files])
-  
+  // Drag state
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
-  const [tabDropIndex, setTabDropIndex] = useState<number | null>(null) // For reordering tabs
+  const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
 
-  const handleSelectFile = useCallback((fileName: string) => {
-    setPaneState(prev => ({
-      ...prev,
-      activeFile: fileName,
-      openTabs: prev.openTabs.includes(fileName) ? prev.openTabs : [...prev.openTabs, fileName],
-    }))
+  // Handle external file selection (from file explorer)
+  useEffect(() => {
+    if (depth === 0 && externalSelectFile && files.some(f => f.name === externalSelectFile)) {
+      if (!splitState) {
+        setActiveFile(externalSelectFile)
+        if (!openTabs.includes(externalSelectFile)) {
+          setOpenTabs(prev => [...prev, externalSelectFile])
+        }
+      }
+    }
+  }, [externalSelectFile, depth, files, splitState, openTabs])
+
+  // Cleanup editor on unmount
+  useEffect(() => {
+    return () => {
+      if (editorRef.current) {
+        try {
+          editorRef.current.dispose()
+        } catch (e) {
+          // Ignore disposal errors
+        }
+        editorRef.current = null
+      }
+    }
   }, [])
 
-  const handleCloseTab = useCallback((fileName: string) => {
-    setPaneState(prev => {
-      const newTabs = prev.openTabs.filter(t => t !== fileName)
-      
-      // If no tabs left and we have a close handler (we're in a split), close this pane
-      if (newTabs.length === 0 && onPaneClose) {
-        // Defer to avoid state update during render
-        setTimeout(() => onPaneClose(), 0)
-      }
-      
-      return {
-        ...prev,
-        openTabs: newTabs,
-        activeFile: prev.activeFile === fileName ? (newTabs[0] || null) : prev.activeFile,
-      }
-    })
-  }, [onPaneClose])
+  const handleSelectFile = useCallback((fileName: string) => {
+    setActiveFile(fileName)
+    if (!openTabs.includes(fileName)) {
+      setOpenTabs(prev => [...prev, fileName])
+    }
+  }, [openTabs])
 
-  // Reorder tabs within this pane
+  const handleCloseTab = useCallback((fileName: string) => {
+    setOpenTabs(prev => {
+      const newTabs = prev.filter(t => t !== fileName)
+      
+      // Update active file if we closed the active one
+      if (activeFile === fileName) {
+        setActiveFile(newTabs[0] || null)
+      }
+      
+      // If no tabs left and we're in a split (depth > 0), signal parent
+      if (newTabs.length === 0 && onPaneEmpty) {
+        setTimeout(() => onPaneEmpty(), 0)
+      }
+      
+      return newTabs
+    })
+  }, [activeFile, onPaneEmpty])
+
   const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
-    setPaneState(prev => {
-      const currentIndex = prev.openTabs.indexOf(draggedFile)
+    setOpenTabs(prev => {
+      const currentIndex = prev.indexOf(draggedFile)
       if (currentIndex === -1) {
         // File not in tabs yet, insert it
-        const newTabs = [...prev.openTabs]
+        const newTabs = [...prev]
         newTabs.splice(dropIndex, 0, draggedFile)
-        return { ...prev, openTabs: newTabs, activeFile: draggedFile }
+        setActiveFile(draggedFile)
+        return newTabs
       }
       if (currentIndex === dropIndex) return prev
       
-      // Remove from current position and insert at new position
-      const newTabs = prev.openTabs.filter(t => t !== draggedFile)
+      const newTabs = prev.filter(t => t !== draggedFile)
       const adjustedIndex = dropIndex > currentIndex ? dropIndex - 1 : dropIndex
       newTabs.splice(adjustedIndex, 0, draggedFile)
-      return { ...prev, openTabs: newTabs }
+      return newTabs
     })
   }, [])
 
-  // Handle drop - create split or add to tabs
   const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {
-    if (!draggedFile) return
+    if (!draggedFile || !files.some(f => f.name === draggedFile)) return
     
-    // Center drop = just add to this pane's tabs
+    // Center drop = just add to tabs
     if (zone === 'center') {
-      setPaneState(prev => ({
-        ...prev,
-        activeFile: draggedFile,
-        openTabs: prev.openTabs.includes(draggedFile) ? prev.openTabs : [...prev.openTabs, draggedFile],
-      }))
+      setActiveFile(draggedFile)
+      if (!openTabs.includes(draggedFile)) {
+        setOpenTabs(prev => [...prev, draggedFile])
+      }
       return
     }
     
@@ -138,90 +146,74 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     const direction = (zone === 'left' || zone === 'right') ? 'horizontal' : 'vertical'
     const isFirst = zone === 'left' || zone === 'top'
     
-    setPaneState(prev => ({
-      type: 'split',
-      activeFile: null,
-      openTabs: [],
-      splitDirection: direction,
-      childStates: isFirst ? [
-        { type: 'editor', activeFile: draggedFile, openTabs: [draggedFile] },
-        { type: 'editor', activeFile: prev.activeFile, openTabs: prev.openTabs },
-      ] : [
-        { type: 'editor', activeFile: prev.activeFile, openTabs: prev.openTabs },
-        { type: 'editor', activeFile: draggedFile, openTabs: [draggedFile] },
-      ],
-    }))
-  }, [])
-
-  // Update child state (for recursive updates) - reserved for future use
-  void function updateChildState(index: 0 | 1, newState: PaneState) {
-    setPaneState(prev => {
-      if (prev.type !== 'split' || !prev.childStates) return prev
-      const newChildStates: [PaneState, PaneState] = [...prev.childStates]
-      newChildStates[index] = newState
-      return { ...prev, childStates: newChildStates }
-    })
-  }
-
-  const activeFile = files.find(f => f.name === paneState.activeFile)
-  
-  // Configure Monaco on mount - disable strict CSS validation
-  const handleEditorMount = useCallback((editorRef: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    setEditorInstance(editorRef)
-    
-    // Disable CSS validation (it doesn't understand modern CSS well)
-    monaco.languages.css?.cssDefaults?.setOptions({
-      validate: false,
-    })
-    monaco.languages.css?.scssDefaults?.setOptions({
-      validate: false,
-    })
-    monaco.languages.css?.lessDefaults?.setOptions({
-      validate: false,
-    })
-  }, [])
-
-  // Handle child pane closing - collapse split and keep the other child
-  const handleChildClose = useCallback((closedIndex: 0 | 1) => {
-    setPaneState(prev => {
-      if (prev.type !== 'split' || !prev.childStates) return prev
-      // Keep the other child's state
-      const keepIndex = closedIndex === 0 ? 1 : 0
-      return prev.childStates[keepIndex]
-    })
-  }, [])
-
-  // Render split view - pass child states down
-  if (paneState.type === 'split' && paneState.childStates) {
-    // Dispose current editor before rendering split
-    if (editorInstance) {
-      editorInstance.dispose()
-      setEditorInstance(null)
+    // Dispose current editor before splitting
+    if (editorRef.current) {
+      try {
+        editorRef.current.dispose()
+      } catch (e) {
+        // Ignore
+      }
+      editorRef.current = null
     }
     
+    setSplitState({ direction })
+    setSplitChildFiles(isFirst 
+      ? [[draggedFile], openTabs]
+      : [openTabs, [draggedFile]]
+    )
+  }, [files, openTabs])
+
+  const handleChildEmpty = useCallback((childIndex: 0 | 1) => {
+    // Child pane is empty, collapse split and restore this pane with the other child's tabs
+    // Since we can't easily get the other child's current state, we just close the split
+    // and the remaining child becomes a standalone pane
+    setSplitState(null)
+    
+    // We'll restore with the other child's initial files (not perfect but prevents blank screen)
+    const otherIndex = childIndex === 0 ? 1 : 0
+    const otherFiles = splitChildFiles[otherIndex]
+    if (otherFiles.length > 0) {
+      setOpenTabs(otherFiles)
+      setActiveFile(otherFiles[0])
+    }
+  }, [splitChildFiles])
+
+  const handleEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+    editorRef.current = editor
+    
+    // Disable CSS validation
+    monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
+    monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
+    monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
+  }, [])
+
+  const currentFile = files.find(f => f.name === activeFile)
+
+  // Render split view
+  if (splitState) {
     return (
-      <SplitPane direction={paneState.splitDirection || 'horizontal'} defaultSize={50}>
+      <SplitPane direction={splitState.direction} defaultSize={50}>
         <EditorPane 
-          key={`${paneId}-split-0`}
+          key={`${paneId}-child-0`}
           files={files} 
           onFileChange={onFileChange} 
           theme={theme} 
           settings={settings}
-          initialActiveFile={paneState.childStates[0].activeFile || undefined}
-          initialOpenTabs={paneState.childStates[0].openTabs}
+          initialActiveFile={splitChildFiles[0][0]}
+          initialOpenTabs={splitChildFiles[0]}
           depth={depth + 1}
-          onPaneClose={() => handleChildClose(0)}
+          onPaneEmpty={() => handleChildEmpty(0)}
         />
         <EditorPane 
-          key={`${paneId}-split-1`}
+          key={`${paneId}-child-1`}
           files={files} 
           onFileChange={onFileChange} 
           theme={theme} 
           settings={settings}
-          initialActiveFile={paneState.childStates[1].activeFile || undefined}
-          initialOpenTabs={paneState.childStates[1].openTabs}
+          initialActiveFile={splitChildFiles[1][0]}
+          initialOpenTabs={splitChildFiles[1]}
           depth={depth + 1}
-          onPaneClose={() => handleChildClose(1)}
+          onPaneEmpty={() => handleChildEmpty(1)}
         />
       </SplitPane>
     )
@@ -230,7 +222,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   // Render editor
   return (
     <div className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
-      {/* Tab bar - drop here to add to tabs */}
+      {/* Tab bar */}
       <div 
         className={`flex items-center bg-ide-surface border-b overflow-x-auto scrollbar-hide flex-shrink-0 transition-colors ${
           isTabBarDragOver ? 'border-green-500 bg-green-500/10' : 'border-ide-border'
@@ -258,10 +250,8 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           const draggedFile = e.dataTransfer.getData('text/plain')
           if (draggedFile && files.some(f => f.name === draggedFile)) {
             if (tabDropIndex !== null) {
-              // Reorder/insert at specific position
               handleReorderTab(draggedFile, tabDropIndex)
             } else {
-              // Add to end of tabs
               handleDrop('center', draggedFile)
             }
           }
@@ -271,12 +261,11 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           setTabDropIndex(null)
         }}
       >
-        {paneState.openTabs.filter(name => files.some(f => f.name === name)).map((fileName, index) => {
+        {openTabs.filter(name => files.some(f => f.name === name)).map((fileName, index) => {
           const file = files.find(f => f.name === fileName)
           if (!file) return null
           return (
             <div key={file.name} className="flex items-center flex-shrink-0">
-              {/* Drop indicator before tab */}
               {tabDropIndex === index && (
                 <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5" />
               )}
@@ -291,7 +280,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
                   e.stopPropagation()
                   const rect = e.currentTarget.getBoundingClientRect()
                   const midpoint = rect.left + rect.width / 2
-                  // Set drop index based on which half of tab we're over
                   setTabDropIndex(e.clientX < midpoint ? index : index + 1)
                 }}
                 onDragLeave={() => setTabDropIndex(null)}
@@ -307,12 +295,12 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
                 }}
                 onClick={() => handleSelectFile(file.name)}
                 className={`group flex items-center gap-2 px-3 py-1.5 border-r border-ide-border text-xs whitespace-nowrap cursor-default ${
-                  file.name === paneState.activeFile 
+                  file.name === activeFile 
                     ? 'bg-ide-bg text-ide-text' 
                     : 'bg-ide-surface text-ide-muted hover:text-ide-text hover:bg-ide-bg/50'
                 }`}
               >
-                <FileCode className={`w-3 h-3 flex-shrink-0 ${file.name === paneState.activeFile ? 'text-ide-accent' : ''}`} />
+                <FileCode className={`w-3 h-3 flex-shrink-0 ${file.name === activeFile ? 'text-ide-accent' : ''}`} />
                 <span className="select-none">{file.name.split('/').pop()}</span>
                 <button
                   className="w-3 h-3 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:text-red-400 flex-shrink-0"
@@ -324,11 +312,9 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
             </div>
           )
         })}
-        {/* Drop indicator at end of tabs */}
-        {tabDropIndex === paneState.openTabs.length && (
+        {tabDropIndex === openTabs.length && (
           <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5 flex-shrink-0" />
         )}
-        {/* Drop indicator for tab bar */}
         {isTabBarDragOver && (
           <div className="flex items-center gap-1 px-3 py-1.5 text-xs text-green-400 border-l border-green-500/50">
             <span>+ Drop to add tab</span>
@@ -346,8 +332,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
         }}
         onDragOver={(e) => {
           e.preventDefault()
-          const draggedFile = e.dataTransfer.types.includes('text/plain')
-          if (!draggedFile) return
+          if (!e.dataTransfer.types.includes('text/plain')) return
           
           const rect = e.currentTarget.getBoundingClientRect()
           const x = e.clientX - rect.left
@@ -355,7 +340,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           const xRatio = x / rect.width
           const yRatio = y / rect.height
           
-          // Edge zones for splitting, center for adding to tabs
           if (xRatio < 0.2) setDropZone('left')
           else if (xRatio > 0.8) setDropZone('right')
           else if (yRatio < 0.2) setDropZone('top')
@@ -363,7 +347,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           else setDropZone('center')
         }}
         onDragLeave={(e) => {
-          // Only hide if leaving the container entirely
           const rect = e.currentTarget.getBoundingClientRect()
           if (e.clientX < rect.left || e.clientX > rect.right || 
               e.clientY < rect.top || e.clientY > rect.bottom) {
@@ -375,7 +358,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           e.preventDefault()
           e.stopPropagation()
           const draggedFile = e.dataTransfer.getData('text/plain')
-          if (draggedFile && dropZone && files.some(f => f.name === draggedFile)) {
+          if (draggedFile && dropZone) {
             handleDrop(dropZone, draggedFile)
           }
           setIsDraggingOver(false)
@@ -421,7 +404,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
                 </div>
               )}
             </div>
-            {/* Center zone */}
             <div className={`absolute inset-0 m-[20%] border-2 border-dashed pointer-events-none z-40 transition-all ${
               dropZone === 'center' ? 'border-green-500 bg-green-500/20' : 'border-transparent'
             }`}>
@@ -434,14 +416,14 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           </>
         )}
 
-        {activeFile ? (
+        {currentFile ? (
           <Editor
             key={`${paneId}-editor`}
             height="100%"
-            path={activeFile.name}
-            language={activeFile.language}
-            value={activeFile.content}
-            onChange={(value) => value !== undefined && onFileChange(activeFile.name, value)}
+            path={currentFile.name}
+            language={currentFile.language}
+            value={currentFile.content}
+            onChange={(value) => value !== undefined && onFileChange(currentFile.name, value)}
             onMount={handleEditorMount}
             theme={theme === 'light' ? 'vs' : 'vs-dark'}
             options={{
@@ -461,7 +443,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           />
         ) : (
           <div className="h-full flex items-center justify-center text-ide-muted text-sm">
-            No file selected
+            {openTabs.length === 0 ? 'No files open' : 'Select a file'}
           </div>
         )}
       </div>
