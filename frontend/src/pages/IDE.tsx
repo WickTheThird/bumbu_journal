@@ -193,77 +193,77 @@ export default function IDE() {
       handleRun()
     })
     
-    // Configure TypeScript/JavaScript for JSX support
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+    // TypeScript compiler options for JSX
+    const compilerOptions = {
       target: monaco.languages.typescript.ScriptTarget.ESNext,
       module: monaco.languages.typescript.ModuleKind.ESNext,
       moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-      jsxImportSource: 'react',
+      jsx: monaco.languages.typescript.JsxEmit.React,
       allowSyntheticDefaultImports: true,
       esModuleInterop: true,
       allowNonTsExtensions: true,
+      allowJs: true,
       strict: false,
+      skipLibCheck: true,
       noEmit: true,
-    })
+    }
     
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.ESNext,
-      module: monaco.languages.typescript.ModuleKind.ESNext,
-      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-      allowSyntheticDefaultImports: true,
-      esModuleInterop: true,
-    })
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions(compilerOptions)
     
-    // Disable TypeScript validation - bundler handles actual compilation
-    // This removes all red squiggles while keeping syntax highlighting
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true,
-      noSyntaxValidation: true,
-    })
-    
-    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true,
-      noSyntaxValidation: true,
-    })
-    
-    // Add React types declaration
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(
-      `
-      declare namespace React {
-        type ReactNode = any;
-        type FC<P = {}> = (props: P) => ReactNode;
-        function useState<T>(initial: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
-        function useEffect(effect: () => void | (() => void), deps?: any[]): void;
-        function useCallback<T extends (...args: any[]) => any>(callback: T, deps: any[]): T;
-        function useMemo<T>(factory: () => T, deps: any[]): T;
-        function useRef<T>(initial: T): { current: T };
-        const Fragment: any;
-      }
-      
-      declare module 'react' {
-        export = React;
-        export as namespace React;
-      }
-      
-      declare module 'react-dom/client' {
-        export function createRoot(container: Element | null): { render(element: any): void };
-      }
-      
-      declare namespace JSX {
-        interface Element extends React.ReactNode {}
-        interface IntrinsicElements {
-          div: any; span: any; p: any; h1: any; h2: any; h3: any; h4: any; h5: any; h6: any;
-          a: any; button: any; input: any; form: any; label: any; select: any; option: any; textarea: any;
-          ul: any; ol: any; li: any; table: any; tr: any; td: any; th: any; thead: any; tbody: any;
-          img: any; video: any; audio: any; canvas: any; svg: any; path: any;
-          header: any; footer: any; nav: any; main: any; section: any; article: any; aside: any;
-          [elemName: string]: any;
-        }
-      }
-      `,
-      'file:///node_modules/@types/react/index.d.ts'
-    )
+    // Comprehensive React types with proper JSX support
+    const reactDts = `
+declare namespace React {
+  type CSSProperties = Record<string, string | number>;
+  type ReactNode = ReactElement | string | number | boolean | null | undefined;
+  interface ReactElement<P = any> { type: any; props: P; key: string | null; }
+  type FC<P = {}> = (props: P & { children?: ReactNode }) => ReactElement | null;
+  
+  function useState<T>(initial: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
+  function useEffect(effect: () => void | (() => void), deps?: readonly any[]): void;
+  function useCallback<T extends (...args: any[]) => any>(callback: T, deps: readonly any[]): T;
+  function useMemo<T>(factory: () => T, deps: readonly any[]): T;
+  function useRef<T>(initial: T): { current: T };
+  function useContext<T>(context: Context<T>): T;
+  function createElement(type: any, props?: any, ...children: any[]): ReactElement;
+  
+  const Fragment: symbol;
+  
+  interface Context<T> {
+    Provider: FC<{ value: T; children?: ReactNode }>;
+  }
+  
+  interface HTMLProps {
+    children?: ReactNode;
+    className?: string;
+    id?: string;
+    style?: CSSProperties;
+    onClick?: (e: any) => void;
+    onChange?: (e: any) => void;
+    onSubmit?: (e: any) => void;
+    onKeyDown?: (e: any) => void;
+    [key: string]: any;
+  }
+}
+
+declare module 'react' {
+  export = React;
+}
+
+declare module 'react-dom/client' {
+  export function createRoot(container: Element | null): { render(element: any): void };
+}
+
+declare namespace JSX {
+  interface Element extends React.ReactElement {}
+  interface IntrinsicElements {
+    [elemName: string]: React.HTMLProps;
+  }
+}
+`;
+
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(reactDts, 'file:///node_modules/@types/react/index.d.ts')
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(reactDts, 'file:///node_modules/@types/react/index.d.ts')
   }
   
   if (isLoading) {
