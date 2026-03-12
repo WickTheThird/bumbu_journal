@@ -217,6 +217,8 @@ const PaneRenderer = memo(function PaneRenderer({
     })
   }, [node.id, files, onUpdateNode])
 
+  console.log('[PaneRenderer] Rendering node:', node.id, node.type, node.type === 'editor' ? `tabs: ${node.openTabs?.length}` : `children: ${node.children?.length}`)
+
   // Render split
   if (node.type === 'split' && node.children) {
     return (
@@ -439,12 +441,14 @@ export default function EditorPane({
   externalSelectFile,
 }: EditorPaneProps) {
   // Single source of truth: the pane tree
-  const [paneTree, setPaneTree] = useState<PaneNode>(() => 
-    createEditorNode(
+  const [paneTree, setPaneTree] = useState<PaneNode>(() => {
+    const tree = createEditorNode(
       initialActiveFile || files[0]?.name || null,
       initialOpenTabs || files.slice(0, 3).map(f => f.name)
     )
-  )
+    console.log('[EditorPane] Initial tree:', JSON.stringify(tree))
+    return tree
+  })
 
   // Handle external file selection
   useEffect(() => {
@@ -474,9 +478,12 @@ export default function EditorPane({
   // Update a node in the tree
   const handleUpdateNode = useCallback((nodeId: string, updater: (node: PaneNode) => PaneNode | null) => {
     setPaneTree(prev => {
+      console.log('[EditorPane] Updating node:', nodeId, 'prev tree:', JSON.stringify(prev))
       const result = updateNodeInTree(prev, nodeId, updater)
+      console.log('[EditorPane] Result:', result ? JSON.stringify(result) : 'NULL')
       // If root becomes null (all panes closed), create a new empty editor
       if (result === null) {
+        console.log('[EditorPane] Creating new root')
         return createEditorNode(files[0]?.name || null, files.slice(0, 1).map(f => f.name))
       }
       return result
