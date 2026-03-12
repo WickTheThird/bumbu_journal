@@ -643,13 +643,16 @@ declare module '*';
               <div
                 key={file.name}
                 draggable
-                onDragStart={() => setDraggedFile(file.name)}
+                onDragStart={(e) => {
+                  setDraggedFile(file.name)
+                  e.dataTransfer.effectAllowed = 'move'
+                }}
                 onDragEnd={() => {
                   setDraggedFile(null)
                   setDropZone(null)
                 }}
                 onClick={() => setActiveFile(file.name)}
-                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 cursor-grab active:cursor-grabbing ${
+                className={`group flex items-center gap-2 px-3 py-2 border-r border-ide-border text-sm whitespace-nowrap transition flex-shrink-0 cursor-default ${
                   file.name === workspace.activeFile 
                     ? 'bg-ide-bg text-ide-text' 
                     : file.name === splitFile 
@@ -662,24 +665,28 @@ declare module '*';
                 {file.name === splitFile && (
                   <span className="text-[10px] text-purple-400 ml-1">SPLIT</span>
                 )}
-                {workspace.files.length > 1 && (
-                  <X 
-                    className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-red-400 transition hidden sm:block" 
-                    onClick={(e) => { 
-                      e.stopPropagation()
-                      // Close tab, don't delete file - if it's the split file, close split
-                      if (file.name === splitFile) {
+                <button
+                  className="w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded transition"
+                  onClick={(e) => { 
+                    e.stopPropagation()
+                    // Just close the split if this file is in split view
+                    if (file.name === splitFile) {
+                      setSplitFile(null)
+                    }
+                    // If this is the active file, switch to split file or first other file
+                    if (file.name === workspace.activeFile) {
+                      if (splitFile && splitFile !== file.name) {
+                        setActiveFile(splitFile)
                         setSplitFile(null)
-                      } else if (file.name === workspace.activeFile) {
-                        // Switch to another file if closing active
+                      } else {
                         const otherFile = workspace.files.find(f => f.name !== file.name)
                         if (otherFile) setActiveFile(otherFile.name)
                       }
-                      // Don't delete, just close from view (user can reopen from explorer)
-                    }} 
-                    title="Close tab"
-                  />
-                )}
+                    }
+                  }}
+                >
+                  <X className="w-3 h-3 text-ide-muted hover:text-red-400" />
+                </button>
               </div>
             ))}
             {splitFile && (
