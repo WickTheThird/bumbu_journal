@@ -198,17 +198,13 @@ function PaneRenderer({
       const currentTabs = (n.openTabs && n.openTabs.length > 0) ? n.openTabs : [files[0]?.name].filter(Boolean) as string[]
       const currentActive = n.activeFile || currentTabs[0] || null
       
-      // Keep the same ID for existing content, create new ID only for the dragged file
-      const existingEditor: PaneNode = {
-        id: n.id, // Preserve original ID to avoid remount
-        type: 'editor',
-        activeFile: currentActive,
-        openTabs: currentTabs,
-      }
+      // IMPORTANT: Split keeps the original ID so parent doesn't see a change
+      // Both children get new IDs
+      const existingEditor = createEditorNode(currentActive, currentTabs)
       const newEditor = createEditorNode(draggedFile, [draggedFile])
       
       return {
-        id: generatePaneId(), // Split container gets new ID
+        id: n.id, // KEEP SAME ID - this prevents parent remount
         type: 'split',
         direction,
         children: isFirst ? [newEditor, existingEditor] : [existingEditor, newEditor],
