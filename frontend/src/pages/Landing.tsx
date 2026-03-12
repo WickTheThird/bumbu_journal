@@ -103,7 +103,7 @@ export default function Landing() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <a 
-              href="https://github.com/WickTheThird/bumbu_journal"
+              href="https://github.com/WickTheThird/HashIDE"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-8 py-4 rounded-full border border-white/10 hover:bg-white/5 font-medium transition flex items-center justify-center gap-2"
@@ -418,7 +418,7 @@ export default function Landing() {
                 <Linkedin className="w-5 h-5" />
               </a>
               <a 
-                href="https://github.com/WickTheThird/bumbu_journal" 
+                href="https://github.com/WickTheThird/HashIDE" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-600 hover:text-white transition"
