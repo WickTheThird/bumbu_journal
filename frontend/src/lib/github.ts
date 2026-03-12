@@ -5,7 +5,7 @@
  */
 
 const GITHUB_API = 'https://api.github.com'
-const GITHUB_CLIENT_ID = 'Ov23liYourClientId' // TODO: Replace with real client ID
+const GITHUB_CLIENT_ID = 'Ov23liFlSKXnYuNkre0F'
 
 export interface GitHubFile {
   name: string
