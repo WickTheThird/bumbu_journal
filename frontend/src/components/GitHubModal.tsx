@@ -38,7 +38,7 @@ export default function GitHubModal({ isOpen, onClose }: GitHubModalProps) {
   const [prUrl, setPrUrl] = useState('')
   const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
   
-  const { workspace, loadWorkspace } = useWorkspaceStore()
+  const { workspace, setWorkspace } = useWorkspaceStore()
   
   useEffect(() => {
     if (isOpen) {
@@ -77,7 +77,7 @@ export default function GitHubModal({ isOpen, onClose }: GitHubModalProps) {
       }
       
       // Load into workspace
-      loadWorkspace({
+      setWorkspace({
         files: files.map(f => ({
           name: f.name,
           content: f.content,

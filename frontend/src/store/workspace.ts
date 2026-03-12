@@ -18,6 +18,7 @@ interface WorkspaceState {
   setActiveFile: (name: string) => void
   
   updateSettings: (settings: Partial<NonNullable<Workspace['settings']>>) => void
+  setWorkspace: (workspace: Workspace) => void
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
@@ -141,6 +142,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         }
       }
     })
+  },
+  
+  setWorkspace: (workspace: Workspace) => {
+    set({ workspace, error: null })
   },
 }))
 
