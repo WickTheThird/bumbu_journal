@@ -78,7 +78,7 @@ const updateNodeInTree = (
     
     return {
       ...tree,
-      children: [child0, child1],
+      children: [child0!, child1!], // We know they're not null at this point
     }
   }
   
