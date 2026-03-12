@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useId } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
+import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
 import SplitPane from './SplitPane'
 import { File } from '../types/workspace'
@@ -30,11 +31,23 @@ interface PaneState {
 }
 
 export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile }: EditorPaneProps) {
+  const paneId = useId() // Unique ID for this pane instance
+  const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
+  
   const [paneState, setPaneState] = useState<PaneState>({
     type: 'editor',
     activeFile: initialActiveFile || files[0]?.name || null,
     openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
   })
+  
+  // Cleanup editor on unmount
+  useEffect(() => {
+    return () => {
+      if (editorInstance) {
+        editorInstance.dispose()
+      }
+    }
+  }, [editorInstance])
   
   // Handle external file selection (from file explorer) - only at root level
   useEffect(() => {
@@ -145,7 +158,9 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const activeFile = files.find(f => f.name === paneState.activeFile)
   
   // Configure Monaco on mount - disable strict CSS validation
-  const handleEditorMount = useCallback((_editor: unknown, monaco: Monaco) => {
+  const handleEditorMount = useCallback((editorRef: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+    setEditorInstance(editorRef)
+    
     // Disable CSS validation (it doesn't understand modern CSS well)
     monaco.languages.css?.cssDefaults?.setOptions({
       validate: false,
@@ -160,9 +175,16 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
 
   // Render split view - pass child states down
   if (paneState.type === 'split' && paneState.childStates) {
+    // Dispose current editor before rendering split
+    if (editorInstance) {
+      editorInstance.dispose()
+      setEditorInstance(null)
+    }
+    
     return (
       <SplitPane direction={paneState.splitDirection || 'horizontal'} defaultSize={50}>
         <EditorPane 
+          key={`${paneId}-split-0`}
           files={files} 
           onFileChange={onFileChange} 
           theme={theme} 
@@ -172,6 +194,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           depth={depth + 1}
         />
         <EditorPane 
+          key={`${paneId}-split-1`}
           files={files} 
           onFileChange={onFileChange} 
           theme={theme} 
@@ -393,6 +416,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
 
         {activeFile ? (
           <Editor
+            key={`${paneId}-editor`}
             height="100%"
             path={activeFile.name}
             language={activeFile.language}
