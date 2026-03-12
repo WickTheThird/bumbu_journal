@@ -145,6 +145,9 @@ const PaneRenderer = memo(function PaneRenderer({
     }
   }, [])
 
+  // Container ref for resize observer
+  const containerRef = useRef<HTMLDivElement>(null)
+  
   const handleEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor
     
@@ -154,7 +157,26 @@ const PaneRenderer = memo(function PaneRenderer({
       monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
       monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
     } catch (e) { /* ignore */ }
+    
+    // Force layout after mount
+    requestAnimationFrame(() => {
+      editor.layout()
+    })
   }, [])
+  
+  // Watch for container resizes
+  useEffect(() => {
+    if (!containerRef.current || !editorRef.current) return
+    
+    const observer = new ResizeObserver(() => {
+      if (editorRef.current) {
+        editorRef.current.layout()
+      }
+    })
+    
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [node.activeFile]) // Re-attach when file changes
 
   // Handle tab selection
   const handleSelectFile = useCallback((fileName: string) => {
@@ -276,7 +298,7 @@ const PaneRenderer = memo(function PaneRenderer({
   const currentFile = files.find(f => f.name === activeFile)
 
   return (
-    <div className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
+    <div ref={containerRef} className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
       {/* Tab bar */}
       <div 
         className={`flex items-center bg-ide-surface border-b overflow-x-auto scrollbar-hide flex-shrink-0 transition-colors ${
