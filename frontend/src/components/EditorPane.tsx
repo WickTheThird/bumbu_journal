@@ -20,7 +20,8 @@ interface EditorPaneProps {
   initialOpenTabs?: string[]
   depth?: number
   externalSelectFile?: string | null
-  onPaneEmpty?: () => void // Called when pane has no tabs (for split collapse)
+  onPaneEmpty?: () => void // Called when pane empties
+  onStateChange?: (tabs: string[], active: string | null) => void // Report state changes to parent
 }
 
 interface SplitState {
@@ -37,7 +38,8 @@ export default function EditorPane({
   initialOpenTabs, 
   depth = 0, 
   externalSelectFile,
-  onPaneEmpty 
+  onPaneEmpty,
+  onStateChange
 }: EditorPaneProps) {
   const paneId = useId()
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -53,12 +55,27 @@ export default function EditorPane({
   // Split state - null means no split
   const [splitState, setSplitState] = useState<SplitState | null>(null)
   const [splitChildFiles, setSplitChildFiles] = useState<[string[], string[]]>([[], []])
+  // Track current state of each child (updated via callback)
+  const childStateRef = useRef<{
+    0: { tabs: string[], active: string | null },
+    1: { tabs: string[], active: string | null }
+  }>({
+    0: { tabs: [], active: null },
+    1: { tabs: [], active: null }
+  })
   
   // Drag state
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
   const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
+
+  // Report state changes to parent
+  useEffect(() => {
+    if (onStateChange) {
+      onStateChange(openTabs, activeFile)
+    }
+  }, [openTabs, activeFile, onStateChange])
 
   // Handle external file selection (from file explorer)
   useEffect(() => {
@@ -102,7 +119,7 @@ export default function EditorPane({
         setActiveFile(newTabs[0] || null)
       }
       
-      // If no tabs left and we're in a split (depth > 0), signal parent
+      // If no tabs left, signal parent
       if (newTabs.length === 0 && onPaneEmpty) {
         setTimeout(() => onPaneEmpty(), 0)
       }
@@ -163,18 +180,29 @@ export default function EditorPane({
     )
   }, [files, openTabs])
 
+  // Called when a child pane reports its state (on every tab change)
+  const handleChildStateUpdate = useCallback((childIndex: 0 | 1, tabs: string[], active: string | null) => {
+    childStateRef.current[childIndex] = { tabs, active }
+  }, [])
+
   const handleChildEmpty = useCallback((childIndex: 0 | 1) => {
-    // Child pane is empty, collapse split and restore this pane with the other child's tabs
-    // Since we can't easily get the other child's current state, we just close the split
-    // and the remaining child becomes a standalone pane
+    // Child pane is empty, collapse split and restore with the other child's current state
+    const otherIndex = childIndex === 0 ? 1 : 0
+    const otherState = childStateRef.current[otherIndex]
+    
     setSplitState(null)
     
-    // We'll restore with the other child's initial files (not perfect but prevents blank screen)
-    const otherIndex = childIndex === 0 ? 1 : 0
-    const otherFiles = splitChildFiles[otherIndex]
-    if (otherFiles.length > 0) {
-      setOpenTabs(otherFiles)
-      setActiveFile(otherFiles[0])
+    // Restore with the other child's current tabs
+    if (otherState.tabs.length > 0) {
+      setOpenTabs(otherState.tabs)
+      setActiveFile(otherState.active || otherState.tabs[0])
+    } else {
+      // Fallback to initial files if other child also empty
+      const fallbackFiles = splitChildFiles[otherIndex]
+      if (fallbackFiles.length > 0) {
+        setOpenTabs(fallbackFiles)
+        setActiveFile(fallbackFiles[0])
+      }
     }
   }, [splitChildFiles])
 
@@ -203,6 +231,7 @@ export default function EditorPane({
           initialOpenTabs={splitChildFiles[0]}
           depth={depth + 1}
           onPaneEmpty={() => handleChildEmpty(0)}
+          onStateChange={(tabs, active) => handleChildStateUpdate(0, tabs, active)}
         />
         <EditorPane 
           key={`${paneId}-child-1`}
@@ -214,6 +243,7 @@ export default function EditorPane({
           initialOpenTabs={splitChildFiles[1]}
           depth={depth + 1}
           onPaneEmpty={() => handleChildEmpty(1)}
+          onStateChange={(tabs, active) => handleChildStateUpdate(1, tabs, active)}
         />
       </SplitPane>
     )
