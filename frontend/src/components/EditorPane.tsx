@@ -1,9 +1,21 @@
-import { useState, useCallback, useEffect, useId, useRef } from 'react'
+import { useState, useCallback, useEffect, useId, useRef, useMemo } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
 import SplitPane from './SplitPane'
 import { File } from '../types/workspace'
+
+// Recursive pane tree structure
+export interface PaneNode {
+  id: string
+  type: 'editor' | 'split'
+  // Editor state (when type === 'editor')
+  activeFile?: string | null
+  openTabs?: string[]
+  // Split state (when type === 'split')
+  direction?: 'horizontal' | 'vertical'
+  children?: [PaneNode, PaneNode]
+}
 
 interface EditorPaneProps {
   files: File[]
@@ -18,256 +30,213 @@ interface EditorPaneProps {
   }
   initialActiveFile?: string
   initialOpenTabs?: string[]
-  depth?: number
   externalSelectFile?: string | null
-  onPaneEmpty?: () => void // Called when pane empties
-  onStateChange?: (tabs: string[], active: string | null) => void // Report state changes to parent
 }
 
-interface SplitState {
-  direction: 'horizontal' | 'vertical'
-  // We don't store child states - children manage their own
+// Generate unique IDs
+let paneIdCounter = 0
+const generatePaneId = () => `pane-${++paneIdCounter}`
+
+// Create initial editor node
+const createEditorNode = (activeFile: string | null, openTabs: string[]): PaneNode => ({
+  id: generatePaneId(),
+  type: 'editor',
+  activeFile,
+  openTabs,
+})
+
+// Deep clone a pane node
+const cloneNode = (node: PaneNode): PaneNode => JSON.parse(JSON.stringify(node))
+
+// Find and update a node in the tree by ID
+const updateNodeInTree = (
+  tree: PaneNode,
+  nodeId: string,
+  updater: (node: PaneNode) => PaneNode | null // null means remove/collapse
+): PaneNode | null => {
+  if (tree.id === nodeId) {
+    return updater(tree)
+  }
+  
+  if (tree.type === 'split' && tree.children) {
+    const newChildren: [PaneNode | null, PaneNode | null] = [
+      updateNodeInTree(tree.children[0], nodeId, updater),
+      updateNodeInTree(tree.children[1], nodeId, updater),
+    ]
+    
+    // If one child is null (removed), return the other child (collapse)
+    if (newChildren[0] === null && newChildren[1] !== null) {
+      return newChildren[1]
+    }
+    if (newChildren[1] === null && newChildren[0] !== null) {
+      return newChildren[0]
+    }
+    if (newChildren[0] === null && newChildren[1] === null) {
+      return null
+    }
+    
+    return {
+      ...tree,
+      children: [newChildren[0]!, newChildren[1]!],
+    }
+  }
+  
+  return tree
 }
 
-export default function EditorPane({ 
-  files, 
-  onFileChange, 
-  theme, 
-  settings, 
-  initialActiveFile, 
-  initialOpenTabs, 
-  depth = 0, 
-  externalSelectFile,
-  onPaneEmpty,
-  onStateChange
-}: EditorPaneProps) {
-  const paneId = useId()
+// Inner component that renders a single pane (controlled by parent)
+function PaneRenderer({
+  node,
+  files,
+  onFileChange,
+  theme,
+  settings,
+  onUpdateNode,
+}: {
+  node: PaneNode
+  files: File[]
+  onFileChange: (fileName: string, content: string) => void
+  theme: 'light' | 'dark'
+  settings: EditorPaneProps['settings']
+  onUpdateNode: (nodeId: string, updater: (node: PaneNode) => PaneNode | null) => void
+}) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   
-  // Editor state
-  const [activeFile, setActiveFile] = useState<string | null>(
-    initialActiveFile || files[0]?.name || null
-  )
-  const [openTabs, setOpenTabs] = useState<string[]>(
-    initialOpenTabs || files.slice(0, 3).map(f => f.name)
-  )
-  
-  // Split state - null means no split
-  const [splitState, setSplitState] = useState<SplitState | null>(null)
-  const [splitChildFiles, setSplitChildFiles] = useState<[string[], string[]]>([[], []])
-  // Track current state of each child (updated via callback)
-  const childStateRef = useRef<{
-    0: { tabs: string[], active: string | null },
-    1: { tabs: string[], active: string | null }
-  }>({
-    0: { tabs: [], active: null },
-    1: { tabs: [], active: null }
-  })
-  
-  // Drag state
+  // Drag state (local to this pane)
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
   const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
 
-  // Report state changes to parent
-  useEffect(() => {
-    if (onStateChange) {
-      onStateChange(openTabs, activeFile)
-    }
-  }, [openTabs, activeFile, onStateChange])
-
-  // Handle external file selection (from file explorer)
-  useEffect(() => {
-    if (depth === 0 && externalSelectFile && files.some(f => f.name === externalSelectFile)) {
-      if (!splitState) {
-        setActiveFile(externalSelectFile)
-        if (!openTabs.includes(externalSelectFile)) {
-          setOpenTabs(prev => [...prev, externalSelectFile])
-        }
-      }
-    }
-  }, [externalSelectFile, depth, files, splitState, openTabs])
-
   // Cleanup editor on unmount
   useEffect(() => {
     return () => {
       if (editorRef.current) {
-        try {
-          editorRef.current.dispose()
-        } catch (e) {
-          // Ignore disposal errors
-        }
+        try { editorRef.current.dispose() } catch (e) { /* ignore */ }
         editorRef.current = null
       }
     }
   }, [])
 
-  const handleSelectFile = useCallback((fileName: string) => {
-    setActiveFile(fileName)
-    if (!openTabs.includes(fileName)) {
-      setOpenTabs(prev => [...prev, fileName])
-    }
-  }, [openTabs])
-
-  const handleCloseTab = useCallback((fileName: string) => {
-    setOpenTabs(prev => {
-      const newTabs = prev.filter(t => t !== fileName)
-      
-      // Update active file if we closed the active one
-      if (activeFile === fileName) {
-        setActiveFile(newTabs[0] || null)
-      }
-      
-      // If no tabs left, signal parent
-      if (newTabs.length === 0 && onPaneEmpty) {
-        setTimeout(() => onPaneEmpty(), 0)
-      }
-      
-      return newTabs
-    })
-  }, [activeFile, onPaneEmpty])
-
-  const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
-    setOpenTabs(prev => {
-      const currentIndex = prev.indexOf(draggedFile)
-      if (currentIndex === -1) {
-        // File not in tabs yet, insert it
-        const newTabs = [...prev]
-        newTabs.splice(dropIndex, 0, draggedFile)
-        setActiveFile(draggedFile)
-        return newTabs
-      }
-      if (currentIndex === dropIndex) return prev
-      
-      const newTabs = prev.filter(t => t !== draggedFile)
-      const adjustedIndex = dropIndex > currentIndex ? dropIndex - 1 : dropIndex
-      newTabs.splice(adjustedIndex, 0, draggedFile)
-      return newTabs
-    })
-  }, [])
-
-  const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {
-    if (!draggedFile || !files.some(f => f.name === draggedFile)) return
-    
-    // Center drop = just add to tabs
-    if (zone === 'center') {
-      setActiveFile(draggedFile)
-      if (!openTabs.includes(draggedFile)) {
-        setOpenTabs(prev => [...prev, draggedFile])
-      }
-      return
-    }
-    
-    // Edge drop = create split
-    const direction = (zone === 'left' || zone === 'right') ? 'horizontal' : 'vertical'
-    const isFirst = zone === 'left' || zone === 'top'
-    
-    // Dispose current editor before splitting
-    if (editorRef.current) {
-      try {
-        editorRef.current.dispose()
-      } catch (e) {
-        // Ignore
-      }
-      editorRef.current = null
-    }
-    
-    // Set up initial child state tracking
-    const newChildFiles: [string[], string[]] = isFirst 
-      ? [[draggedFile], openTabs]
-      : [openTabs, [draggedFile]]
-    
-    childStateRef.current = {
-      0: { tabs: newChildFiles[0], active: newChildFiles[0][0] || null },
-      1: { tabs: newChildFiles[1], active: newChildFiles[1][0] || null }
-    }
-    
-    setSplitState({ direction })
-    setSplitChildFiles(newChildFiles)
-  }, [files, openTabs])
-
-  // Called when a child pane reports its state (on every tab change)
-  const handleChildStateUpdate = useCallback((childIndex: 0 | 1, tabs: string[], active: string | null) => {
-    childStateRef.current[childIndex] = { tabs, active }
-  }, [])
-
-  const handleChildEmpty = useCallback((childIndex: 0 | 1) => {
-    // Child pane is empty, collapse split and restore with the other child's current state
-    const otherIndex = childIndex === 0 ? 1 : 0
-    const otherState = childStateRef.current[otherIndex]
-    
-    // Determine new tabs and active file
-    let newTabs: string[] = []
-    let newActive: string | null = null
-    
-    if (otherState.tabs.length > 0) {
-      newTabs = otherState.tabs
-      newActive = otherState.active || otherState.tabs[0]
-    } else {
-      // Fallback to initial files if other child also empty
-      const fallbackFiles = splitChildFiles[otherIndex]
-      if (fallbackFiles.length > 0) {
-        newTabs = fallbackFiles
-        newActive = fallbackFiles[0]
-      }
-    }
-    
-    // Update state atomically
-    setSplitState(null)
-    setOpenTabs(newTabs)
-    setActiveFile(newActive)
-    
-    // Report our new state to parent (if we're in a nested split)
-    if (onStateChange) {
-      onStateChange(newTabs, newActive)
-    }
-  }, [splitChildFiles, onStateChange])
-
   const handleEditorMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor
-    
-    // Disable CSS validation
     monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
     monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
     monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
   }, [])
 
-  const currentFile = files.find(f => f.name === activeFile)
+  // Handle tab selection
+  const handleSelectFile = useCallback((fileName: string) => {
+    onUpdateNode(node.id, (n) => ({
+      ...n,
+      activeFile: fileName,
+      openTabs: n.openTabs?.includes(fileName) ? n.openTabs : [...(n.openTabs || []), fileName],
+    }))
+  }, [node.id, onUpdateNode])
 
-  // Render split view
-  if (splitState) {
+  // Handle tab close
+  const handleCloseTab = useCallback((fileName: string) => {
+    onUpdateNode(node.id, (n) => {
+      const newTabs = (n.openTabs || []).filter(t => t !== fileName)
+      const newActive = n.activeFile === fileName ? (newTabs[0] || null) : n.activeFile
+      
+      // If no tabs left, remove this pane (return null to trigger collapse)
+      if (newTabs.length === 0) {
+        return null
+      }
+      
+      return { ...n, openTabs: newTabs, activeFile: newActive }
+    })
+  }, [node.id, onUpdateNode])
+
+  // Handle tab reorder
+  const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
+    onUpdateNode(node.id, (n) => {
+      const tabs = n.openTabs || []
+      const currentIndex = tabs.indexOf(draggedFile)
+      
+      if (currentIndex === -1) {
+        // Insert new tab
+        const newTabs = [...tabs]
+        newTabs.splice(dropIndex, 0, draggedFile)
+        return { ...n, openTabs: newTabs, activeFile: draggedFile }
+      }
+      
+      if (currentIndex === dropIndex) return n
+      
+      const newTabs = tabs.filter(t => t !== draggedFile)
+      const adjustedIndex = dropIndex > currentIndex ? dropIndex - 1 : dropIndex
+      newTabs.splice(adjustedIndex, 0, draggedFile)
+      return { ...n, openTabs: newTabs }
+    })
+  }, [node.id, onUpdateNode])
+
+  // Handle drop to create split or add tab
+  const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {
+    if (!draggedFile || !files.some(f => f.name === draggedFile)) return
+    
+    if (zone === 'center') {
+      // Add to tabs
+      onUpdateNode(node.id, (n) => ({
+        ...n,
+        activeFile: draggedFile,
+        openTabs: n.openTabs?.includes(draggedFile) ? n.openTabs : [...(n.openTabs || []), draggedFile],
+      }))
+      return
+    }
+    
+    // Create split
+    const direction = (zone === 'left' || zone === 'right') ? 'horizontal' : 'vertical'
+    const isFirst = zone === 'left' || zone === 'top'
+    
+    // Dispose current editor
+    if (editorRef.current) {
+      try { editorRef.current.dispose() } catch (e) { /* ignore */ }
+      editorRef.current = null
+    }
+    
+    onUpdateNode(node.id, (n) => {
+      const existingEditor = createEditorNode(n.activeFile || null, n.openTabs || [])
+      const newEditor = createEditorNode(draggedFile, [draggedFile])
+      
+      return {
+        id: n.id, // Keep same ID for the split
+        type: 'split',
+        direction,
+        children: isFirst ? [newEditor, existingEditor] : [existingEditor, newEditor],
+      }
+    })
+  }, [node.id, files, onUpdateNode])
+
+  // Render split
+  if (node.type === 'split' && node.children) {
     return (
-      <SplitPane direction={splitState.direction} defaultSize={50}>
-        <EditorPane 
-          key={`${paneId}-child-0`}
-          files={files} 
-          onFileChange={onFileChange} 
-          theme={theme} 
+      <SplitPane direction={node.direction || 'horizontal'} defaultSize={50}>
+        <PaneRenderer
+          node={node.children[0]}
+          files={files}
+          onFileChange={onFileChange}
+          theme={theme}
           settings={settings}
-          initialActiveFile={splitChildFiles[0][0]}
-          initialOpenTabs={splitChildFiles[0]}
-          depth={depth + 1}
-          onPaneEmpty={() => handleChildEmpty(0)}
-          onStateChange={(tabs, active) => handleChildStateUpdate(0, tabs, active)}
+          onUpdateNode={onUpdateNode}
         />
-        <EditorPane 
-          key={`${paneId}-child-1`}
-          files={files} 
-          onFileChange={onFileChange} 
-          theme={theme} 
+        <PaneRenderer
+          node={node.children[1]}
+          files={files}
+          onFileChange={onFileChange}
+          theme={theme}
           settings={settings}
-          initialActiveFile={splitChildFiles[1][0]}
-          initialOpenTabs={splitChildFiles[1]}
-          depth={depth + 1}
-          onPaneEmpty={() => handleChildEmpty(1)}
-          onStateChange={(tabs, active) => handleChildStateUpdate(1, tabs, active)}
+          onUpdateNode={onUpdateNode}
         />
       </SplitPane>
     )
   }
 
   // Render editor
+  const openTabs = node.openTabs || []
+  const activeFile = node.activeFile
+  const currentFile = files.find(f => f.name === activeFile)
+
   return (
     <div className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
       {/* Tab bar */}
@@ -278,14 +247,9 @@ export default function EditorPane({
         onDragEnter={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          if (e.dataTransfer.types.includes('text/plain')) {
-            setIsTabBarDragOver(true)
-          }
+          if (e.dataTransfer.types.includes('text/plain')) setIsTabBarDragOver(true)
         }}
-        onDragOver={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDragLeave={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -304,7 +268,6 @@ export default function EditorPane({
             }
           }
           setIsTabBarDragOver(false)
-          setIsDraggingOver(false)
           setDropZone(null)
           setTabDropIndex(null)
         }}
@@ -314,9 +277,7 @@ export default function EditorPane({
           if (!file) return null
           return (
             <div key={file.name} className="flex items-center flex-shrink-0">
-              {tabDropIndex === index && (
-                <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5" />
-              )}
+              {tabDropIndex === index && <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5" />}
               <div
                 draggable
                 onDragStart={(e) => {
@@ -327,17 +288,14 @@ export default function EditorPane({
                   e.preventDefault()
                   e.stopPropagation()
                   const rect = e.currentTarget.getBoundingClientRect()
-                  const midpoint = rect.left + rect.width / 2
-                  setTabDropIndex(e.clientX < midpoint ? index : index + 1)
+                  setTabDropIndex(e.clientX < rect.left + rect.width / 2 ? index : index + 1)
                 }}
                 onDragLeave={() => setTabDropIndex(null)}
                 onDrop={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   const draggedFile = e.dataTransfer.getData('text/plain')
-                  if (draggedFile && tabDropIndex !== null) {
-                    handleReorderTab(draggedFile, tabDropIndex)
-                  }
+                  if (draggedFile && tabDropIndex !== null) handleReorderTab(draggedFile, tabDropIndex)
                   setTabDropIndex(null)
                   setIsTabBarDragOver(false)
                 }}
@@ -360,9 +318,7 @@ export default function EditorPane({
             </div>
           )
         })}
-        {tabDropIndex === openTabs.length && (
-          <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5 flex-shrink-0" />
-        )}
+        {tabDropIndex === openTabs.length && <div className="w-0.5 h-6 bg-green-500 rounded-full mx-0.5 flex-shrink-0" />}
         {isTabBarDragOver && (
           <div className="flex items-center gap-1 px-3 py-1.5 text-xs text-green-400 border-l border-green-500/50">
             <span>+ Drop to add tab</span>
@@ -374,20 +330,13 @@ export default function EditorPane({
       <div 
         className="relative"
         style={{ flex: '1 1 0', minHeight: 0, minWidth: 0, overflow: 'hidden' }}
-        onDragEnter={(e) => {
-          e.preventDefault()
-          setIsDraggingOver(true)
-        }}
+        onDragEnter={(e) => { e.preventDefault(); setIsDraggingOver(true) }}
         onDragOver={(e) => {
           e.preventDefault()
           if (!e.dataTransfer.types.includes('text/plain')) return
-          
           const rect = e.currentTarget.getBoundingClientRect()
-          const x = e.clientX - rect.left
-          const y = e.clientY - rect.top
-          const xRatio = x / rect.width
-          const yRatio = y / rect.height
-          
+          const xRatio = (e.clientX - rect.left) / rect.width
+          const yRatio = (e.clientY - rect.top) / rect.height
           if (xRatio < 0.2) setDropZone('left')
           else if (xRatio > 0.8) setDropZone('right')
           else if (yRatio < 0.2) setDropZone('top')
@@ -396,8 +345,7 @@ export default function EditorPane({
         }}
         onDragLeave={(e) => {
           const rect = e.currentTarget.getBoundingClientRect()
-          if (e.clientX < rect.left || e.clientX > rect.right || 
-              e.clientY < rect.top || e.clientY > rect.bottom) {
+          if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
             setIsDraggingOver(false)
             setDropZone(null)
           }
@@ -406,67 +354,35 @@ export default function EditorPane({
           e.preventDefault()
           e.stopPropagation()
           const draggedFile = e.dataTransfer.getData('text/plain')
-          if (draggedFile && dropZone) {
-            handleDrop(dropZone, draggedFile)
-          }
+          if (draggedFile && dropZone) handleDrop(dropZone, draggedFile)
           setIsDraggingOver(false)
           setDropZone(null)
         }}
       >
-        {/* Drop zone indicators */}
+        {/* Drop zones */}
         {isDraggingOver && dropZone && (
           <>
-            <div className={`absolute inset-y-0 left-0 w-1/5 border-2 border-dashed pointer-events-none z-50 transition-all ${
-              dropZone === 'left' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'
-            }`}>
-              {dropZone === 'left' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs font-medium">Split Left</span>
-                </div>
-              )}
+            <div className={`absolute inset-y-0 left-0 w-1/5 border-2 border-dashed pointer-events-none z-50 ${dropZone === 'left' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'}`}>
+              {dropZone === 'left' && <div className="absolute inset-0 flex items-center justify-center"><span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">Split Left</span></div>}
             </div>
-            <div className={`absolute inset-y-0 right-0 w-1/5 border-2 border-dashed pointer-events-none z-50 transition-all ${
-              dropZone === 'right' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'
-            }`}>
-              {dropZone === 'right' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs font-medium">Split Right</span>
-                </div>
-              )}
+            <div className={`absolute inset-y-0 right-0 w-1/5 border-2 border-dashed pointer-events-none z-50 ${dropZone === 'right' ? 'border-purple-500 bg-purple-500/20' : 'border-transparent'}`}>
+              {dropZone === 'right' && <div className="absolute inset-0 flex items-center justify-center"><span className="bg-purple-500 text-white px-2 py-1 rounded text-xs">Split Right</span></div>}
             </div>
-            <div className={`absolute inset-x-0 top-0 h-1/5 border-2 border-dashed pointer-events-none z-50 transition-all ${
-              dropZone === 'top' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'
-            }`}>
-              {dropZone === 'top' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-cyan-500 text-white px-2 py-1 rounded text-xs font-medium">Split Top</span>
-                </div>
-              )}
+            <div className={`absolute inset-x-0 top-0 h-1/5 border-2 border-dashed pointer-events-none z-50 ${dropZone === 'top' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'}`}>
+              {dropZone === 'top' && <div className="absolute inset-0 flex items-center justify-center"><span className="bg-cyan-500 text-white px-2 py-1 rounded text-xs">Split Top</span></div>}
             </div>
-            <div className={`absolute inset-x-0 bottom-0 h-1/5 border-2 border-dashed pointer-events-none z-50 transition-all ${
-              dropZone === 'bottom' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'
-            }`}>
-              {dropZone === 'bottom' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-cyan-500 text-white px-2 py-1 rounded text-xs font-medium">Split Bottom</span>
-                </div>
-              )}
+            <div className={`absolute inset-x-0 bottom-0 h-1/5 border-2 border-dashed pointer-events-none z-50 ${dropZone === 'bottom' ? 'border-cyan-500 bg-cyan-500/20' : 'border-transparent'}`}>
+              {dropZone === 'bottom' && <div className="absolute inset-0 flex items-center justify-center"><span className="bg-cyan-500 text-white px-2 py-1 rounded text-xs">Split Bottom</span></div>}
             </div>
-            <div className={`absolute inset-0 m-[20%] border-2 border-dashed pointer-events-none z-40 transition-all ${
-              dropZone === 'center' ? 'border-green-500 bg-green-500/20' : 'border-transparent'
-            }`}>
-              {dropZone === 'center' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">Add to Tabs</span>
-                </div>
-              )}
+            <div className={`absolute inset-0 m-[20%] border-2 border-dashed pointer-events-none z-40 ${dropZone === 'center' ? 'border-green-500 bg-green-500/20' : 'border-transparent'}`}>
+              {dropZone === 'center' && <div className="absolute inset-0 flex items-center justify-center"><span className="bg-green-500 text-white px-2 py-1 rounded text-xs">Add to Tabs</span></div>}
             </div>
           </>
         )}
 
         {currentFile ? (
           <Editor
-            key={`${paneId}-editor`}
+            key={`${node.id}-editor`}
             height="100%"
             path={currentFile.name}
             language={currentFile.language}
@@ -496,5 +412,72 @@ export default function EditorPane({
         )}
       </div>
     </div>
+  )
+}
+
+// Main EditorPane component - manages the entire pane tree
+export default function EditorPane({ 
+  files, 
+  onFileChange, 
+  theme, 
+  settings, 
+  initialActiveFile, 
+  initialOpenTabs,
+  externalSelectFile,
+}: EditorPaneProps) {
+  // Single source of truth: the pane tree
+  const [paneTree, setPaneTree] = useState<PaneNode>(() => 
+    createEditorNode(
+      initialActiveFile || files[0]?.name || null,
+      initialOpenTabs || files.slice(0, 3).map(f => f.name)
+    )
+  )
+
+  // Handle external file selection
+  useEffect(() => {
+    if (externalSelectFile && files.some(f => f.name === externalSelectFile)) {
+      // Find the first editor node and add the file there
+      setPaneTree(prev => {
+        const findFirstEditor = (node: PaneNode): string | null => {
+          if (node.type === 'editor') return node.id
+          if (node.children) {
+            return findFirstEditor(node.children[0]) || findFirstEditor(node.children[1])
+          }
+          return null
+        }
+        
+        const editorId = findFirstEditor(prev)
+        if (!editorId) return prev
+        
+        return updateNodeInTree(prev, editorId, (n) => ({
+          ...n,
+          activeFile: externalSelectFile,
+          openTabs: n.openTabs?.includes(externalSelectFile) ? n.openTabs : [...(n.openTabs || []), externalSelectFile],
+        })) || prev
+      })
+    }
+  }, [externalSelectFile, files])
+
+  // Update a node in the tree
+  const handleUpdateNode = useCallback((nodeId: string, updater: (node: PaneNode) => PaneNode | null) => {
+    setPaneTree(prev => {
+      const result = updateNodeInTree(prev, nodeId, updater)
+      // If root becomes null (all panes closed), create a new empty editor
+      if (result === null) {
+        return createEditorNode(files[0]?.name || null, files.slice(0, 1).map(f => f.name))
+      }
+      return result
+    })
+  }, [files])
+
+  return (
+    <PaneRenderer
+      node={paneTree}
+      files={files}
+      onFileChange={onFileChange}
+      theme={theme}
+      settings={settings}
+      onUpdateNode={handleUpdateNode}
+    />
   )
 }
