@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { X, Eye, RefreshCw, Loader2 } from 'lucide-react'
-import { bundle, needsBundling, initBundler } from '../lib/bundler'
+import { bundle, needsBundling, initBundler, generateImportMap } from '../lib/bundler'
 
 interface HTMLPreviewProps {
   html?: string
@@ -15,6 +15,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
   const [refreshKey, setRefreshKey] = useState(0)
   const [bundledCode, setBundledCode] = useState<string | null>(null)
   const [bundleError, setBundleError] = useState<string | null>(null)
+  const [bundleImports, setBundleImports] = useState<string[]>([])
   const [isBundling, setIsBundling] = useState(false)
   
   // Check if this is a React/framework project
@@ -39,14 +40,17 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
         if (result.error) {
           setBundleError(result.error)
           setBundledCode(null)
+          setBundleImports([])
         } else {
           setBundledCode(result.code)
+          setBundleImports(result.imports)
           setBundleError(null)
         }
       } catch (e: any) {
         if (!cancelled) {
           setBundleError(e.message || 'Bundle failed')
           setBundledCode(null)
+          setBundleImports([])
         }
       } finally {
         if (!cancelled) {
@@ -99,11 +103,17 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
       bodyContent = bodyMatch[1]
     }
     
+    // Generate importmap for npm packages
+    const importMap = generateImportMap(bundleImports)
+    
     return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="importmap">
+${importMap}
+  <\/script>
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; }
     #root { min-height: 100vh; }
@@ -117,7 +127,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
   <\/script>
 </body>
 </html>`
-  }, [bundledCode, files, isFrameworkProject])
+  }, [bundledCode, bundleImports, files, isFrameworkProject])
   
   const srcdoc = isFrameworkProject ? frameworkSrcdoc : htmlSrcdoc
   

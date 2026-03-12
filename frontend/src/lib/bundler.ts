@@ -1,55 +1,12 @@
 /**
  * Browser-based bundler using esbuild-wasm
- * Compiles JSX/TSX and resolves npm deps via esm.sh
+ * Compiles JSX/TSX, npm packages loaded via esm.sh at runtime
  */
 
 import * as esbuild from 'esbuild-wasm'
 
 let initialized = false
 let initializing: Promise<void> | null = null
-
-const ESM_SH = 'https://esm.sh'
-
-// IndexedDB cache for dependencies
-const DB_NAME = 'hashide-deps'
-const STORE_NAME = 'modules'
-
-async function openCache(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1)
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore(STORE_NAME)
-    }
-  })
-}
-
-async function getCached(key: string): Promise<string | null> {
-  try {
-    const db = await openCache()
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly')
-      const store = tx.objectStore(STORE_NAME)
-      const request = store.get(key)
-      request.onsuccess = () => resolve(request.result || null)
-      request.onerror = () => resolve(null)
-    })
-  } catch {
-    return null
-  }
-}
-
-async function setCache(key: string, value: string): Promise<void> {
-  try {
-    const db = await openCache()
-    const tx = db.transaction(STORE_NAME, 'readwrite')
-    const store = tx.objectStore(STORE_NAME)
-    store.put(value, key)
-  } catch {
-    // Cache failures are non-fatal
-  }
-}
 
 /**
  * Initialize esbuild WASM
@@ -66,7 +23,7 @@ export async function initBundler(): Promise<void> {
       })
     } catch (e: any) {
       // If worker fails, try without worker
-      if (e.message?.includes('Worker')) {
+      if (e.message?.includes('Worker') || e.message?.includes('go')) {
         await esbuild.initialize({
           wasmURL: 'https://unpkg.com/esbuild-wasm@0.24.0/esbuild.wasm',
           worker: false,
@@ -82,38 +39,23 @@ export async function initBundler(): Promise<void> {
 }
 
 /**
- * Fetch module from esm.sh with caching
+ * Plugin to handle local files and external npm packages
  */
-async function fetchModule(url: string): Promise<string> {
-  // Check cache first
-  const cached = await getCached(url)
-  if (cached) return cached
-  
-  // Fetch from CDN
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.status}`)
-  }
-  
-  const content = await response.text()
-  
-  // Cache for future use
-  await setCache(url, content)
-  
-  return content
-}
-
-/**
- * Plugin to resolve npm imports via esm.sh
- */
-function esmPlugin(files: Map<string, string>): esbuild.Plugin {
+function localPlugin(files: Map<string, string>): esbuild.Plugin {
   return {
-    name: 'esm-sh',
+    name: 'local-files',
     setup(build) {
+      // Mark all npm imports as external - they'll be loaded via importmap
+      build.onResolve({ filter: /^[^./]/ }, (args) => {
+        return { 
+          path: args.path, 
+          external: true,
+        }
+      })
+      
       // Handle relative imports from local files
       build.onResolve({ filter: /^\./ }, (args) => {
-        // Resolve relative path
-        const dir = args.importer.replace(/\/[^/]+$/, '')
+        const dir = args.importer ? args.importer.replace(/\/[^/]+$/, '') : ''
         let path = `${dir}/${args.path}`.replace(/\/\.\//g, '/')
         
         // Normalize path
@@ -145,19 +87,19 @@ function esmPlugin(files: Map<string, string>): esbuild.Plugin {
         return { path, namespace: 'local' }
       })
       
-      // Handle npm package imports
-      build.onResolve({ filter: /^[^./]/ }, (args) => {
-        return {
-          path: args.path,
-          namespace: 'esm-sh',
+      // Handle entry point
+      build.onResolve({ filter: /^\// }, (args) => {
+        if (files.has(args.path)) {
+          return { path: args.path, namespace: 'local' }
         }
+        return { path: args.path, namespace: 'local' }
       })
       
       // Load local files
       build.onLoad({ filter: /.*/, namespace: 'local' }, (args) => {
         const content = files.get(args.path)
         if (!content) {
-          return { contents: '', loader: 'empty' }
+          return { contents: `console.error("File not found: ${args.path}")`, loader: 'js' }
         }
         
         const ext = args.path.split('.').pop() || ''
@@ -175,18 +117,6 @@ function esmPlugin(files: Map<string, string>): esbuild.Plugin {
           loader: loaderMap[ext] || 'js',
         }
       })
-      
-      // Load npm packages from esm.sh
-      build.onLoad({ filter: /.*/, namespace: 'esm-sh' }, async (args) => {
-        const url = `${ESM_SH}/${args.path}`
-        
-        try {
-          const content = await fetchModule(url)
-          return { contents: content, loader: 'js' }
-        } catch (e) {
-          return { contents: `console.error("Failed to load ${args.path}")`, loader: 'js' }
-        }
-      })
     },
   }
 }
@@ -194,6 +124,7 @@ function esmPlugin(files: Map<string, string>): esbuild.Plugin {
 export interface BundleResult {
   code: string
   error?: string
+  imports: string[] // npm packages that need to be loaded
 }
 
 /**
@@ -231,29 +162,66 @@ export async function bundle(files: { name: string; content: string }[]): Promis
   }
   
   if (!entry) {
-    return { code: '', error: 'No entry point found (index.tsx, main.tsx, App.tsx, etc.)' }
+    return { code: '', imports: [], error: 'No entry point found (index.tsx, main.tsx, App.tsx, etc.)' }
+  }
+  
+  // Collect imports for the importmap
+  const npmImports = new Set<string>()
+  
+  // Scan files for npm imports
+  for (const [, content] of fileMap) {
+    const importMatches = content.matchAll(/import\s+(?:.*?\s+from\s+)?['"]([^.\/][^'"]*)['"]/g)
+    for (const match of importMatches) {
+      const pkg = match[1].split('/')[0]
+      npmImports.add(pkg)
+    }
   }
   
   try {
     const result = await esbuild.build({
-      entryPoints: [entry],
+      stdin: {
+        contents: fileMap.get(entry)!,
+        loader: entry.endsWith('.tsx') ? 'tsx' : entry.endsWith('.ts') ? 'ts' : entry.endsWith('.jsx') ? 'jsx' : 'js',
+        resolveDir: '/',
+        sourcefile: entry,
+      },
       bundle: true,
       write: false,
       format: 'esm',
       target: 'es2020',
       jsx: 'automatic',
       jsxImportSource: 'react',
-      plugins: [esmPlugin(fileMap)],
+      plugins: [localPlugin(fileMap)],
       define: {
         'process.env.NODE_ENV': '"development"',
       },
     })
     
     const code = result.outputFiles?.[0]?.text || ''
-    return { code }
+    return { code, imports: Array.from(npmImports) }
   } catch (e: any) {
-    return { code: '', error: e.message || 'Bundle failed' }
+    return { code: '', imports: [], error: e.message || 'Bundle failed' }
   }
+}
+
+/**
+ * Generate importmap for esm.sh
+ */
+export function generateImportMap(imports: string[]): string {
+  const map: Record<string, string> = {}
+  
+  for (const pkg of imports) {
+    // Map package to esm.sh URL
+    map[pkg] = `https://esm.sh/${pkg}`
+    // Also map subpaths
+    map[`${pkg}/`] = `https://esm.sh/${pkg}/`
+  }
+  
+  // Add react/jsx-runtime for JSX automatic runtime
+  map['react/jsx-runtime'] = 'https://esm.sh/react/jsx-runtime'
+  map['react/jsx-dev-runtime'] = 'https://esm.sh/react/jsx-dev-runtime'
+  
+  return JSON.stringify({ imports: map }, null, 2)
 }
 
 /**
