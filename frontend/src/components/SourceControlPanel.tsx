@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { X, GitCommit, FileDiff, ChevronDown, ChevronRight, Plus, Minus, File } from 'lucide-react'
+import { X, GitCommit, FileDiff, Plus, Minus } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { fetchFileContent, GitHubRepo } from '../lib/github'
 
@@ -26,7 +26,6 @@ interface Commit {
 
 export default function SourceControlPanel({ isOpen, onClose, sourceRepo }: SourceControlPanelProps) {
   const [activeTab, setActiveTab] = useState<'changes' | 'history'>('changes')
-  const [changes, setChanges] = useState<FileChange[]>([])
   const [commits, setCommits] = useState<Commit[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
