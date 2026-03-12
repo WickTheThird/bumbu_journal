@@ -217,12 +217,6 @@ const PaneRenderer = memo(function PaneRenderer({
     })
   }, [node.id, files, onUpdateNode])
 
-  // Validate node before rendering
-  if (!node || !node.id) {
-    console.error('[PaneRenderer] Invalid node received:', node)
-    return <div className="h-full flex items-center justify-center text-red-500">Error: Invalid pane</div>
-  }
-
   // Render split
   if (node.type === 'split' && node.children) {
     return (
@@ -420,6 +414,8 @@ const PaneRenderer = memo(function PaneRenderer({
               padding: { top: 8 },
               folding: true,
               fixedOverflowWidgets: true,
+              // Disable Monaco's native drop handling to prevent conflicts
+              dropIntoEditor: { enabled: false },
             }}
           />
         ) : (
@@ -432,22 +428,6 @@ const PaneRenderer = memo(function PaneRenderer({
   )
 })
 
-// Validate pane tree structure
-const validateTree = (node: PaneNode): boolean => {
-  if (!node || !node.id || !node.type) {
-    console.error('[EditorPane] Invalid node:', node)
-    return false
-  }
-  if (node.type === 'split') {
-    if (!node.children || node.children.length !== 2) {
-      console.error('[EditorPane] Split without valid children:', node)
-      return false
-    }
-    return validateTree(node.children[0]) && validateTree(node.children[1])
-  }
-  return true
-}
-
 // Main EditorPane component - manages the entire pane tree
 export default function EditorPane({ 
   files, 
@@ -459,14 +439,12 @@ export default function EditorPane({
   externalSelectFile,
 }: EditorPaneProps) {
   // Single source of truth: the pane tree
-  const [paneTree, setPaneTree] = useState<PaneNode>(() => {
-    const tree = createEditorNode(
+  const [paneTree, setPaneTree] = useState<PaneNode>(() => 
+    createEditorNode(
       initialActiveFile || files[0]?.name || null,
       initialOpenTabs || files.slice(0, 3).map(f => f.name)
     )
-    console.log('[EditorPane] Initial tree:', JSON.stringify(tree, null, 2))
-    return tree
-  })
+  )
 
   // Handle external file selection
   useEffect(() => {
@@ -496,22 +474,11 @@ export default function EditorPane({
   // Update a node in the tree
   const handleUpdateNode = useCallback((nodeId: string, updater: (node: PaneNode) => PaneNode | null) => {
     setPaneTree(prev => {
-      console.log('[EditorPane] Updating node:', nodeId)
       const result = updateNodeInTree(prev, nodeId, updater)
-      
       // If root becomes null (all panes closed), create a new empty editor
       if (result === null) {
-        console.log('[EditorPane] Tree became null, creating new root')
         return createEditorNode(files[0]?.name || null, files.slice(0, 1).map(f => f.name))
       }
-      
-      // Validate the result
-      if (!validateTree(result)) {
-        console.error('[EditorPane] Invalid tree after update, keeping previous')
-        return prev
-      }
-      
-      console.log('[EditorPane] Tree after update:', JSON.stringify(result, null, 2))
       return result
     })
   }, [files])
