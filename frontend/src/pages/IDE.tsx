@@ -25,8 +25,40 @@ import HTMLPreview from '../components/HTMLPreview'
 import SearchPanel from '../components/SearchPanel'
 import GitHubModal from '../components/GitHubModal'
 import SourceControlPanel from '../components/SourceControlPanel'
-import EditorPane from '../components/EditorPane'
+import EditorPaneV2 from '../components/EditorPaneV2'
+import { PaneManagerProvider, usePaneManager } from '../components/PaneManager'
 import { GitHubRepo } from '../lib/github'
+import { File } from '../types/workspace'
+
+// Wrapper component to access PaneManager context
+function EditorPaneRoot({ 
+  files, 
+  onFileChange, 
+  theme, 
+  settings 
+}: { 
+  files: File[]
+  onFileChange: (fileName: string, content: string) => void
+  theme: 'light' | 'dark'
+  settings: {
+    fontSize?: number
+    tabSize?: number
+    wordWrap?: boolean
+    minimap?: boolean
+    lineNumbers?: boolean
+  }
+}) {
+  const { state } = usePaneManager()
+  return (
+    <EditorPaneV2
+      paneId={state.rootId}
+      files={files}
+      onFileChange={onFileChange}
+      theme={theme}
+      settings={settings}
+    />
+  )
+}
 
 export default function IDE() {
   const { 
@@ -519,22 +551,25 @@ export default function IDE() {
         
         {/* Editor + Terminal */}
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* EditorPane with nested split support */}
+          {/* EditorPane with nested split support - centralized state management */}
           <div style={{ flex: showTerminal ? '1 1 0' : '1 1 100%', minHeight: 0, overflow: 'hidden' }}>
-            <EditorPane
-              files={workspace.files}
-              onFileChange={updateFile}
-              theme={(workspace.settings?.theme || 'dark') as 'light' | 'dark'}
-              settings={{
-                fontSize: workspace.settings?.fontSize,
-                tabSize: workspace.settings?.tabSize,
-                wordWrap: workspace.settings?.wordWrap,
-                minimap: workspace.settings?.minimap,
-                lineNumbers: workspace.settings?.lineNumbers,
-              }}
-              initialActiveFile={workspace.activeFile}
-              externalSelectFile={workspace.activeFile}
-            />
+            <PaneManagerProvider
+              initialTabs={workspace.files.slice(0, 3).map(f => f.name)}
+              initialActiveFile={workspace.activeFile || null}
+            >
+              <EditorPaneRoot
+                files={workspace.files}
+                onFileChange={updateFile}
+                theme={(workspace.settings?.theme || 'dark') as 'light' | 'dark'}
+                settings={{
+                  fontSize: workspace.settings?.fontSize,
+                  tabSize: workspace.settings?.tabSize,
+                  wordWrap: workspace.settings?.wordWrap,
+                  minimap: workspace.settings?.minimap,
+                  lineNumbers: workspace.settings?.lineNumbers,
+                }}
+              />
+            </PaneManagerProvider>
           </div>
           {/* Terminal - resizable, at bottom of main */}
           {showTerminal && (
