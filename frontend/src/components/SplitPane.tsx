@@ -83,15 +83,13 @@ export default function SplitPane({
         minWidth: 0,
       }}
     >
-      {/* First pane */}
+      {/* First pane - use flex with basis */}
       <div
         className="overflow-hidden"
         style={{
-          flex: `${size} 1 0%`,
+          flex: `${size} 1 0`,
           minWidth: isHorizontal ? 50 : undefined,
           minHeight: isHorizontal ? undefined : 30,
-          height: isHorizontal ? '100%' : undefined,
-          width: isHorizontal ? undefined : '100%',
         }}
       >
         {children[0]}
@@ -105,15 +103,13 @@ export default function SplitPane({
         }`}
       />
 
-      {/* Second pane */}
+      {/* Second pane - use remaining flex */}
       <div
         className="overflow-hidden"
         style={{
-          flex: `${100 - size} 1 0%`,
+          flex: `${100 - size} 1 0`,
           minWidth: isHorizontal ? 50 : undefined,
           minHeight: isHorizontal ? undefined : 30,
-          height: isHorizontal ? '100%' : undefined,
-          width: isHorizontal ? undefined : '100%',
         }}
       >
         {children[1]}
