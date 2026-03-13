@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import Editor, { Monaco } from '@monaco-editor/react'
+import Editor from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
 import SplitPane from './SplitPane'
