@@ -25,6 +25,7 @@ interface PaneManagerContextType {
   closeTab: (paneId: string, fileName: string) => void
   selectFile: (paneId: string, fileName: string) => void
   reorderTabs: (paneId: string, draggedFile: string, dropIndex: number) => void
+  openFileExternal: (fileName: string) => void // Open file from outside (e.g., file explorer)
 }
 
 const PaneManagerContext = createContext<PaneManagerContextType | null>(null)
@@ -256,6 +257,41 @@ export function PaneManagerProvider({
     })
   }, [])
 
+  // Open file from external source (file explorer) - finds first editor pane
+  const openFileExternal = useCallback((fileName: string) => {
+    setState(prev => {
+      // Find first editor pane (depth-first search)
+      const findFirstEditor = (paneId: string): string | null => {
+        const pane = prev.panes[paneId]
+        if (!pane) return null
+        if (pane.type === 'editor') return paneId
+        if (pane.type === 'split' && pane.children) {
+          return findFirstEditor(pane.children[0]) || findFirstEditor(pane.children[1])
+        }
+        return null
+      }
+
+      const targetPaneId = findFirstEditor(prev.rootId)
+      if (!targetPaneId) return prev
+
+      const pane = prev.panes[targetPaneId]
+      if (!pane || pane.type !== 'editor') return prev
+
+      const tabs = pane.openTabs || []
+      return {
+        ...prev,
+        panes: {
+          ...prev.panes,
+          [targetPaneId]: {
+            ...pane,
+            activeFile: fileName,
+            openTabs: tabs.includes(fileName) ? tabs : [...tabs, fileName],
+          }
+        }
+      }
+    })
+  }, [])
+
   return (
     <PaneManagerContext.Provider value={{
       state,
@@ -266,6 +302,7 @@ export function PaneManagerProvider({
       closeTab,
       selectFile,
       reorderTabs,
+      openFileExternal,
     }}>
       {children}
     </PaneManagerContext.Provider>

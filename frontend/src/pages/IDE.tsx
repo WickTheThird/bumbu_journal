@@ -35,7 +35,8 @@ function EditorPaneRoot({
   files, 
   onFileChange, 
   theme, 
-  settings 
+  settings,
+  onReady,
 }: { 
   files: File[]
   onFileChange: (fileName: string, content: string) => void
@@ -47,8 +48,17 @@ function EditorPaneRoot({
     minimap?: boolean
     lineNumbers?: boolean
   }
+  onReady?: (api: { openFile: (fileName: string) => void }) => void
 }) {
-  const { state } = usePaneManager()
+  const { state, openFileExternal } = usePaneManager()
+  
+  // Expose API to parent once mounted
+  useEffect(() => {
+    if (onReady) {
+      onReady({ openFile: openFileExternal })
+    }
+  }, [onReady, openFileExternal])
+  
   return (
     <EditorPaneV2
       paneId={state.rootId}
@@ -106,7 +116,15 @@ export default function IDE() {
   const [previewWidth, setPreviewWidth] = useState(400)
   const [isResizingPreview, setIsResizingPreview] = useState(false)
   
-  // File selection now handled by EditorPane
+  // Editor API for opening files from outside
+  const [editorApi, setEditorApi] = useState<{ openFile: (fileName: string) => void } | null>(null)
+  
+  // Wrapper for file selection that uses editor API
+  const handleSelectFile = useCallback((fileName: string) => {
+    if (editorApi) {
+      editorApi.openFile(fileName)
+    }
+  }, [editorApi])
   
   // Load workspace from hash on mount
   useEffect(() => {
@@ -385,7 +403,7 @@ export default function IDE() {
                   className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition ${
                     file.name === workspace.activeFile ? 'bg-ide-accent/10 text-ide-accent' : 'hover:bg-ide-border/50'
                   }`}
-                  onClick={() => { setActiveFile(file.name); setShowSidebar(false); }}
+                  onClick={() => { handleSelectFile(file.name); setShowSidebar(false); }}
                 >
                   <FileCode className="w-4 h-4 flex-shrink-0" />
                   <span className="text-sm truncate flex-1">{file.name}</span>
@@ -506,7 +524,7 @@ export default function IDE() {
             <FileTree
               files={workspace.files}
               activeFile={workspace.activeFile}
-              onSelectFile={setActiveFile}
+              onSelectFile={handleSelectFile}
               onDeleteFile={deleteFile}
               onRenameFile={renameFile}
             />
@@ -568,6 +586,7 @@ export default function IDE() {
                   minimap: workspace.settings?.minimap,
                   lineNumbers: workspace.settings?.lineNumbers,
                 }}
+                onReady={setEditorApi}
               />
             </PaneManagerProvider>
           </div>
