@@ -1,97 +1,121 @@
 import { useState, useRef, useCallback, useEffect, ReactNode } from 'react'
 
 interface SplitPaneProps {
-  direction: 'horizontal' | 'vertical'
   children: [ReactNode, ReactNode]
-  defaultRatio?: number // 0-1, default 0.5
+  direction?: 'horizontal' | 'vertical'
+  defaultSize?: number // percentage (0-100)
+  minSize?: number // percentage
+  maxSize?: number // percentage
+  className?: string
 }
 
-export default function SplitPane({ direction, children, defaultRatio = 0.5 }: SplitPaneProps) {
-  const [ratio, setRatio] = useState(defaultRatio)
+export default function SplitPane({
+  children,
+  direction = 'horizontal',
+  defaultSize = 50,
+  minSize = 10,
+  maxSize = 90,
+  className = '',
+}: SplitPaneProps) {
+  const [size, setSize] = useState(defaultSize)
+  const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const isDragging = useRef(false)
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
-    isDragging.current = true
-    document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
-    document.body.style.userSelect = 'none'
-  }, [direction])
+    e.stopPropagation()
+    setIsDragging(true)
+  }, [])
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return
+
+      const rect = containerRef.current.getBoundingClientRect()
+      let newSize: number
+
+      if (direction === 'horizontal') {
+        // Account for handle width (4px)
+        const availableWidth = rect.width - 4
+        newSize = ((e.clientX - rect.left) / availableWidth) * 100
+      } else {
+        // Account for handle height (4px)
+        const availableHeight = rect.height - 4
+        newSize = ((e.clientY - rect.top) / availableHeight) * 100
+      }
+
+      newSize = Math.max(minSize, Math.min(maxSize, newSize))
+      setSize(newSize)
+    },
+    [isDragging, direction, minSize, maxSize]
+  )
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false)
+  }, [])
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current || !containerRef.current) return
-      
-      const rect = containerRef.current.getBoundingClientRect()
-      let newRatio: number
-      
-      if (direction === 'horizontal') {
-        newRatio = (e.clientX - rect.left) / rect.width
-      } else {
-        newRatio = (e.clientY - rect.top) / rect.height
-      }
-      
-      // Clamp between 0.1 and 0.9
-      setRatio(Math.max(0.1, Math.min(0.9, newRatio)))
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
+      document.body.style.userSelect = 'none'
     }
 
-    const handleMouseUp = () => {
-      if (isDragging.current) {
-        isDragging.current = false
-        document.body.style.cursor = ''
-        document.body.style.userSelect = ''
-      }
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     }
-  }, [direction])
+  }, [isDragging, handleMouseMove, handleMouseUp, direction])
 
   const isHorizontal = direction === 'horizontal'
 
   return (
     <div
       ref={containerRef}
-      style={{
-        display: 'flex',
-        flexDirection: isHorizontal ? 'row' : 'column',
+      className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} ${className}`}
+      style={{ 
+        height: '100%', 
         width: '100%',
-        height: '100%',
-        overflow: 'hidden',
+        minHeight: 0,
+        minWidth: 0,
       }}
     >
-      <div style={{ 
-        [isHorizontal ? 'width' : 'height']: `calc(${ratio * 100}% - 2px)`,
-        [isHorizontal ? 'height' : 'width']: '100%',
-        overflow: 'hidden',
-        flexShrink: 0,
-      }}>
+      {/* First pane */}
+      <div
+        className="overflow-hidden"
+        style={{
+          flex: `${size} 1 0%`,
+          minWidth: isHorizontal ? 50 : undefined,
+          minHeight: isHorizontal ? undefined : 30,
+          height: isHorizontal ? '100%' : undefined,
+          width: isHorizontal ? undefined : '100%',
+        }}
+      >
         {children[0]}
       </div>
-      
+
+      {/* Resize handle */}
       <div
         onMouseDown={handleMouseDown}
-        style={{
-          [isHorizontal ? 'width' : 'height']: '4px',
-          [isHorizontal ? 'height' : 'width']: '100%',
-          background: '#333',
-          cursor: isHorizontal ? 'col-resize' : 'row-resize',
-          flexShrink: 0,
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.background = '#a855f7'}
-        onMouseLeave={(e) => e.currentTarget.style.background = '#333'}
+        className={`flex-shrink-0 bg-ide-border hover:bg-purple-500 active:bg-purple-600 transition-colors z-10 ${
+          isHorizontal ? 'cursor-col-resize w-1 hover:w-1' : 'cursor-row-resize h-1 hover:h-1'
+        }`}
       />
-      
-      <div style={{ 
-        flex: 1,
-        overflow: 'hidden',
-        minWidth: 0,
-        minHeight: 0,
-      }}>
+
+      {/* Second pane */}
+      <div
+        className="overflow-hidden"
+        style={{
+          flex: `${100 - size} 1 0%`,
+          minWidth: isHorizontal ? 50 : undefined,
+          minHeight: isHorizontal ? undefined : 30,
+          height: isHorizontal ? '100%' : undefined,
+          width: isHorizontal ? undefined : '100%',
+        }}
+      >
         {children[1]}
       </div>
     </div>
