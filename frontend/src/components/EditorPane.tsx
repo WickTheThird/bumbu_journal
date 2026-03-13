@@ -63,6 +63,10 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const prevStateRef = useRef<string>('')
   useEffect(() => {
     if (depth > 0 && onStateChangeRef.current) {
+      // Don't report empty states - they trigger unwanted collapses
+      if (paneState.openTabs.length === 0) {
+        return
+      }
       // Only report if state actually changed (compare serialized)
       const stateKey = JSON.stringify({ tabs: paneState.openTabs, active: paneState.activeFile })
       if (stateKey !== prevStateRef.current) {
