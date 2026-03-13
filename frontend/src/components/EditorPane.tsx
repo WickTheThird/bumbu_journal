@@ -531,14 +531,14 @@ export default function EditorPane({
         const currentFiles = filesRef.current
         return createEditorNode(currentFiles[0]?.name || null, currentFiles.slice(0, 1).map(f => f.name))
       }
-      
-      // Force window resize event to trigger Monaco layout updates
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'))
-      }, 50)
-      
       return result
     })
+    
+    // Force window resize events to trigger Monaco layout updates
+    // Multiple timeouts to ensure layout happens after React renders
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 0)
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 150)
   }, []) // Empty deps - uses filesRef instead
 
   return (
