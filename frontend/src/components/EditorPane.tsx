@@ -56,11 +56,21 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   }, [editorInstance])
   
   // Report state changes to parent (for tracking child states)
+  // Use ref to avoid infinite loops from callback reference changes
+  const onStateChangeRef = useRef(onStateChange)
+  onStateChangeRef.current = onStateChange
+  
+  const prevStateRef = useRef<string>('')
   useEffect(() => {
-    if (onStateChange && depth > 0) {
-      onStateChange(paneState)
+    if (depth > 0 && onStateChangeRef.current) {
+      // Only report if state actually changed (compare serialized)
+      const stateKey = JSON.stringify({ tabs: paneState.openTabs, active: paneState.activeFile })
+      if (stateKey !== prevStateRef.current) {
+        prevStateRef.current = stateKey
+        onStateChangeRef.current(paneState)
+      }
     }
-  }, [paneState, onStateChange, depth])
+  }, [paneState, depth])
   
   // Handle external file selection (from file explorer) - only at root level
   useEffect(() => {
