@@ -88,6 +88,9 @@ function SingleEditor({
 
   const handleEditorMount = useCallback((ed: editor.IStandaloneCodeEditor) => {
     editorRef.current = ed
+    // Force layout after mount
+    setTimeout(() => ed.layout(), 0)
+    setTimeout(() => ed.layout(), 100)
   }, [])
 
   const handleSelectTab = useCallback((name: string) => {
@@ -110,25 +113,34 @@ function SingleEditor({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    const file = e.dataTransfer.getData('text/plain')
-    console.log('[handleDrop] file:', file, 'dropZone:', dropZone)
-    if (!file || !files.some(f => f.name === file)) {
-      console.log('[handleDrop] invalid file')
-      return
+    const rawFile = e.dataTransfer.getData('text/plain')
+    console.log('[handleDrop] rawFile:', rawFile, 'dropZone:', dropZone)
+    
+    // Try exact match or filename extraction
+    let file = rawFile
+    if (!files.some(f => f.name === file)) {
+      const fileName = rawFile.split('/').pop() || ''
+      if (files.some(f => f.name === fileName)) {
+        file = fileName
+      } else {
+        console.log('[handleDrop] no matching file found')
+        setDropZone(null)
+        return
+      }
     }
+    
+    console.log('[handleDrop] matched file:', file, 'zone:', dropZone)
+    const currentTabs = pane.openTabs || []
 
     if (dropZone === 'center' || dropZone === 'tabs') {
-      console.log('[handleDrop] adding to tabs')
-      if (!tabs.includes(file)) {
-        onUpdate({ openTabs: [...tabs, file], activeFile: file })
+      if (!currentTabs.includes(file)) {
+        onUpdate({ openTabs: [...currentTabs, file], activeFile: file })
       } else {
         onUpdate({ activeFile: file })
       }
     } else if (dropZone === 'left' || dropZone === 'right') {
-      console.log('[handleDrop] splitting horizontal')
       onSplit('horizontal', file)
     } else if (dropZone === 'top' || dropZone === 'bottom') {
-      console.log('[handleDrop] splitting vertical')
       onSplit('vertical', file)
     }
     setDropZone(null)
