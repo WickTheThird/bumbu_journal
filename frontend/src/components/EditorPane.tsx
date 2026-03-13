@@ -31,7 +31,7 @@ interface PaneState {
   childStates?: [PaneState, PaneState]
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onRequestClose, onStateChange }: EditorPaneProps) {
+export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onRequestClose }: EditorPaneProps) {
   const paneId = useId() // Unique ID for this pane instance
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   
