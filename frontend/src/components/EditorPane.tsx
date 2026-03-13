@@ -108,19 +108,26 @@ function SingleEditor({
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     const file = e.dataTransfer.getData('text/plain')
-    if (!file || !files.some(f => f.name === file)) return
+    console.log('[handleDrop] file:', file, 'dropZone:', dropZone)
+    if (!file || !files.some(f => f.name === file)) {
+      console.log('[handleDrop] invalid file')
+      return
+    }
 
     if (dropZone === 'center' || dropZone === 'tabs') {
-      // Add to tabs
+      console.log('[handleDrop] adding to tabs')
       if (!tabs.includes(file)) {
         onUpdate({ openTabs: [...tabs, file], activeFile: file })
       } else {
         onUpdate({ activeFile: file })
       }
     } else if (dropZone === 'left' || dropZone === 'right') {
+      console.log('[handleDrop] splitting horizontal')
       onSplit('horizontal', file)
     } else if (dropZone === 'top' || dropZone === 'bottom') {
+      console.log('[handleDrop] splitting vertical')
       onSplit('vertical', file)
     }
     setDropZone(null)
@@ -241,17 +248,18 @@ function PaneRenderer({
   onReplace: (newPane: PaneNode | null) => void
 }) {
   const handleSplit = useCallback((direction: 'horizontal' | 'vertical', newFile: string) => {
+    console.log('[handleSplit] direction:', direction, 'newFile:', newFile, 'pane:', pane.id)
     const existingEditor = createEditor(pane.activeFile || null, pane.openTabs || [])
     const newEditor = createEditor(newFile, [newFile])
     
-    onReplace({
+    const newSplit = {
       id: newId(),
-      type: 'split',
+      type: 'split' as const,
       direction,
-      children: direction === 'horizontal' 
-        ? [existingEditor, newEditor]  // left, right
-        : [existingEditor, newEditor], // top, bottom
-    })
+      children: [existingEditor, newEditor] as [PaneNode, PaneNode],
+    }
+    console.log('[handleSplit] creating split:', newSplit)
+    onReplace(newSplit)
   }, [pane, onReplace])
 
   const handleClose = useCallback(() => {
@@ -266,14 +274,17 @@ function PaneRenderer({
     const [child0, child1] = pane.children
 
     const handleReplaceChild = (index: 0 | 1) => (newChild: PaneNode | null) => {
+      console.log('[handleReplaceChild] index:', index, 'newChild:', newChild?.id, 'type:', newChild?.type)
       if (newChild === null) {
         // Child was closed, replace this split with the other child
+        console.log('[handleReplaceChild] collapsing split')
         onReplace(pane.children![index === 0 ? 1 : 0])
       } else {
         // Update child
         const newChildren: [PaneNode, PaneNode] = index === 0 
           ? [newChild, child1]
           : [child0, newChild]
+        console.log('[handleReplaceChild] updating children')
         onReplace({ ...pane, children: newChildren })
       }
     }
