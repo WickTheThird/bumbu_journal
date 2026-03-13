@@ -21,6 +21,7 @@ interface EditorPaneProps {
   depth?: number
   externalSelectFile?: string | null // File selected from outside (e.g., file explorer)
   onRequestClose?: () => void // Called when this pane wants to close (all tabs closed)
+  onStateChange?: (state: PaneState) => void // Called when state changes (for parent tracking)
 }
 
 interface PaneState {
@@ -31,7 +32,7 @@ interface PaneState {
   childStates?: [PaneState, PaneState]
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onRequestClose }: EditorPaneProps) {
+export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onRequestClose, onStateChange }: EditorPaneProps) {
   const paneId = useId() // Unique ID for this pane instance
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   
@@ -49,6 +50,13 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
       }
     }
   }, [editorInstance])
+  
+  // Report state changes to parent (for tracking child states)
+  useEffect(() => {
+    if (onStateChange && depth > 0) {
+      onStateChange(paneState)
+    }
+  }, [paneState, onStateChange, depth])
   
   // Handle external file selection (from file explorer) - only at root level
   useEffect(() => {
@@ -153,6 +161,16 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }))
   }, [])
 
+  // Track child state changes so we can restore properly on collapse
+  const handleChildStateChange = useCallback((index: 0 | 1, state: PaneState) => {
+    setPaneState(prev => {
+      if (prev.type !== 'split' || !prev.childStates) return prev
+      const newChildStates: [PaneState, PaneState] = [...prev.childStates]
+      newChildStates[index] = state
+      return { ...prev, childStates: newChildStates }
+    })
+  }, [])
+
   // Handle child requesting to close - collapse split and restore other child
   const handleChildClose = useCallback((closedIndex: 0 | 1) => {
     setPaneState(prev => {
@@ -162,15 +180,26 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
       const survivingIndex = closedIndex === 0 ? 1 : 0
       const survivingState = prev.childStates[survivingIndex]
       
+      console.log('[handleChildClose] Collapsing split, restoring:', survivingState)
+      
       // Collapse to the surviving child's state
+      // Make sure we have valid tabs
+      const newTabs = survivingState.openTabs.length > 0 
+        ? survivingState.openTabs 
+        : (survivingState.activeFile ? [survivingState.activeFile] : [])
+      
       return {
         type: survivingState.type,
-        activeFile: survivingState.activeFile,
-        openTabs: survivingState.openTabs,
+        activeFile: survivingState.activeFile || newTabs[0] || null,
+        openTabs: newTabs,
         splitDirection: survivingState.splitDirection,
         childStates: survivingState.childStates,
       }
     })
+    
+    // Force resize after collapse to ensure Monaco renders
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 150)
   }, [])
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
@@ -211,6 +240,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialOpenTabs={paneState.childStates[0].openTabs}
           depth={depth + 1}
           onRequestClose={() => handleChildClose(0)}
+          onStateChange={(state) => handleChildStateChange(0, state)}
         />
         <EditorPane 
           key={`${paneId}-split-1`}
@@ -222,6 +252,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialOpenTabs={paneState.childStates[1].openTabs}
           depth={depth + 1}
           onRequestClose={() => handleChildClose(1)}
+          onStateChange={(state) => handleChildStateChange(1, state)}
         />
       </SplitPane>
     )
