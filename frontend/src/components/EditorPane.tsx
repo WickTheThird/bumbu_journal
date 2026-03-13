@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useId } from 'react'
+import { useState, useCallback, useEffect, useId, useRef } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { FileCode, X } from 'lucide-react'
