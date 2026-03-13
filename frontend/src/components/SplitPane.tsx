@@ -68,10 +68,8 @@ export default function SplitPane({
 
   const isHorizontal = direction === 'horizontal'
 
-  // Use CSS Grid for more predictable sizing
-  const gridTemplate = isHorizontal 
-    ? `${size}% 4px ${100 - size}%`
-    : `${size}% 4px ${100 - size}%`
+  // Use CSS Grid with fr units for proportional sizing
+  const gridTemplate = `${size}fr 4px ${100 - size}fr`
 
   return (
     <div
@@ -84,6 +82,7 @@ export default function SplitPane({
         height: '100%', 
         width: '100%',
         overflow: 'hidden',
+        position: 'relative',
       }}
     >
       {/* First pane */}

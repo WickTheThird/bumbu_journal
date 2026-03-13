@@ -267,7 +267,12 @@ const PaneRenderer = memo(function PaneRenderer({
   // Render split
   if (node.type === 'split' && node.children) {
     return (
-      <SplitPane direction={node.direction || 'horizontal'} defaultSize={50} className="h-full w-full">
+      <SplitPane 
+        key={`split-${node.id}`}
+        direction={node.direction || 'horizontal'} 
+        defaultSize={50} 
+        className="h-full w-full"
+      >
         <PaneRenderer
           key={node.children[0].id}
           node={node.children[0]}
