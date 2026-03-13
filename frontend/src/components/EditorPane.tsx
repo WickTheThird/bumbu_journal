@@ -36,10 +36,14 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const paneId = useId() // Unique ID for this pane instance
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   
-  const [paneState, setPaneState] = useState<PaneState>({
-    type: 'editor',
-    activeFile: initialActiveFile || files[0]?.name || null,
-    openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
+  const [paneState, setPaneState] = useState<PaneState>(() => {
+    const initial = {
+      type: 'editor' as const,
+      activeFile: initialActiveFile || files[0]?.name || null,
+      openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
+    }
+    console.log(`[EditorPane ${depth}] Initial state:`, initial)
+    return initial
   })
   
   // Cleanup editor on unmount
@@ -163,44 +167,51 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
 
   // Track child state changes so we can restore properly on collapse
   const handleChildStateChange = useCallback((index: 0 | 1, state: PaneState) => {
+    console.log(`[EditorPane ${depth}] Child ${index} state changed:`, state.openTabs, state.activeFile)
     setPaneState(prev => {
       if (prev.type !== 'split' || !prev.childStates) return prev
       const newChildStates: [PaneState, PaneState] = [...prev.childStates]
       newChildStates[index] = state
       return { ...prev, childStates: newChildStates }
     })
-  }, [])
+  }, [depth])
 
   // Handle child requesting to close - collapse split and restore other child
   const handleChildClose = useCallback((closedIndex: 0 | 1) => {
+    console.log(`[EditorPane ${depth}] handleChildClose called, closedIndex:`, closedIndex)
     setPaneState(prev => {
-      if (prev.type !== 'split' || !prev.childStates) return prev
+      console.log(`[EditorPane ${depth}] prev state:`, prev)
+      if (prev.type !== 'split' || !prev.childStates) {
+        console.log(`[EditorPane ${depth}] Not a split, ignoring`)
+        return prev
+      }
       
       // Get the OTHER child's state (the one that's staying)
       const survivingIndex = closedIndex === 0 ? 1 : 0
       const survivingState = prev.childStates[survivingIndex]
       
-      console.log('[handleChildClose] Collapsing split, restoring:', survivingState)
+      console.log(`[EditorPane ${depth}] Surviving state [${survivingIndex}]:`, survivingState)
       
       // Collapse to the surviving child's state
-      // Make sure we have valid tabs
       const newTabs = survivingState.openTabs.length > 0 
         ? survivingState.openTabs 
         : (survivingState.activeFile ? [survivingState.activeFile] : [])
       
-      return {
+      const newState = {
         type: survivingState.type,
         activeFile: survivingState.activeFile || newTabs[0] || null,
         openTabs: newTabs,
         splitDirection: survivingState.splitDirection,
         childStates: survivingState.childStates,
       }
+      console.log(`[EditorPane ${depth}] New collapsed state:`, newState)
+      return newState
     })
     
-    // Force resize after collapse to ensure Monaco renders
+    // Force resize after collapse
     setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
     setTimeout(() => window.dispatchEvent(new Event('resize')), 150)
-  }, [])
+  }, [depth])
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
   
