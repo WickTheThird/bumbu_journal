@@ -80,7 +80,6 @@ export default function IDE() {
     updateFile, 
     deleteFile,
     renameFile,
-    setActiveFile,
   } = useWorkspaceStore()
   
   const [copied, setCopied] = useState(false)
