@@ -21,7 +21,6 @@ interface EditorPaneProps {
   depth?: number
   externalSelectFile?: string | null // File selected from outside (e.g., file explorer)
   onRequestClose?: () => void // Called when this pane wants to close (all tabs closed)
-  onStateChange?: (state: PaneState) => void // Called when state changes (for parent tracking)
 }
 
 interface PaneState {
@@ -55,26 +54,8 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }
   }, [editorInstance])
   
-  // Report state changes to parent (for tracking child states)
-  // Use ref to avoid infinite loops from callback reference changes
-  const onStateChangeRef = useRef(onStateChange)
-  onStateChangeRef.current = onStateChange
-  
-  const prevStateRef = useRef<string>('')
-  useEffect(() => {
-    if (depth > 0 && onStateChangeRef.current) {
-      // Don't report empty states - they trigger unwanted collapses
-      if (paneState.openTabs.length === 0) {
-        return
-      }
-      // Only report if state actually changed (compare serialized)
-      const stateKey = JSON.stringify({ tabs: paneState.openTabs, active: paneState.activeFile })
-      if (stateKey !== prevStateRef.current) {
-        prevStateRef.current = stateKey
-        onStateChangeRef.current(paneState)
-      }
-    }
-  }, [paneState, depth])
+  // State tracking removed - was causing cascade issues
+  // Children will reinitialize from initialOpenTabs on collapse
   
   // Handle external file selection (from file explorer) - only at root level
   useEffect(() => {
@@ -186,17 +167,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }))
   }, [])
 
-  // Track child state changes so we can restore properly on collapse
-  const handleChildStateChange = useCallback((index: 0 | 1, state: PaneState) => {
-    console.log(`[EditorPane ${depth}] Child ${index} state changed:`, state.openTabs, state.activeFile)
-    setPaneState(prev => {
-      if (prev.type !== 'split' || !prev.childStates) return prev
-      const newChildStates: [PaneState, PaneState] = [...prev.childStates]
-      newChildStates[index] = state
-      return { ...prev, childStates: newChildStates }
-    })
-  }, [depth])
-
   // Handle child requesting to close - collapse split and restore other child
   const handleChildClose = useCallback((closedIndex: 0 | 1) => {
     console.log(`[EditorPane ${depth}] handleChildClose called, closedIndex:`, closedIndex)
@@ -278,7 +248,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialOpenTabs={paneState.childStates[0].openTabs}
           depth={depth + 1}
           onRequestClose={() => handleChildClose(0)}
-          onStateChange={(state) => handleChildStateChange(0, state)}
         />
         <EditorPane 
           key={`${paneId}-split-1`}
@@ -290,7 +259,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialOpenTabs={paneState.childStates[1].openTabs}
           depth={depth + 1}
           onRequestClose={() => handleChildClose(1)}
-          onStateChange={(state) => handleChildStateChange(1, state)}
         />
       </SplitPane>
     )
