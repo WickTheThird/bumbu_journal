@@ -118,8 +118,8 @@ const panePropsAreEqual = (prev: PaneRendererProps, next: PaneRendererProps): bo
 }
 
 // Inner component that renders a single pane (controlled by parent)
-// Memoized with custom comparison to prevent unnecessary re-renders
-const PaneRenderer = memo(function PaneRenderer({
+// NOTE: memo disabled temporarily for debugging
+const PaneRenderer = function PaneRenderer({
   node,
   files,
   onFileChange,
@@ -478,7 +478,7 @@ const PaneRenderer = memo(function PaneRenderer({
       </div>
     </div>
   )
-}, panePropsAreEqual)
+}
 
 // Main EditorPane component - manages the entire pane tree
 export default function EditorPane({ 
