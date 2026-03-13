@@ -67,6 +67,7 @@ function SingleEditor({
   onClose: () => void
   onUpdate: (updates: Partial<PaneNode>) => void
 }) {
+  console.log('[SingleEditor] rendering pane:', pane.id)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [dropZone, setDropZone] = useState<string | null>(null)
@@ -270,6 +271,8 @@ function PaneRenderer({
     onReplace({ ...pane, ...updates })
   }, [pane, onReplace])
 
+  console.log('[PaneRenderer] rendering:', pane.id, pane.type)
+  
   if (pane.type === 'split' && pane.children) {
     const [child0, child1] = pane.children
 
