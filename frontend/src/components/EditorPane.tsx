@@ -20,6 +20,7 @@ interface EditorPaneProps {
   initialOpenTabs?: string[]
   depth?: number
   externalSelectFile?: string | null // File selected from outside (e.g., file explorer)
+  onRequestClose?: () => void // Called when this pane wants to close (all tabs closed)
 }
 
 interface PaneState {
@@ -30,7 +31,7 @@ interface PaneState {
   childStates?: [PaneState, PaneState]
 }
 
-export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile }: EditorPaneProps) {
+export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onRequestClose }: EditorPaneProps) {
   const paneId = useId() // Unique ID for this pane instance
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   
@@ -84,13 +85,20 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const handleCloseTab = useCallback((fileName: string) => {
     setPaneState(prev => {
       const newTabs = prev.openTabs.filter(t => t !== fileName)
+      
+      // If closing last tab and we're in a split (depth > 0), request close
+      if (newTabs.length === 0 && depth > 0 && onRequestClose) {
+        // Use setTimeout to avoid state update during render
+        setTimeout(() => onRequestClose(), 0)
+      }
+      
       return {
         ...prev,
         openTabs: newTabs,
         activeFile: prev.activeFile === fileName ? (newTabs[0] || null) : prev.activeFile,
       }
     })
-  }, [])
+  }, [depth, onRequestClose])
 
   // Reorder tabs within this pane
   const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
@@ -145,15 +153,25 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }))
   }, [])
 
-  // Update child state (for recursive updates) - reserved for future use
-  void function updateChildState(index: 0 | 1, newState: PaneState) {
+  // Handle child requesting to close - collapse split and restore other child
+  const handleChildClose = useCallback((closedIndex: 0 | 1) => {
     setPaneState(prev => {
       if (prev.type !== 'split' || !prev.childStates) return prev
-      const newChildStates: [PaneState, PaneState] = [...prev.childStates]
-      newChildStates[index] = newState
-      return { ...prev, childStates: newChildStates }
+      
+      // Get the OTHER child's state (the one that's staying)
+      const survivingIndex = closedIndex === 0 ? 1 : 0
+      const survivingState = prev.childStates[survivingIndex]
+      
+      // Collapse to the surviving child's state
+      return {
+        type: survivingState.type,
+        activeFile: survivingState.activeFile,
+        openTabs: survivingState.openTabs,
+        splitDirection: survivingState.splitDirection,
+        childStates: survivingState.childStates,
+      }
     })
-  }
+  }, [])
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
   
@@ -192,6 +210,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialActiveFile={paneState.childStates[0].activeFile || undefined}
           initialOpenTabs={paneState.childStates[0].openTabs}
           depth={depth + 1}
+          onRequestClose={() => handleChildClose(0)}
         />
         <EditorPane 
           key={`${paneId}-split-1`}
@@ -202,6 +221,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
           initialActiveFile={paneState.childStates[1].activeFile || undefined}
           initialOpenTabs={paneState.childStates[1].openTabs}
           depth={depth + 1}
+          onRequestClose={() => handleChildClose(1)}
         />
       </SplitPane>
     )
