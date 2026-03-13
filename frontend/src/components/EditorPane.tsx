@@ -218,9 +218,13 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
       return newState
     })
     
-    // Force resize after collapse
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 150)
+    // Force resize after collapse - aggressive timing to ensure Monaco renders
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'))
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 100)
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 200)
+    })
   }, [depth])
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
@@ -243,9 +247,11 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
 
   // Render split view - pass child states down
   if (paneState.type === 'split' && paneState.childStates) {
-    // Dispose current editor before rendering split
+    // Dispose current editor before rendering split (will be recreated on collapse)
     if (editorInstance) {
-      editorInstance.dispose()
+      try {
+        editorInstance.dispose()
+      } catch (e) { /* ignore */ }
       setEditorInstance(null)
     }
     
@@ -279,9 +285,9 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     )
   }
 
-  // Render editor
+  // Render editor - key forces remount when returning from split
   return (
-    <div className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
+    <div key={`editor-${paneId}-${paneState.openTabs.join(',')}`} className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
       {/* Tab bar - drop here to add to tabs */}
       <div 
         className={`flex items-center bg-ide-surface border-b overflow-x-auto scrollbar-hide flex-shrink-0 transition-colors ${
