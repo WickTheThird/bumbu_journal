@@ -108,12 +108,19 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }))
   }, [])
 
+  // Track if we've already requested close to prevent duplicates
+  const hasRequestedClose = useRef(false)
+  
   const handleCloseTab = useCallback((fileName: string) => {
     setPaneState(prev => {
+      // Only handle if we're actually an editor (not a split)
+      if (prev.type !== 'editor') return prev
+      
       const newTabs = prev.openTabs.filter(t => t !== fileName)
       
       // If closing last tab and we're in a split (depth > 0), request close
-      if (newTabs.length === 0 && depth > 0 && onRequestClose) {
+      if (newTabs.length === 0 && depth > 0 && onRequestClose && !hasRequestedClose.current) {
+        hasRequestedClose.current = true
         // Use setTimeout to avoid state update during render
         setTimeout(() => onRequestClose(), 0)
       }
