@@ -41,9 +41,42 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
 
   const handleEditorMount = useCallback((editorRef: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     setEditorInstance(editorRef)
+    
+    // Disable CSS validation (doesn't understand modern CSS well)
     monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
     monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
     monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
+    
+    // Configure TypeScript/JavaScript for JSX support
+    const tsCompilerOptions = {
+      jsx: monaco.languages.typescript.JsxEmit.React,
+      jsxFactory: 'React.createElement',
+      jsxFragmentFactory: 'React.Fragment',
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      module: monaco.languages.typescript.ModuleKind.ESNext,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      allowNonTsExtensions: true,
+      allowJs: true,
+      esModuleInterop: true,
+      noEmit: true,
+      skipLibCheck: true,
+      // Don't error on missing types
+      noImplicitAny: false,
+      strictNullChecks: false,
+    }
+    
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(tsCompilerOptions)
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions(tsCompilerOptions)
+    
+    // Add React type definitions for better JSX support
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+    })
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+    })
   }, [])
 
   const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {

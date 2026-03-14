@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { X, Eye, RefreshCw, Loader2 } from 'lucide-react'
 import { bundle, needsBundling, initBundler, generateImportMap } from '../lib/bundler'
 
@@ -167,6 +167,33 @@ ${importMap}
   }, [bundledCode, bundleImports, files, isFrameworkProject])
   
   const srcdoc = isFrameworkProject ? frameworkSrcdoc : htmlSrcdoc
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  
+  // Force iframe to resize when container changes
+  useEffect(() => {
+    const handleResize = () => {
+      if (iframeRef.current) {
+        // Force reflow by reading and setting dimensions
+        const iframe = iframeRef.current
+        iframe.style.height = '0'
+        requestAnimationFrame(() => {
+          iframe.style.height = '100%'
+        })
+      }
+    }
+    
+    window.addEventListener('resize', handleResize)
+    // Also listen for any custom resize events
+    const observer = new ResizeObserver(handleResize)
+    if (iframeRef.current?.parentElement) {
+      observer.observe(iframeRef.current.parentElement)
+    }
+    
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      observer.disconnect()
+    }
+  }, [isOpen])
   
   if (!isOpen) return null
   
@@ -221,9 +248,11 @@ ${importMap}
       {/* Preview iframe */}
       {srcdoc && (
         <iframe
+          ref={iframeRef}
           key={refreshKey}
           srcDoc={srcdoc}
-          className="flex-1 w-full bg-white"
+          className="flex-1 bg-white"
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
           sandbox="allow-scripts allow-same-origin"
           title="Preview"
         />
