@@ -150,6 +150,22 @@ export function isPyodideLoaded(): boolean {
   return pyodideLoaded
 }
 
+/**
+ * Preload Pyodide in the background (call on IDE mount)
+ * This prevents UI freeze when user first runs Python
+ */
+export function preloadPyodide(): void {
+  if (pyodidePromise || pyodideLoaded) return
+  
+  // Start loading in background after a short delay
+  setTimeout(() => {
+    console.log('[Pyodide] Starting background preload...')
+    loadPyodide()
+      .then(() => console.log('[Pyodide] Background preload complete'))
+      .catch(e => console.warn('[Pyodide] Background preload failed:', e))
+  }, 2000) // Wait 2s after page load to not compete with initial render
+}
+
 async function loadPyodide(): Promise<PyodideInterface> {
   if (pyodidePromise) return pyodidePromise
   

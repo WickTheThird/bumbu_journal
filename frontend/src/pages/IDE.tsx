@@ -11,7 +11,7 @@ import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
-import { execute, ExecutionResult, ProjectFile, setLoadingCallback, isPyodideLoaded } from '../lib/sandbox'
+import { execute, ExecutionResult, ProjectFile, setLoadingCallback, isPyodideLoaded, preloadPyodide } from '../lib/sandbox'
 import { saveSnapshot } from '../lib/history'
 import { downloadWorkspaceAsZip } from '../lib/download'
 import Terminal from '../components/Terminal'
@@ -135,6 +135,9 @@ export default function IDE() {
   useEffect(() => {
     loadFromHash()
     getCurrentUser().then(setGithubUser).catch(() => setGithubUser(null))
+    
+    // Preload Pyodide in background to avoid freeze on first Python run
+    preloadPyodide()
     
     // Listen for hash changes (back/forward navigation)
     const handleHashChange = () => loadFromHash()
