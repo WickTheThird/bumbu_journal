@@ -120,13 +120,35 @@ export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<
 /**
  * Import entire repository
  */
-export async function importRepo(repo: GitHubRepo, maxFiles = 50): Promise<{ name: string; content: string }[]> {
+export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ name: string; content: string }[]> {
   const tree = await fetchRepoTree(repo)
   
-  // Filter to common code files and limit count
-  const codeExtensions = ['.py', '.js', '.ts', '.tsx', '.jsx', '.html', '.css', '.json', '.md', '.txt', '.yml', '.yaml']
+  // Filter to text-based code files (exclude binaries)
+  const codeExtensions = [
+    // Web
+    '.html', '.htm', '.css', '.scss', '.sass', '.less', '.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte',
+    // Config
+    '.json', '.yml', '.yaml', '.toml', '.xml', '.env', '.ini', '.cfg',
+    // Docs
+    '.md', '.mdx', '.txt', '.rst',
+    // Python
+    '.py', '.pyi', '.pyw',
+    // Other languages
+    '.rb', '.php', '.go', '.rs', '.c', '.cpp', '.h', '.hpp', '.java', '.kt', '.swift', '.sh', '.bash', '.zsh',
+    // Data
+    '.sql', '.graphql', '.prisma',
+    // Special
+    '.gitignore', '.dockerignore', '.editorconfig', 'Makefile', 'Dockerfile', '.eslintrc', '.prettierrc',
+  ]
+  
+  // Include files without extension that are common (Makefile, Dockerfile, etc.)
+  const specialFiles = ['Makefile', 'Dockerfile', 'Procfile', 'Gemfile', 'Rakefile', '.gitignore', '.env']
+  
   const codeFiles = tree
-    .filter(f => codeExtensions.some(ext => f.path.endsWith(ext)))
+    .filter(f => {
+      const fileName = f.path.split('/').pop() || ''
+      return codeExtensions.some(ext => f.path.endsWith(ext)) || specialFiles.includes(fileName)
+    })
     .slice(0, maxFiles)
   
   // Fetch all file contents in parallel (with some concurrency limit)

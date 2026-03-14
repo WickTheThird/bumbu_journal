@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { X, Eye, RefreshCw, Loader2 } from 'lucide-react'
 import { bundle, needsBundling, initBundler, generateImportMap } from '../lib/bundler'
+import { marked } from 'marked'
 
 interface HTMLPreviewProps {
   html?: string
@@ -20,6 +21,10 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
   
   // Check if this is a React/framework project
   const isFrameworkProject = files && needsBundling(files)
+  
+  // Check for markdown files
+  const markdownFile = files?.find(f => f.name.endsWith('.md') || f.name.endsWith('.mdx'))
+  const isMarkdownProject = !isFrameworkProject && markdownFile && !files?.some(f => f.name.endsWith('.html'))
   
   // Bundle framework projects
   useEffect(() => {
@@ -166,7 +171,52 @@ ${importMap}
 </html>`
   }, [bundledCode, bundleImports, files, isFrameworkProject])
   
-  const srcdoc = isFrameworkProject ? frameworkSrcdoc : htmlSrcdoc
+  // Generate srcdoc for Markdown projects
+  const markdownSrcdoc = useMemo(() => {
+    if (!isMarkdownProject || !markdownFile) return null
+    
+    const cssFile = files?.find(f => f.name.endsWith('.css'))
+    const htmlContent = marked(markdownFile.content) as string
+    
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html { scroll-behavior: smooth; }
+    body { 
+      font-family: system-ui, -apple-system, sans-serif; 
+      margin: 0; 
+      padding: 24px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+    h2 { font-size: 1.5em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+    pre { background: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; }
+    code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 16px; color: #666; }
+    a { color: #0969da; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    img { max-width: 100%; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    th { background: #f6f8fa; }
+    ${cssFile?.content || ''}
+  </style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`
+  }, [markdownFile, files, isMarkdownProject, refreshKey])
+  
+  const srcdoc = isFrameworkProject ? frameworkSrcdoc : (isMarkdownProject ? markdownSrcdoc : htmlSrcdoc)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   
   // Force iframe to resize when container changes

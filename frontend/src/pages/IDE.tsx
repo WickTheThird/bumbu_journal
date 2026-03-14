@@ -317,8 +317,9 @@ export default function IDE() {
   const cssFile = workspace.files.find(f => f.name.endsWith('.css'))
   const jsFile = workspace.files.find(f => f.name.endsWith('.js') && !f.name.endsWith('.test.js'))
   
-  // Can preview if has HTML file OR has framework files
-  const canPreview = htmlFile || hasFrameworkFiles
+  // Can preview if has HTML file OR has framework files OR has markdown
+  const hasMarkdown = workspace.files.some(f => f.name.endsWith('.md') || f.name.endsWith('.mdx'))
+  const canPreview = htmlFile || hasFrameworkFiles || hasMarkdown
   
   return (
     <div className="h-screen flex flex-col bg-ide-bg">
