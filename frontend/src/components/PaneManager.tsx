@@ -1,4 +1,4 @@
-import { createContext, useContext, useCallback, useState, ReactNode } from 'react'
+import { createContext, useContext, useCallback, useState, ReactNode, useRef, useEffect } from 'react'
 
 export interface PaneNode {
   id: string
@@ -37,11 +37,13 @@ const generatePaneId = () => `pane-${++paneIdCounter}`
 export function PaneManagerProvider({ 
   children, 
   initialTabs,
-  initialActiveFile 
+  initialActiveFile,
+  workspaceKey, // Use this to reset state when workspace changes
 }: { 
   children: ReactNode
   initialTabs: string[]
   initialActiveFile: string | null
+  workspaceKey?: string // Hash of workspace to detect changes
 }) {
   const [state, setState] = useState<PaneManagerState>(() => {
     const rootId = generatePaneId()
@@ -57,6 +59,27 @@ export function PaneManagerProvider({
       }
     }
   })
+  
+  // Reset state when workspace changes (new template loaded)
+  const prevWorkspaceKey = useRef(workspaceKey)
+  useEffect(() => {
+    if (workspaceKey && workspaceKey !== prevWorkspaceKey.current) {
+      prevWorkspaceKey.current = workspaceKey
+      // Full reset - create new root pane
+      const newRootId = generatePaneId()
+      setState({
+        rootId: newRootId,
+        panes: {
+          [newRootId]: {
+            id: newRootId,
+            type: 'editor',
+            activeFile: initialActiveFile,
+            openTabs: initialTabs,
+          }
+        }
+      })
+    }
+  }, [workspaceKey, initialTabs, initialActiveFile])
 
   const getPane = useCallback((id: string) => state.panes[id], [state.panes])
 

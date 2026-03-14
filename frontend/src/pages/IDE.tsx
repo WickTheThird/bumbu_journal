@@ -579,6 +579,7 @@ export default function IDE() {
             <PaneManagerProvider
               initialTabs={workspace.files.slice(0, 3).map(f => f.name)}
               initialActiveFile={workspace.activeFile || null}
+              workspaceKey={workspace.files.map(f => f.name).sort().join(',')}
             >
               <EditorPaneRoot
                 files={workspace.files}
