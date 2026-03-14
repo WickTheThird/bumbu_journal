@@ -291,6 +291,11 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
               automaticLayout: true,
               scrollBeyondLastLine: false,
               padding: { top: 8 },
+              // Bracket/autocomplete settings
+              autoClosingBrackets: 'languageDefined',
+              autoClosingQuotes: 'languageDefined',
+              autoSurround: 'languageDefined',
+              acceptSuggestionOnCommitCharacter: false,
             }}
           />
         ) : (
