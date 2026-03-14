@@ -136,19 +136,37 @@ interface PyodideInterface {
 }
 
 let pyodidePromise: Promise<PyodideInterface> | null = null
+let pyodideLoaded = false
+
+// Callback for loading status updates
+type LoadingCallback = (status: string) => void
+let loadingCallback: LoadingCallback | null = null
+
+export function setLoadingCallback(cb: LoadingCallback | null) {
+  loadingCallback = cb
+}
+
+export function isPyodideLoaded(): boolean {
+  return pyodideLoaded
+}
 
 async function loadPyodide(): Promise<PyodideInterface> {
   if (pyodidePromise) return pyodidePromise
+  
+  loadingCallback?.('Loading Python runtime (~10MB)...')
   
   pyodidePromise = new Promise((resolve, reject) => {
     const script = document.createElement('script')
     script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js'
     script.onload = async () => {
       try {
+        loadingCallback?.('Initializing Python...')
         // @ts-expect-error - Pyodide is loaded globally
         const pyodide = await window.loadPyodide({
           indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
         })
+        pyodideLoaded = true
+        loadingCallback?.('Python ready')
         resolve(pyodide as PyodideInterface)
       } catch (e) {
         reject(e)

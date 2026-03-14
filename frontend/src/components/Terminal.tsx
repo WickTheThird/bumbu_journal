@@ -4,17 +4,18 @@ import type { ExecutionResult } from '../lib/sandbox'
 interface TerminalProps {
   output: ExecutionResult | null
   isRunning: boolean
+  loadingStatus?: string | null
   onClose: () => void
   onRun?: () => void // Made optional, not used anymore
 }
 
-export default function Terminal({ output, isRunning, onClose }: TerminalProps) {
+export default function Terminal({ output, isRunning, loadingStatus, onClose }: TerminalProps) {
   // Determine what text to show
   let displayText = ''
   let textColor = '#e2e8f0'
   
   if (isRunning) {
-    displayText = 'Running...'
+    displayText = loadingStatus || 'Running...'
     textColor = '#64748b'
   } else if (output) {
     if (output.output) {

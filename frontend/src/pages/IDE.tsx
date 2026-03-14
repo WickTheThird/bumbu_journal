@@ -11,7 +11,7 @@ import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
-import { execute, ExecutionResult, ProjectFile } from '../lib/sandbox'
+import { execute, ExecutionResult, ProjectFile, setLoadingCallback, isPyodideLoaded } from '../lib/sandbox'
 import { saveSnapshot } from '../lib/history'
 import { downloadWorkspaceAsZip } from '../lib/download'
 import Terminal from '../components/Terminal'
@@ -113,6 +113,7 @@ export default function IDE() {
   const [githubUser, setGithubUser] = useState<{ login: string } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
+  const [loadingStatus, setLoadingStatus] = useState<string | null>(null)
   // Editor ref removed - EditorPane manages its own editor
   // Editor state is now managed by EditorPane component
   const [terminalHeight, setTerminalHeight] = useState(200)
@@ -232,6 +233,12 @@ export default function IDE() {
     setIsRunning(true)
     setOutput(null)
     setShowMobileMenu(false)
+    setLoadingStatus(null)
+    
+    // Set up loading callback for Python
+    if (activeFile.language === 'python' && !isPyodideLoaded()) {
+      setLoadingCallback((status) => setLoadingStatus(status))
+    }
     
     try {
       console.log('[IDE] Executing:', activeFile.language, activeFile.content.substring(0, 50))
@@ -250,10 +257,14 @@ export default function IDE() {
       }
       
       console.log('[IDE] Execution result:', result)
+      setLoadingCallback(null)
+      setLoadingStatus(null)
       setIsRunning(false)
       setOutput(result)
     } catch (e) {
       console.error('[IDE] Execution error:', e)
+      setLoadingCallback(null)
+      setLoadingStatus(null)
       setIsRunning(false)
       setOutput({
         success: false,
@@ -605,7 +616,7 @@ export default function IDE() {
                 onMouseDown={() => setIsResizingTerminal(true)}
               />
               <div className="flex-1 min-h-0">
-                <Terminal output={output} isRunning={isRunning} onClose={() => setShowTerminal(false)} />
+                <Terminal output={output} isRunning={isRunning} loadingStatus={loadingStatus} onClose={() => setShowTerminal(false)} />
               </div>
             </div>
           )}
