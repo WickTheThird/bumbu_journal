@@ -50,7 +50,7 @@ function EditorPaneRoot({
   }
   onReady?: (api: { openFile: (fileName: string) => void }) => void
 }) {
-  const { state, openFileExternal } = usePaneManager()
+  const { state, openFileExternal, syncWithFiles } = usePaneManager()
   
   // Expose API to parent once mounted
   useEffect(() => {
@@ -58,6 +58,11 @@ function EditorPaneRoot({
       onReady({ openFile: openFileExternal })
     }
   }, [onReady, openFileExternal])
+  
+  // Sync tabs with available files when workspace changes
+  useEffect(() => {
+    syncWithFiles(files.map(f => f.name))
+  }, [files, syncWithFiles])
   
   return (
     <EditorPaneV2

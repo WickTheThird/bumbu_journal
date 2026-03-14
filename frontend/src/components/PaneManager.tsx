@@ -26,6 +26,7 @@ interface PaneManagerContextType {
   selectFile: (paneId: string, fileName: string) => void
   reorderTabs: (paneId: string, draggedFile: string, dropIndex: number) => void
   openFileExternal: (fileName: string) => void // Open file from outside (e.g., file explorer)
+  syncWithFiles: (fileNames: string[]) => void // Remove tabs for files that no longer exist
 }
 
 const PaneManagerContext = createContext<PaneManagerContextType | null>(null)
@@ -292,6 +293,37 @@ export function PaneManagerProvider({
     })
   }, [])
 
+  // Sync all panes with available files - remove tabs for files that don't exist
+  const syncWithFiles = useCallback((fileNames: string[]) => {
+    const fileSet = new Set(fileNames)
+    setState(prev => {
+      const newPanes: Record<string, PaneNode> = {}
+      let changed = false
+
+      for (const [id, pane] of Object.entries(prev.panes)) {
+        if (pane.type === 'editor') {
+          const validTabs = (pane.openTabs || []).filter(t => fileSet.has(t))
+          const activeStillValid = pane.activeFile && fileSet.has(pane.activeFile)
+          
+          if (validTabs.length !== (pane.openTabs || []).length || !activeStillValid) {
+            changed = true
+            newPanes[id] = {
+              ...pane,
+              openTabs: validTabs,
+              activeFile: activeStillValid ? pane.activeFile : (validTabs[0] || null),
+            }
+          } else {
+            newPanes[id] = pane
+          }
+        } else {
+          newPanes[id] = pane
+        }
+      }
+
+      return changed ? { ...prev, panes: newPanes } : prev
+    })
+  }, [])
+
   return (
     <PaneManagerContext.Provider value={{
       state,
@@ -303,6 +335,7 @@ export function PaneManagerProvider({
       selectFile,
       reorderTabs,
       openFileExternal,
+      syncWithFiles,
     }}>
       {children}
     </PaneManagerContext.Provider>

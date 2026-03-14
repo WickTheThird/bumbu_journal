@@ -57,10 +57,10 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
       moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
       allowNonTsExtensions: true,
       allowJs: true,
+      checkJs: false, // Don't type-check JS files
       esModuleInterop: true,
       noEmit: true,
       skipLibCheck: true,
-      // Don't error on missing types
       noImplicitAny: false,
       strictNullChecks: false,
     }
@@ -68,12 +68,12 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions(tsCompilerOptions)
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions(tsCompilerOptions)
     
-    // Add React type definitions for better JSX support
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: false,
+    // Disable semantic validation for JS files (they shouldn't show TS-only errors)
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: true, // Disable semantic checks for JS/JSX
       noSyntaxValidation: false,
     })
-    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: false,
       noSyntaxValidation: false,
     })
