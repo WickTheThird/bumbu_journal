@@ -1,8 +1,10 @@
 /**
  * GitHub API integration
- * Phase 1: Read-only public repo import
+ * Phase 1: Read-only public repo import (via ZIP download - no rate limits)
  * Phase 2: Device flow auth + fork/PR
  */
+
+import JSZip from 'jszip'
 
 const GITHUB_API = 'https://api.github.com'
 const GITHUB_CLIENT_ID = 'Ov23liFlSKXnYuNkre0F'
@@ -118,10 +120,24 @@ export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<
 }
 
 /**
- * Import entire repository
+ * Import entire repository via ZIP download (no API rate limits!)
+ * Downloads the repo as a ZIP file and extracts in browser
  */
 export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ name: string; content: string }[]> {
-  const tree = await fetchRepoTree(repo)
+  // Download repo as ZIP - this bypasses API rate limits
+  const zipUrl = `https://codeload.github.com/${repo.owner}/${repo.repo}/zip/refs/heads/${repo.branch}`
+  
+  const response = await fetch(zipUrl)
+  
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(`Repository not found: ${repo.owner}/${repo.repo}`)
+    }
+    throw new Error(`Failed to download repository: ${response.status}`)
+  }
+  
+  const zipData = await response.arrayBuffer()
+  const zip = await JSZip.loadAsync(zipData)
   
   // Filter to text-based code files (exclude binaries)
   const codeExtensions = [
@@ -141,32 +157,35 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
     '.gitignore', '.dockerignore', '.editorconfig', 'Makefile', 'Dockerfile', '.eslintrc', '.prettierrc',
   ]
   
-  // Include files without extension that are common (Makefile, Dockerfile, etc.)
   const specialFiles = ['Makefile', 'Dockerfile', 'Procfile', 'Gemfile', 'Rakefile', '.gitignore', '.env']
   
-  const codeFiles = tree
-    .filter(f => {
-      const fileName = f.path.split('/').pop() || ''
-      return codeExtensions.some(ext => f.path.endsWith(ext)) || specialFiles.includes(fileName)
-    })
-    .slice(0, maxFiles)
-  
-  // Fetch all file contents in parallel (with some concurrency limit)
   const files: { name: string; content: string }[] = []
   
-  for (let i = 0; i < codeFiles.length; i += 5) {
-    const batch = codeFiles.slice(i, i + 5)
-    const contents = await Promise.all(
-      batch.map(async (file) => {
-        try {
-          const content = await fetchFileContent(repo, file.path)
-          return { name: file.path, content }
-        } catch {
-          return null
-        }
-      })
-    )
-    files.push(...contents.filter((f): f is { name: string; content: string } => f !== null))
+  // ZIP has a root folder like "repo-branch/" - we need to strip it
+  const zipFiles = Object.keys(zip.files)
+  const rootFolder = zipFiles[0]?.split('/')[0] + '/'
+  
+  for (const [path, file] of Object.entries(zip.files)) {
+    if (file.dir) continue
+    if (files.length >= maxFiles) break
+    
+    // Strip root folder from path
+    const relativePath = path.replace(rootFolder, '')
+    if (!relativePath) continue
+    
+    const fileName = relativePath.split('/').pop() || ''
+    const isCodeFile = codeExtensions.some(ext => relativePath.endsWith(ext)) || specialFiles.includes(fileName)
+    
+    if (!isCodeFile) continue
+    
+    try {
+      const content = await file.async('string')
+      // Skip binary/corrupted files (they'll have weird characters)
+      if (content.includes('\0')) continue
+      files.push({ name: relativePath, content })
+    } catch {
+      // Skip files that can't be read as text
+    }
   }
   
   return files
