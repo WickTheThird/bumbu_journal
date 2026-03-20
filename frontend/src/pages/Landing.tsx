@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Github, FileCode, Package, Share2, Zap, Play } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 import GitHubModal from '../components/GitHubModal'
 import '../styles/cyberpunk.css'
 
 export default function Landing() {
+  const navigate = useNavigate()
   const [showTemplates, setShowTemplates] = useState(false)
   const [showGitHub, setShowGitHub] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -393,7 +394,7 @@ export default function Landing() {
       <GitHubModal
         isOpen={showGitHub}
         onClose={() => setShowGitHub(false)}
-        onImport={() => {}}
+        onImport={() => navigate('/ide')}
       />
     </div>
   )
