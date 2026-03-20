@@ -39,7 +39,7 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
   const [prUrl, setPrUrl] = useState('')
   const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
   
-  const { workspace, setWorkspace } = useWorkspaceStore()
+  const { workspace, setWorkspace, saveToHash } = useWorkspaceStore()
   
   useEffect(() => {
     if (isOpen) {
@@ -78,8 +78,8 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
       }
       
       // Load into workspace
-      setWorkspace({
-        version: 1,
+      const newWorkspace = {
+        version: 1 as const,
         files: files.map(f => ({
           name: f.name,
           content: f.content,
@@ -87,7 +87,11 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
         })),
         activeFile: files[0].name,
         settings: workspace.settings,
-      })
+      }
+      setWorkspace(newWorkspace)
+      
+      // Save to hash so /ide can load it
+      saveToHash()
       
       setSourceRepo(parsed)
       onImport?.(parsed)
