@@ -394,7 +394,10 @@ export default function Landing() {
       <GitHubModal
         isOpen={showGitHub}
         onClose={() => setShowGitHub(false)}
-        onImport={() => navigate('/ide')}
+        onImport={() => {
+          // Use window.location to preserve the hash that was just saved
+          window.location.href = '/ide' + window.location.hash
+        }}
       />
     </div>
   )
