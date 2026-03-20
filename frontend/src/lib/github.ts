@@ -83,7 +83,11 @@ export async function fetchRepoTree(repo: GitHubRepo): Promise<GitHubFile[]> {
       throw new Error(`Repository not found: ${repo.owner}/${repo.repo}`)
     }
     if (response.status === 403) {
-      throw new Error('Rate limited. Try again later or login with GitHub.')
+      const token = localStorage.getItem('github_token')
+      if (!token) {
+        throw new Error('GitHub rate limit reached. Please login with GitHub to continue (5,000 requests/hour vs 60 for anonymous).')
+      }
+      throw new Error('Rate limited. Please try again in a few minutes.')
     }
     throw new Error(`GitHub API error: ${response.status}`)
   }
