@@ -125,7 +125,7 @@ export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<
  */
 export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ name: string; content: string }[]> {
   // Download repo as ZIP via our CORS proxy - bypasses API rate limits
-  const zipUrl = `${OAUTH_PROXY}/zip/${repo.owner}/${repo.repo}/${repo.branch}`
+  const zipUrl = `https://hashide-proxy.bumbufilip22.workers.dev/zip/${repo.owner}/${repo.repo}/${repo.branch}`
   
   const response = await fetch(zipUrl)
   
