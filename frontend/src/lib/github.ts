@@ -124,8 +124,8 @@ export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<
  * Downloads the repo as a ZIP file and extracts in browser
  */
 export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ name: string; content: string }[]> {
-  // Download repo as ZIP - this bypasses API rate limits
-  const zipUrl = `https://codeload.github.com/${repo.owner}/${repo.repo}/zip/refs/heads/${repo.branch}`
+  // Download repo as ZIP via our CORS proxy - bypasses API rate limits
+  const zipUrl = `${OAUTH_PROXY}/zip/${repo.owner}/${repo.repo}/${repo.branch}`
   
   const response = await fetch(zipUrl)
   
