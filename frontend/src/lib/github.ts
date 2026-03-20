@@ -83,11 +83,7 @@ export async function fetchRepoTree(repo: GitHubRepo): Promise<GitHubFile[]> {
       throw new Error(`Repository not found: ${repo.owner}/${repo.repo}`)
     }
     if (response.status === 403) {
-      const token = localStorage.getItem('github_token')
-      if (!token) {
-        throw new Error('GitHub rate limit reached. Please login with GitHub to continue (5,000 requests/hour vs 60 for anonymous).')
-      }
-      throw new Error('Rate limited. Please try again in a few minutes.')
+      throw new Error('Rate limited. Try again later or login with GitHub.')
     }
     throw new Error(`GitHub API error: ${response.status}`)
   }
@@ -104,24 +100,9 @@ export async function fetchRepoTree(repo: GitHubRepo): Promise<GitHubFile[]> {
 }
 
 /**
- * Fetch file content using jsDelivr CDN (no rate limits)
- * Falls back to GitHub API if needed
+ * Fetch file content
  */
 export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<string> {
-  // Use jsDelivr CDN - no rate limits, mirrors GitHub repos
-  const cdnUrl = `https://cdn.jsdelivr.net/gh/${repo.owner}/${repo.repo}@${repo.branch}/${path}`
-  
-  try {
-    const response = await fetch(cdnUrl)
-    
-    if (response.ok) {
-      return await response.text()
-    }
-  } catch {
-    // CDN failed, try GitHub API as fallback
-  }
-  
-  // Fallback to GitHub API (may hit rate limits)
   const url = `${GITHUB_API}/repos/${repo.owner}/${repo.repo}/contents/${path}?ref=${repo.branch}`
   
   const response = await fetch(url, { headers: getHeaders() })
