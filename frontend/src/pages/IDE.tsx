@@ -4,8 +4,15 @@ import { Link } from 'react-router-dom'
 // import type { Monaco } from '@monaco-editor/react'
 import { 
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Twitter, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
 } from 'lucide-react'
+
+// X (formerly Twitter) icon
+const XIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+)
 import '../styles/cyberpunk.css'
 import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
@@ -217,11 +224,11 @@ export default function IDE() {
     setTimeout(() => setCopied(false), 2000)
   }
   
-  const handleShareTwitter = () => {
+  const handleShareX = () => {
     const url = getShareableURL(workspace)
     const text = `Check out my code on HashIDE!`
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
-    window.open(twitterUrl, '_blank')
+    const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+    window.open(xUrl, '_blank')
   }
   
   const handleDownload = async () => {
@@ -392,8 +399,8 @@ export default function IDE() {
             
             {/* Share */}
             <p className="text-xs text-ide-muted uppercase tracking-wide px-1 pt-4">Share</p>
-            <button onClick={handleShareTwitter} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
-              <Twitter className="w-4 h-4" /> Post on Twitter
+            <button onClick={handleShareX} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-ide-border/50">
+              <XIcon className="w-4 h-4" /> Post on X
             </button>
           </div>
         </div>
@@ -501,8 +508,8 @@ export default function IDE() {
             {copied ? 'Copied!' : 'Share'}
           </button>
           
-          <button onClick={handleShareTwitter} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-[#1DA1F2] transition" title="Share on Twitter/X">
-            <Twitter className="w-4 h-4" />
+          <button onClick={handleShareX} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-[#1DA1F2] transition" title="Share on X">
+            <XIcon className="w-4 h-4" />
           </button>
         </div>
         
