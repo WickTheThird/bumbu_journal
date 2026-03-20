@@ -127,7 +127,11 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
   // Download repo as ZIP via our CORS proxy - bypasses API rate limits
   const zipUrl = `https://hashide-proxy.bumbufilip22.workers.dev/zip/${repo.owner}/${repo.repo}/${repo.branch}`
   
+  console.log('[GitHub Import] Fetching ZIP from:', zipUrl)
+  
   const response = await fetch(zipUrl)
+  
+  console.log('[GitHub Import] Response status:', response.status)
   
   if (!response.ok) {
     if (response.status === 404) {
@@ -137,7 +141,10 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
   }
   
   const zipData = await response.arrayBuffer()
+  console.log('[GitHub Import] ZIP size:', zipData.byteLength, 'bytes')
+  
   const zip = await JSZip.loadAsync(zipData)
+  console.log('[GitHub Import] ZIP files:', Object.keys(zip.files).length)
   
   // Filter to text-based code files (exclude binaries)
   const codeExtensions = [
@@ -188,6 +195,7 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
     }
   }
   
+  console.log('[GitHub Import] Extracted files:', files.length, files.map(f => f.name))
   return files
 }
 

@@ -70,7 +70,10 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
     setLoading(true)
     
     try {
+      console.log('[GitHubModal] Starting import for:', parsed)
       const files = await importRepo(parsed)
+      
+      console.log('[GitHubModal] Imported files:', files.length)
       
       if (files.length === 0) {
         setError('No supported files found in repository')
@@ -88,15 +91,19 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
         activeFile: files[0].name,
         settings: workspace.settings,
       }
+      console.log('[GitHubModal] Setting workspace with', newWorkspace.files.length, 'files')
       setWorkspace(newWorkspace)
       
       // Save to hash so /ide can load it
+      console.log('[GitHubModal] Saving to hash')
       saveToHash()
+      console.log('[GitHubModal] Hash saved, URL is now:', window.location.hash.slice(0, 50) + '...')
       
       setSourceRepo(parsed)
       onImport?.(parsed)
       onClose()
     } catch (e) {
+      console.error('[GitHubModal] Import error:', e)
       setError(e instanceof Error ? e.message : 'Failed to import')
     } finally {
       setLoading(false)
