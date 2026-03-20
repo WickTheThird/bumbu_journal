@@ -2,7 +2,7 @@
 
 A browser-based code editor where your entire workspace is stored in the URL hash. Write Python, JavaScript, and HTML. Share code by sharing a link.
 
-**Live:** https://bumbuindustries.com
+**Live:** [https://hashideea.com](https://hashideea.com)
 
 ## Features
 
