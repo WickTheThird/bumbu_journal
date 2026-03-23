@@ -2,5 +2,4 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://bumbuindustries.com/sitemap.xml
+Sitemap: https://hashideea.com/sitemap.xml

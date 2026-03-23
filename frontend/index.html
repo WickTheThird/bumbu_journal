@@ -101,9 +101,75 @@
       "keywords": "online code editor, browser IDE, code playground, React editor, Python online, JavaScript IDE"
     }
     </script>
+    <!-- FAQ Structured Data for rich search results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is HashIDE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "HashIDE is a free online code editor and browser-based IDE that lets you write, run, and share code directly in your browser. It supports React, Python, JavaScript, and TypeScript with live preview and npm packages — no installation or signup required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does code sharing work in HashIDE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Your entire project — all files, code, and settings — is compressed and encoded into the URL hash. To share your project, just copy the URL and send it to anyone. They'll see your exact code and can run or edit it instantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What programming languages does HashIDE support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "HashIDE supports JavaScript, TypeScript, JSX/TSX (React), Python, HTML, and CSS. JavaScript and TypeScript run in a sandboxed iframe, while Python runs via Pyodide directly in the browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use npm packages in HashIDE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. HashIDE supports the full npm ecosystem. Just import any package in your code and it will be automatically loaded from esm.sh. React, Framer Motion, Lodash, and thousands of other packages work out of the box."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is HashIDE free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, HashIDE is completely free and open source. There are no accounts, no subscriptions, and no limits. Your code lives in the URL, so there's nothing stored on our servers."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="max-width:800px;margin:0 auto;padding:2rem;font-family:system-ui,sans-serif;color:#e2e8f0;background:#050508">
+        <h1>HashIDE — Free Online Code Editor & Browser IDE</h1>
+        <p>HashIDE is a free, open-source online code editor that runs entirely in your browser. Write React, Python, JavaScript, and TypeScript code with live preview, npm package support, and instant sharing via URL.</p>
+        <h2>Features</h2>
+        <ul>
+          <li><strong>Online Code Editor</strong> — Full-featured Monaco editor (the engine behind VS Code) with syntax highlighting, autocomplete, and multi-file support</li>
+          <li><strong>Live Preview</strong> — See your HTML, CSS, React, and JavaScript changes in real-time as you type</li>
+          <li><strong>Run Python Online</strong> — Execute Python code directly in the browser using Pyodide with multi-file project and import support</li>
+          <li><strong>npm Packages</strong> — Import any npm package. Dependencies resolve automatically via esm.sh</li>
+          <li><strong>URL-Based Sharing</strong> — Your entire project is encoded in the URL. Share code by sharing a link — no accounts needed</li>
+          <li><strong>GitHub Import</strong> — Import any public GitHub repository directly into the editor</li>
+          <li><strong>React & TypeScript</strong> — Full JSX/TSX support with esbuild-wasm bundling in the browser</li>
+        </ul>
+        <p><a href="/ide">Open HashIDE Editor</a> | <a href="https://github.com/WickTheThird/HashIDE">View Source on GitHub</a></p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
