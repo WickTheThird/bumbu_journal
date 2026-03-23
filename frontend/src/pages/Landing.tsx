@@ -32,7 +32,7 @@ export default function Landing() {
       <div className="fixed inset-0 pointer-events-none opacity-[0.015] scanlines z-50" />
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/5 bg-[#050508]/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] backdrop-blur-xl shadow-[0_1px_0_0_rgba(255,255,255,0.05)_inset,0_-1px_0_0_rgba(255,255,255,0.02)_inset]">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
