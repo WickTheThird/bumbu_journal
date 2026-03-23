@@ -3,95 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Primary Meta Tags -->
-    <title>Page Not Found — HashIDE Online Code Editor</title>
-    <meta name="title" content="Page Not Found — HashIDE Online Code Editor" />
-    <meta name="description" content="The page you're looking for doesn't exist. Visit HashIDE — a free online code editor for React, Python, JavaScript and TypeScript with live preview." />
-    <meta name="keywords" content="online code editor, browser IDE, HashIDE" />
-    <meta name="author" content="Filip Bumbu" />
-    <meta name="robots" content="noindex, follow" />
-    <meta name="language" content="English" />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://hashideea.com/" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://hashideea.com/" />
-    <meta property="og:title" content="HashIDEA — Build, remix, and deploy apps instantly" />
-    <meta property="og:description" content="Build, remix, and deploy apps instantly. No setup, no servers — your entire project lives in the URL. Share by sharing a link." />
-    <meta property="og:image" content="https://hashideea.com/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="HashIDEA" />
-    <meta property="og:locale" content="en_US" />
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://hashideea.com/" />
-    <meta name="twitter:title" content="HashIDEA — Build, remix, and deploy apps instantly" />
-    <meta name="twitter:description" content="Build, remix, and deploy apps instantly. No setup, no servers — your entire project lives in the URL. Share by sharing a link." />
-    <meta name="twitter:image" content="https://hashideea.com/og-image.png" />
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/bumbu_journal/apple-touch-icon.png" />
-    
-    <!-- Theme -->
-    <meta name="theme-color" content="#050508" />
-    <meta name="color-scheme" content="dark" />
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    
-    <!-- Google Analytics - Replace GA_MEASUREMENT_ID with your actual ID -->
-    <!-- Get your ID at: https://analytics.google.com/ -->
-    <!--
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <title>Redirecting... — HashIDEA</title>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'GA_MEASUREMENT_ID');
+      // SPA redirect for GitHub Pages
+      // Preserve the path and redirect to index.html
+      const path = window.location.pathname + window.location.search + window.location.hash;
+      window.location.replace('/' + '?redirect=' + encodeURIComponent(path));
     </script>
-    -->
-    
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "HashIDEA",
-      "description": "A browser-based code editor where your entire workspace is stored in the URL hash.",
-      "url": "https://hashideea.com/",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Any",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Filip Bumbu",
-        "url": "https://www.linkedin.com/in/filip-bumbu-410741262"
-      },
-      "featureList": [
-        "URL-based workspace storage",
-        "Python execution via Pyodide",
-        "Monaco Editor integration",
-        "Multi-file support",
-        "Instant code sharing"
-      ]
-    }
-    </script>
-    <script type="module" crossorigin src="/assets/index-DEMkkG14.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-ZRQvwUEM.css">
   </head>
   <body>
-    <div id="root"></div>
+    <p>Redirecting...</p>
   </body>
 </html>
