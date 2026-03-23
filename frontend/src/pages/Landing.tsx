@@ -1,34 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Github, FileCode, Package, Share2, Zap, Play, Code2, Globe, Copy, Check, ExternalLink } from 'lucide-react'
+import { ArrowRight, Github, FileCode, Share2, Zap, Code2, Copy, Check, ExternalLink, Sparkles, Users, Briefcase, GraduationCap } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 import GitHubModal from '../components/GitHubModal'
 import RecentProjects from '../components/RecentProjects'
 import { TEMPLATES } from '../lib/templates'
 import { encodeWorkspace } from '../lib/hash'
-import '../styles/cyberpunk.css'
 
 export default function Landing() {
   const [showTemplates, setShowTemplates] = useState(false)
   const [showGitHub, setShowGitHub] = useState(false)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [demoCount, setDemoCount] = useState(0)
   const [copied, setCopied] = useState(false)
-  const heroRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect()
-        setMousePos({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        })
-      }
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
 
   const demoUrl = 'hashidea.com/#eJzT0yMAAGTvBe4'
   
@@ -39,165 +22,144 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050508] text-gray-100 font-mono overflow-x-hidden">
-      {/* Subtle scanlines */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.015] scanlines z-50" />
-
+    <div className="min-h-screen bg-[#09090b] text-gray-100">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] backdrop-blur-xl shadow-[0_1px_0_0_rgba(255,255,255,0.05)_inset,0_-1px_0_0_rgba(255,255,255,0.02)_inset]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 border border-purple-500/50 flex items-center justify-center bg-purple-500/10">
-                <span className="text-purple-400 font-bold text-lg">#</span>
-              </div>
-              <span className="text-lg font-bold tracking-wide text-white">HashIDEA</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-6 text-sm text-gray-400">
-              <a href="#features" className="hover:text-white transition">Features</a>
-              <a href="#templates" className="hover:text-white transition">Templates</a>
-              <a href="https://github.com/WickTheThird/HashIDEA" target="_blank" rel="noopener" className="hover:text-white transition">GitHub</a>
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#09090b]/80 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-purple-500 flex items-center justify-center rounded">
+              <span className="text-white font-bold text-sm">#</span>
             </div>
-          </div>
-          <Link 
-            to="/ide"
-            className="px-4 py-2 bg-purple-500 hover:bg-purple-400 text-white text-sm font-medium transition"
-          >
-            Open IDE
+            <span className="text-lg font-semibold text-white">HashIDEA</span>
           </Link>
+          <div className="flex items-center gap-4">
+            <a 
+              href="https://github.com/WickTheThird/HashIDEA" 
+              target="_blank" 
+              rel="noopener"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <Github className="w-5 h-5" />
+            </a>
+            <Link 
+              to="/ide"
+              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded transition-colors"
+            >
+              Open IDE
+            </Link>
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section 
-        ref={heroRef}
-        className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(168, 85, 247, 0.06), transparent 40%)`
-        }}
-      >
-        {/* Grid with mouse highlight */}
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px)
-            `,
-            backgroundSize: '60px 60px',
-            maskImage: `radial-gradient(500px circle at ${mousePos.x}px ${mousePos.y}px, black, transparent)`
-          }}
-        />
+      {/* Hero */}
+      <section className="pt-32 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-8">
+            <Sparkles className="w-4 h-4" />
+            Instant Application Platform
+          </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <p className="text-purple-400 text-sm font-medium tracking-[0.2em] uppercase mb-6">
-            Code playground
-          </p>
-
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[0.9]">
-            <span className="text-white">Code. Share.</span>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
+            From idea to deployed app
             <br />
-            <span className="text-purple-400">Just the URL.</span>
+            <span className="text-purple-400">in seconds</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light">
-            Build React apps in your browser. Your entire project lives in the URL—share it anywhere, run it instantly.
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Build, preview, and share complete web applications directly in your browser. 
+            Your entire project lives in the URL—no accounts, no servers, no setup.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button
-              onClick={() => setShowTemplates(true)}
-              className="group px-8 py-4 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-lg flex items-center gap-3 transition-all hover:gap-4"
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
+            <Link
+              to="/ide"
+              className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded flex items-center gap-2 transition-colors"
             >
-              Start coding
-              <ArrowRight className="w-5 h-5" />
-            </button>
+              Start building
+              <ArrowRight className="w-4 h-4" />
+            </Link>
             
             <button
               onClick={() => setShowGitHub(true)}
-              className="px-8 py-4 border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium text-lg flex items-center gap-3 transition-all"
+              className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded flex items-center gap-2 transition-colors border border-white/10"
             >
-              <Github className="w-5 h-5" />
+              <Github className="w-4 h-4" />
               Import from GitHub
             </button>
           </div>
 
-          {/* Key Points */}
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-500">
+          {/* Social proof */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
-              No account needed
+              <Check className="w-4 h-4 text-green-500" />
+              No signup required
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-purple-400 rounded-full" />
+              <Check className="w-4 h-4 text-green-500" />
               React + TypeScript
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full" />
+              <Check className="w-4 h-4 text-green-500" />
               Full npm access
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-pink-400 rounded-full" />
-              Instant preview
             </span>
           </div>
         </div>
+      </section>
 
-        {/* Product Demo */}
-        <div className="relative z-10 w-full max-w-5xl mx-auto mt-16 mb-8">
-          <div className="relative rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0f] shadow-2xl shadow-purple-500/10">
+      {/* Product Demo */}
+      <section className="pb-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0f0f11] shadow-2xl">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-[#12101a] border-b border-white/5">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            <div className="flex items-center gap-3 px-4 py-3 bg-[#18181b] border-b border-white/5">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                <div className="w-3 h-3 rounded-full bg-[#28c840]" />
               </div>
-              <div className="flex-1 mx-4">
+              <div className="flex-1 mx-8">
                 <div 
                   onClick={handleCopyUrl}
-                  className="group max-w-md mx-auto px-3 py-1 bg-[#1a1825] rounded text-xs text-gray-400 text-center cursor-pointer hover:bg-[#1f1a2a] transition flex items-center justify-center gap-2"
+                  className="max-w-sm mx-auto px-4 py-1.5 bg-[#0f0f11] rounded-md text-sm text-gray-400 cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-2"
                 >
-                  <span>{demoUrl}</span>
+                  <span className="truncate">{demoUrl}</span>
                   {copied ? (
-                    <Check className="w-3 h-3 text-green-400" />
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
                   ) : (
-                    <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition" />
+                    <Copy className="w-4 h-4 flex-shrink-0 opacity-50" />
                   )}
                 </div>
               </div>
             </div>
             
             {/* IDE Layout */}
-            <div className="flex h-[400px] md:h-[500px]">
-              {/* File Tree */}
-              <div className="hidden md:block w-48 bg-[#0d0b12] border-r border-white/5 p-3">
-                <div className="text-xs text-gray-500 uppercase tracking-wider mb-3">Explorer</div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2 px-2 py-1 text-gray-400 hover:bg-white/5 rounded cursor-pointer">
-                    <FileCode className="w-4 h-4 text-yellow-400" />
-                    package.json
-                  </div>
-                  <div className="flex items-center gap-2 px-2 py-1 bg-purple-500/20 text-white rounded">
-                    <FileCode className="w-4 h-4 text-purple-400" />
-                    App.tsx
-                  </div>
-                  <div className="flex items-center gap-2 px-2 py-1 text-gray-400 hover:bg-white/5 rounded cursor-pointer">
-                    <FileCode className="w-4 h-4 text-cyan-400" />
-                    index.css
-                  </div>
-                  <div className="flex items-center gap-2 px-2 py-1 text-gray-400 hover:bg-white/5 rounded cursor-pointer">
-                    <FileCode className="w-4 h-4 text-orange-400" />
-                    index.html
-                  </div>
+            <div className="flex h-[420px]">
+              {/* Sidebar */}
+              <div className="hidden md:block w-52 bg-[#0c0c0e] border-r border-white/5 p-4">
+                <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Explorer</div>
+                <div className="space-y-1">
+                  {['package.json', 'App.tsx', 'index.css', 'index.html'].map((file, i) => (
+                    <div 
+                      key={file}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded text-sm ${
+                        i === 1 ? 'bg-purple-500/20 text-white' : 'text-gray-400 hover:bg-white/5'
+                      }`}
+                    >
+                      <FileCode className={`w-4 h-4 ${
+                        i === 0 ? 'text-yellow-400' : 
+                        i === 1 ? 'text-purple-400' : 
+                        i === 2 ? 'text-cyan-400' : 'text-orange-400'
+                      }`} />
+                      {file}
+                    </div>
+                  ))}
                 </div>
               </div>
               
               {/* Editor */}
-              <div className="flex-1 bg-[#0a0a0f] p-4 overflow-hidden">
-                <pre className="text-sm leading-relaxed">
+              <div className="flex-1 bg-[#0f0f11] p-6 overflow-hidden font-mono text-sm">
+                <pre className="leading-relaxed">
                   <code>
                     <span className="text-purple-400">import</span>
                     <span className="text-gray-300"> {'{ useState }'} </span>
@@ -218,15 +180,12 @@ export default function Landing() {
                     {'\n    '}
                     <span className="text-gray-500">{'<'}</span>
                     <span className="text-cyan-400">div</span>
-                    <span className="text-purple-400"> className</span>
-                    <span className="text-gray-300">=</span>
-                    <span className="text-green-400">"container"</span>
                     <span className="text-gray-500">{'>'}</span>
                     {'\n      '}
                     <span className="text-gray-500">{'<'}</span>
                     <span className="text-cyan-400">h1</span>
                     <span className="text-gray-500">{'>'}</span>
-                    <span className="text-gray-300">Count: {'{'}{demoCount}{'}'}</span>
+                    <span className="text-gray-300">{'{'}{demoCount}{'}'}</span>
                     <span className="text-gray-500">{'</'}</span>
                     <span className="text-cyan-400">h1</span>
                     <span className="text-gray-500">{'>'}</span>
@@ -237,7 +196,7 @@ export default function Landing() {
                     <span className="text-gray-300">={'{() => setCount(c => c + 1)}'}</span>
                     <span className="text-gray-500">{'>'}</span>
                     {'\n        '}
-                    <span className="text-gray-300">+1</span>
+                    <span className="text-gray-300">Click me</span>
                     {'\n      '}
                     <span className="text-gray-500">{'</'}</span>
                     <span className="text-cyan-400">button</span>
@@ -254,243 +213,203 @@ export default function Landing() {
                 </pre>
               </div>
               
-              {/* Live Preview */}
-              <div className="hidden lg:flex flex-col w-72 bg-white border-l border-white/5">
-                <div className="flex items-center justify-between px-3 py-2 bg-gray-100 border-b border-gray-200 text-xs text-gray-500">
+              {/* Preview */}
+              <div className="hidden lg:flex flex-col w-80 bg-white">
+                <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
-                    <Play className="w-3 h-3 text-green-500" />
-                    <span>Live Preview</span>
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    Preview
                   </div>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </div>
-                <div className="flex-1 flex flex-col items-center justify-center p-6">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-6">Count: {demoCount}</h1>
+                <div className="flex-1 flex flex-col items-center justify-center p-8">
+                  <div className="text-6xl font-bold text-gray-900 mb-8">{demoCount}</div>
                   <button 
                     onClick={() => setDemoCount(c => c + 1)}
-                    className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition cursor-pointer font-medium"
+                    className="px-8 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium"
                   >
-                    +1
+                    Click me
                   </button>
                 </div>
               </div>
             </div>
           </div>
-          
-          {/* Glow */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-transparent to-cyan-500/20 blur-3xl -z-10" />
         </div>
       </section>
-      
+
+      {/* Value Props */}
+      <section className="py-24 px-6 bg-[#0c0c0e]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Projects as links
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Your entire codebase compressed into a shareable URL. 
+              Anyone can view, run, and remix your code instantly.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="p-6 bg-[#09090b] rounded-lg border border-white/5">
+              <div className="w-10 h-10 flex items-center justify-center bg-purple-500/10 rounded-lg mb-4">
+                <Share2 className="w-5 h-5 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Share instantly</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Copy the URL, paste it anywhere. Recipients see your running app immediately—no downloads, no setup.
+              </p>
+            </div>
+
+            <div className="p-6 bg-[#09090b] rounded-lg border border-white/5">
+              <div className="w-10 h-10 flex items-center justify-center bg-cyan-500/10 rounded-lg mb-4">
+                <Zap className="w-5 h-5 text-cyan-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Live bundling</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                esbuild runs in your browser. Changes preview instantly. Import any npm package—dependencies resolve automatically.
+              </p>
+            </div>
+
+            <div className="p-6 bg-[#09090b] rounded-lg border border-white/5">
+              <div className="w-10 h-10 flex items-center justify-center bg-green-500/10 rounded-lg mb-4">
+                <Code2 className="w-5 h-5 text-green-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Remix anything</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Fork any project with one click. Make your changes, share your own URL. Every project spawns new creations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Built for builders
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto flex items-center justify-center bg-purple-500/10 rounded-full mb-4">
+                <GraduationCap className="w-7 h-7 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Students & Learners</h3>
+              <p className="text-gray-400 text-sm">
+                Zero-friction environment to experiment with code. No local setup, no configuration headaches.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto flex items-center justify-center bg-cyan-500/10 rounded-full mb-4">
+                <Users className="w-7 h-7 text-cyan-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Hobbyist Developers</h3>
+              <p className="text-gray-400 text-sm">
+                Quickly prototype ideas without infrastructure overhead. Ship weekend projects in minutes.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto flex items-center justify-center bg-green-500/10 rounded-full mb-4">
+                <Briefcase className="w-7 h-7 text-green-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Professional Developers</h3>
+              <p className="text-gray-400 text-sm">
+                Share reproducible examples, demos, and proof-of-concepts with colleagues and clients.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Recent Projects */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-12 px-6 bg-[#0c0c0e]">
+        <div className="max-w-5xl mx-auto">
           <RecentProjects />
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-32 px-6 bg-[#08080c]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Everything runs in the browser
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              No servers. No builds. Just open and code.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Feature cards */}
-            <div className="p-8 bg-[#0a0a0f] border border-white/5 hover:border-purple-500/30 transition-all group">
-              <div className="w-12 h-12 flex items-center justify-center bg-purple-500/10 border border-purple-500/20 mb-6">
-                <Share2 className="w-6 h-6 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                URL = Project
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Your entire codebase encoded in the URL. Copy the link, share it anywhere—instant access for anyone.
-              </p>
+      {/* Templates */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Start from a template</h2>
+              <p className="text-gray-400 text-sm mt-1">Pre-built projects ready to remix</p>
             </div>
-
-            <div className="p-8 bg-[#0a0a0f] border border-white/5 hover:border-cyan-500/30 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-cyan-500/10 border border-cyan-500/20 mb-6">
-                <Zap className="w-6 h-6 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Live preview
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Changes reflect instantly as you type. esbuild-wasm bundles your code directly in the browser.
-              </p>
-            </div>
-
-            <div className="p-8 bg-[#0a0a0f] border border-white/5 hover:border-pink-500/30 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-pink-500/10 border border-pink-500/20 mb-6">
-                <Package className="w-6 h-6 text-pink-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                npm packages
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Import from the entire npm registry. Dependencies load automatically via esm.sh with smart caching.
-              </p>
-            </div>
-
-            <div className="p-8 bg-[#0a0a0f] border border-white/5 hover:border-green-500/30 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-green-500/10 border border-green-500/20 mb-6">
-                <Code2 className="w-6 h-6 text-green-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Monaco editor
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Full VS Code editing experience. Syntax highlighting, IntelliSense, and TypeScript support built in.
-              </p>
-            </div>
-
-            <div className="p-8 bg-[#0a0a0f] border border-white/5 hover:border-orange-500/30 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-orange-500/10 border border-orange-500/20 mb-6">
-                <Github className="w-6 h-6 text-orange-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                GitHub sync
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Import repos and gists. Export your work back. Built-in version control with commit history.
-              </p>
-            </div>
-
-            <div className="p-8 bg-[#0a0a0f] border border-white/5 hover:border-yellow-500/30 transition-all">
-              <div className="w-12 h-12 flex items-center justify-center bg-yellow-500/10 border border-yellow-500/20 mb-6">
-                <Globe className="w-6 h-6 text-yellow-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Works offline
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Once loaded, everything runs locally. Dependencies cached in IndexedDB for instant reloads.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Templates Section */}
-      <section id="templates" className="py-32 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Start from a template
-            </h2>
-            <p className="text-xl text-gray-400">
-              Pre-built projects ready to hack on
-            </p>
+            <button
+              onClick={() => setShowTemplates(true)}
+              className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors"
+            >
+              View all {TEMPLATES.length} →
+            </button>
           </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {TEMPLATES.slice(0, 12).map((template) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {TEMPLATES.map((template) => (
               <Link
                 key={template.id}
                 to={`/ide#${encodeWorkspace(template.workspace)}`}
-                className="group p-5 bg-[#0a0a0f] border border-white/5 hover:border-purple-500/50 transition-all"
+                className="group p-4 bg-[#0c0c0e] rounded-lg border border-white/5 hover:border-purple-500/30 transition-colors"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 flex items-center justify-center bg-purple-500/10 border border-purple-500/30 text-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">
                     {template.icon === 'react' ? '⚛️' : 
                      template.icon === 'typescript' ? '📘' :
                      template.icon === 'game' ? '🎮' :
                      template.icon === 'chart' ? '📊' :
                      template.icon === 'animation' ? '✨' :
-                     template.icon === 'api' ? '🔌' : '📄'}
-                  </div>
-                  <h3 className="font-bold text-white group-hover:text-purple-400 transition">
+                     template.icon === 'particle' ? '🎆' :
+                     template.icon === 'api' ? '🔌' :
+                     template.icon === 'portfolio' ? '💼' : '📄'}
+                  </span>
+                  <span className="font-medium text-white text-sm group-hover:text-purple-400 transition-colors truncate">
                     {template.name}
-                  </h3>
+                  </span>
                 </div>
-                <p className="text-sm text-gray-500">{template.description}</p>
+                <p className="text-xs text-gray-500 line-clamp-2">{template.description}</p>
               </Link>
             ))}
           </div>
-          
-          <div className="text-center mt-10">
-            <button
-              onClick={() => setShowTemplates(true)}
-              className="px-6 py-3 border border-gray-700 hover:border-purple-500/50 text-gray-300 hover:text-white transition text-sm font-medium"
-            >
-              View all {TEMPLATES.length} templates →
-            </button>
-          </div>
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section className="py-32 px-6 bg-[#08080c]">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Perfect for
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              { title: 'Tutorials & Documentation', desc: 'Embed live, editable examples in your blog posts or docs. Readers learn by doing.' },
-              { title: 'Bug Reports', desc: 'Share a minimal reproduction with a single URL. No "works on my machine".' },
-              { title: 'Quick Prototypes', desc: 'Sketch out an idea in minutes. Test it, share it, iterate—all from the browser.' },
-              { title: 'Learning React', desc: 'No setup. No node_modules. Just open a template and start experimenting.' },
-            ].map((item, i) => (
-              <div key={i} className="p-6 border border-white/5 bg-[#0a0a0f]">
-                <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
-                <p className="text-gray-400">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-32 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to build?
+      {/* CTA */}
+      <section className="py-24 px-6 bg-[#0c0c0e]">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Start building now
           </h2>
-          <p className="text-xl text-gray-400 mb-12">
-            Pick a template and start coding. It's that simple.
+          <p className="text-lg text-gray-400 mb-8">
+            No signup. No install. Just start coding.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => setShowTemplates(true)}
-              className="px-10 py-5 bg-purple-500 hover:bg-purple-400 text-white font-semibold text-lg transition"
-            >
-              Start coding →
-            </button>
-            <a
-              href="https://github.com/WickTheThird/HashIDEA"
-              target="_blank"
-              rel="noopener"
-              className="px-10 py-5 border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium text-lg flex items-center gap-3 transition"
-            >
-              <Github className="w-5 h-5" />
-              Star on GitHub
-            </a>
-          </div>
+          <Link
+            to="/ide"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-lg transition-colors"
+          >
+            Open the playground
+            <ArrowRight className="w-5 h-5" />
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
-            <span className="text-purple-400 font-bold">#</span>
-            <span>HashIDEA</span>
-            <span className="text-gray-600">·</span>
-            <span className="text-gray-600">Code that lives in the URL</span>
+            <div className="w-5 h-5 bg-purple-500 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-xs">#</span>
+            </div>
+            <span className="text-gray-400">HashIDEA</span>
           </div>
           <div className="flex items-center gap-6">
-            <a href="https://github.com/WickTheThird/HashIDEA" target="_blank" rel="noopener" className="hover:text-white transition">GitHub</a>
-            <span>Built by <a href="https://github.com/WickTheThird" target="_blank" rel="noopener" className="hover:text-white transition">WickTheThird</a></span>
+            <a href="https://github.com/WickTheThird/HashIDEA" target="_blank" rel="noopener" className="hover:text-white transition-colors">GitHub</a>
+            <span>Built by <a href="https://github.com/WickTheThird" target="_blank" rel="noopener" className="hover:text-white transition-colors">WickTheThird</a></span>
           </div>
         </div>
       </footer>
