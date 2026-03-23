@@ -47,11 +47,13 @@ export default function Landing() {
   const [copied, setCopied] = useState(false)
   const [activeFile, setActiveFile] = useState(1) // App.tsx
 
-  const demoUrl = 'hashideea.com/#eJzT0yMAAGTvBe4'
-  const embedUrl = '/embed#eJzT0yMAAGTvBe4'
+  // Get encoded hash from first template (React Counter)
+  const demoHash = encodeWorkspace(TEMPLATES[0].workspace)
+  const demoUrl = `hashideea.com/#${demoHash.slice(0, 20)}...`
+  const embedUrl = `/embed#${demoHash}`
   
   const handleCopyUrl = () => {
-    navigator.clipboard.writeText(`https://${demoUrl}`)
+    navigator.clipboard.writeText(`https://hashideea.com/#${demoHash}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
