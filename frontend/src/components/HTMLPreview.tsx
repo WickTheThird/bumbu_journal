@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { X, Eye, RefreshCw, Loader2 } from 'lucide-react'
 import { bundle, needsBundling, initBundler, generateImportMap } from '../lib/bundler'
+import { buildCachedImportMap } from '../lib/packageCache'
 import { marked } from 'marked'
 
 interface HTMLPreviewProps {
@@ -10,26 +11,29 @@ interface HTMLPreviewProps {
   files?: { name: string; content: string }[]
   isOpen: boolean
   onClose: () => void
+  hideControls?: boolean
 }
 
-export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: HTMLPreviewProps) {
+export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hideControls = false }: HTMLPreviewProps) {
   const [refreshKey, setRefreshKey] = useState(0)
+  const [bundleKey, setBundleKey] = useState(0)
   const [bundledCode, setBundledCode] = useState<string | null>(null)
   const [bundleError, setBundleError] = useState<string | null>(null)
   const [bundleImports, setBundleImports] = useState<string[]>([])
   const [isBundling, setIsBundling] = useState(false)
+  const [importMapText, setImportMapText] = useState<string | null>(null)
   
   const isFrameworkProject = files && needsBundling(files)
   
   const markdownFile = files?.find(f => f.name.endsWith('.md') || f.name.endsWith('.mdx'))
   const isMarkdownProject = !isFrameworkProject && markdownFile && !files?.some(f => f.name.endsWith('.html'))
+  const usesTailwind = !!files?.some(f => /tailwindcss|@tailwind|tailwind.config/.test(f.content))
   
   useEffect(() => {
     if (!isOpen || !isFrameworkProject || !files) return
     
     let cancelled = false
-    
-    async function doBundle() {
+    const timer = setTimeout(async () => {
       setIsBundling(true)
       setBundleError(null)
       
@@ -59,12 +63,43 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
           setIsBundling(false)
         }
       }
+    }, 300)
+    
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [isOpen, files, isFrameworkProject, bundleKey])
+  
+  useEffect(() => {
+    if (!isFrameworkProject) {
+      setImportMapText(null)
+      return
     }
     
-    doBundle()
+    let active = true
+    setImportMapText(null)
+    ;(async () => {
+      try {
+        const map = await buildCachedImportMap(bundleImports)
+        if (active) setImportMapText(map)
+      } catch {
+        if (active) setImportMapText(generateImportMap(bundleImports))
+      }
+    })()
     
-    return () => { cancelled = true }
-  }, [isOpen, files, refreshKey, isFrameworkProject])
+    return () => {
+      active = false
+    }
+  }, [bundleImports, isFrameworkProject])
+  
+  useEffect(() => {
+    if (!isOpen) return
+    const timer = setTimeout(() => {
+      setRefreshKey((k) => k + 1)
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [html, css, js, bundledCode, markdownFile?.content, isOpen, importMapText])
   
   const htmlSrcdoc = useMemo(() => {
     if (isFrameworkProject) return null
@@ -74,6 +109,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${usesTailwind ? '<script src="https://cdn.tailwindcss.com"></script>' : ''}
   <style>
     html { scroll-behavior: smooth; }
     body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
@@ -103,7 +139,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
   <\/script>
 </body>
 </html>`
-  }, [html, css, js, refreshKey, isFrameworkProject])
+  }, [html, css, js, refreshKey, isFrameworkProject, usesTailwind])
   
   const frameworkSrcdoc = useMemo(() => {
     if (!isFrameworkProject || !bundledCode) return null
@@ -120,7 +156,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
       bodyContent = bodyMatch[1]
     }
     
-    const importMap = generateImportMap(bundleImports)
+    const importMap = importMapText || generateImportMap(bundleImports)
     
     return `<!DOCTYPE html>
 <html>
@@ -161,7 +197,7 @@ ${importMap}
   <\/script>
 </body>
 </html>`
-  }, [bundledCode, bundleImports, files, isFrameworkProject])
+  }, [bundledCode, bundleImports, files, isFrameworkProject, importMapText])
   
   const markdownSrcdoc = useMemo(() => {
     if (!isMarkdownProject || !markdownFile) return null
@@ -174,6 +210,7 @@ ${importMap}
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${usesTailwind ? '<script src="https://cdn.tailwindcss.com"></script>' : ''}
   <style>
     html { scroll-behavior: smooth; }
     body { 
@@ -205,7 +242,7 @@ ${importMap}
   ${htmlContent}
 </body>
 </html>`
-  }, [markdownFile, files, isMarkdownProject, refreshKey])
+  }, [markdownFile, files, isMarkdownProject, refreshKey, usesTailwind])
   
   const srcdoc = isFrameworkProject ? frameworkSrcdoc : (isMarkdownProject ? markdownSrcdoc : htmlSrcdoc)
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -238,33 +275,38 @@ ${importMap}
   return (
     <div className="flex flex-col h-full border-l border-ide-border bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-ide-surface border-b border-ide-border">
-        <div className="flex items-center gap-2 text-ide-text">
-          <Eye className="w-4 h-4 text-ide-accent" />
-          <span className="text-sm font-medium">Preview</span>
-          {isFrameworkProject && (
-            <span className="text-xs bg-ide-accent/20 text-ide-accent px-1.5 py-0.5 rounded">React</span>
-          )}
-          {isBundling && (
-            <Loader2 className="w-3 h-3 animate-spin text-ide-muted" />
-          )}
+      {!hideControls && (
+        <div className="flex items-center justify-between px-4 py-2 bg-ide-surface border-b border-ide-border">
+          <div className="flex items-center gap-2 text-ide-text">
+            <Eye className="w-4 h-4 text-ide-accent" />
+            <span className="text-sm font-medium">Preview</span>
+            {isFrameworkProject && (
+              <span className="text-xs bg-ide-accent/20 text-ide-accent px-1.5 py-0.5 rounded">React</span>
+            )}
+            {isBundling && (
+              <Loader2 className="w-3 h-3 animate-spin text-ide-muted" />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+              setRefreshKey(k => k + 1)
+              setBundleKey(k => k + 1)
+            }}
+              className="p-1.5 rounded hover:bg-ide-border transition"
+              title="Refresh"
+            >
+              <RefreshCw className="w-4 h-4 text-ide-muted" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded hover:bg-ide-border transition"
+            >
+              <X className="w-4 h-4 text-ide-muted" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setRefreshKey(k => k + 1)}
-            className="p-1.5 rounded hover:bg-ide-border transition"
-            title="Refresh"
-          >
-            <RefreshCw className="w-4 h-4 text-ide-muted" />
-          </button>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded hover:bg-ide-border transition"
-          >
-            <X className="w-4 h-4 text-ide-muted" />
-          </button>
-        </div>
-      </div>
+      )}
       
       {/* Error display */}
       {bundleError && (
@@ -294,6 +336,11 @@ ${importMap}
           sandbox="allow-scripts allow-same-origin"
           title="Preview"
         />
+      )}
+      {!srcdoc && !isBundling && !bundleError && (
+        <div className="flex-1 flex items-center justify-center bg-ide-bg text-ide-muted text-sm">
+          No preview available for this project.
+        </div>
       )}
     </div>
   )

@@ -78,7 +78,7 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
       }
       
       const newWorkspace = {
-        version: 1 as const,
+        version: 2 as const,
         files: files.map(f => ({
           name: f.name,
           content: f.content,
@@ -148,7 +148,7 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
           { owner: fork.owner, repo: fork.repo, branch: branchName },
           file.name,
           file.content,
-          `Update ${file.name} via HashIDE`,
+          `Update ${file.name} via HashIDEA`,
           branchName
         )
       }
@@ -158,8 +158,8 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
         sourceRepo.repo,
         `${fork.owner}:${branchName}`,
         sourceRepo.branch,
-        prTitle || 'Changes from HashIDE',
-        prBody || 'This PR was created using HashIDE.'
+        prTitle || 'Changes from HashIDEA',
+        prBody || 'This PR was created using HashIDEA.'
       )
       
       setPrUrl(result.html_url)
@@ -311,7 +311,7 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
                       type="text"
                       value={prTitle}
                       onChange={(e) => setPrTitle(e.target.value)}
-                      placeholder="Changes from HashIDE"
+                      placeholder="Changes from HashIDEA"
                       className="w-full px-3 py-2.5 bg-ide-bg border border-ide-border rounded-lg focus:border-ide-accent focus:outline-none text-sm"
                     />
                   </div>

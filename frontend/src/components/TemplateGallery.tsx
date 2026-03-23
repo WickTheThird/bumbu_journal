@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { templates } from '../lib/templates'
+import { TEMPLATES } from '../lib/templates'
 import { encodeWorkspace } from '../lib/hash'
 import { ArrowRight, FileCode, BarChart3, Sparkles, Plug, Briefcase, Dice5, File, Atom, X } from 'lucide-react'
 
@@ -56,7 +56,7 @@ export default function TemplateGallery({ isOpen, onClose }: TemplateGalleryProp
         
         {/* Grid */}
         <div className="p-6 overflow-y-auto max-h-[60vh] grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {templates.map((template) => (
+          {TEMPLATES.map((template) => (
             <Link
               key={template.id}
               to={`/ide#${encodeWorkspace(template.workspace)}`}

@@ -1,5 +1,5 @@
 /**
- * Version history management for HashIDE
+ * Version history management for HashIDEA
  * Stores snapshots of workspace state for undo/comparison
  */
 

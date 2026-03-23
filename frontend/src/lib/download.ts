@@ -1,5 +1,5 @@
 /**
- * File download utilities for HashIDE
+ * File download utilities for HashIDEA
  */
 
 import { Workspace } from '../types/workspace'

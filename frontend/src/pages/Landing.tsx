@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Github, FileCode, Package, Share2, Zap, Play } from 'lucide-react'
+import { ArrowRight, Github, FileCode, Package, Share2, Zap, Play, Sparkles } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 import GitHubModal from '../components/GitHubModal'
+import RecentProjects from '../components/RecentProjects'
+import { TEMPLATES } from '../lib/templates'
+import { encodeWorkspace } from '../lib/hash'
 import '../styles/cyberpunk.css'
 
 export default function Landing() {
@@ -39,12 +42,12 @@ export default function Landing() {
               <div className="w-8 h-8 border border-purple-500/50 flex items-center justify-center bg-purple-500/10">
                 <span className="text-purple-400 font-bold text-lg">#</span>
               </div>
-              <span className="text-lg font-bold tracking-wide text-white">HashIDE</span>
+              <span className="text-lg font-bold tracking-wide text-white">HashIDEA</span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm text-gray-400">
               <a href="#features" className="hover:text-white transition">Features</a>
               <a href="#how-it-works" className="hover:text-white transition">How it works</a>
-              <a href="https://github.com/WickTheThird/HashIDE" target="_blank" rel="noopener" className="hover:text-white transition">GitHub</a>
+              <a href="https://github.com/WickTheThird/HashIDEA" target="_blank" rel="noopener" className="hover:text-white transition">GitHub</a>
             </div>
           </div>
           <Link 
@@ -145,7 +148,7 @@ export default function Landing() {
               </div>
               <div className="flex-1 mx-4">
                 <div className="max-w-md mx-auto px-3 py-1 bg-[#1a1825] rounded text-xs text-gray-400 text-center">
-                  hashide.dev/#eJzT0yMAAGTvBe4
+                  hashideea.com/#eJzT0yMAAGTvBe4
                 </div>
               </div>
             </div>
@@ -254,13 +257,65 @@ export default function Landing() {
           <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-transparent to-cyan-500/20 blur-3xl -z-10" />
         </div>
       </section>
+      
+      {/* Recent Projects Section */}
+      <section className="py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <RecentProjects />
+        </div>
+      </section>
+
+      {/* Templates Section */}
+      <section id="templates" className="py-16 px-6 bg-[#08080c]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Start from a template
+            </h2>
+            <p className="text-gray-400">
+              Pre-built projects to get you started in seconds
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {TEMPLATES.slice(0, 8).map((template) => (
+              <Link
+                key={template.id}
+                to={`/ide#${encodeWorkspace(template.workspace)}`}
+                className="group p-5 bg-[#0a0a0f] border border-white/5 hover:border-purple-500/50 transition-all"
+              >
+                <div className="w-10 h-10 flex items-center justify-center bg-purple-500/10 border border-purple-500/30 mb-4">
+                  {template.icon === 'react' ? (
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                  ) : (
+                    <FileCode className="w-5 h-5 text-purple-400" />
+                  )}
+                </div>
+                <h3 className="font-bold text-white mb-1 group-hover:text-purple-400 transition">
+                  {template.name}
+                </h3>
+                <p className="text-sm text-gray-500">{template.description}</p>
+              </Link>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setShowTemplates(true)}
+              className="text-purple-400 hover:text-purple-300 transition text-sm font-medium"
+            >
+              View all templates →
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section id="features" className="py-32 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Why HashIDE
+              Why HashIDEA
             </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               A new mental model for building and sharing web projects
@@ -358,7 +413,7 @@ export default function Landing() {
               Open the playground
             </button>
             <a
-              href="https://github.com/WickTheThird/HashIDE"
+              href="https://github.com/WickTheThird/HashIDEA"
               target="_blank"
               rel="noopener"
               className="px-10 py-5 border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-medium text-lg flex items-center gap-3 transition"
@@ -375,10 +430,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <span className="text-purple-400">#</span>
-            <span>HashIDE</span>
+            <span>HashIDEA</span>
           </div>
           <div className="flex items-center gap-6">
-            <a href="https://github.com/WickTheThird/HashIDE" target="_blank" rel="noopener" className="hover:text-white transition">GitHub</a>
+            <a href="https://github.com/WickTheThird/HashIDEA" target="_blank" rel="noopener" className="hover:text-white transition">GitHub</a>
             <span>Built by WickTheThird</span>
           </div>
         </div>

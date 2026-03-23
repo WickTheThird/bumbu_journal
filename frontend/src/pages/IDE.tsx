@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff, Code
 } from 'lucide-react'
 
 const XIcon = ({ className }: { className?: string }) => (
@@ -11,6 +11,11 @@ const XIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 import '../styles/cyberpunk.css'
+import RemixButton from '../components/RemixButton'
+import RemixAttribution from '../components/RemixAttribution'
+import EmbedModal from '../components/EmbedModal'
+import { saveToRecentProjects } from '../lib/recentProjects'
+import { getShortHash, getProjectTitle } from '../lib/hash'
 import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
@@ -109,6 +114,7 @@ export default function IDE() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showGitHub, setShowGitHub] = useState(false)
   const [showSourceControl, setShowSourceControl] = useState(false)
+  const [showEmbed, setShowEmbed] = useState(false)
   const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
   const [githubUser, setGithubUser] = useState<{ login: string } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
@@ -196,6 +202,26 @@ export default function IDE() {
     return () => clearTimeout(timer)
   }, [workspace, isLoading])
   
+  // Save to recent projects when workspace changes
+  useEffect(() => {
+    if (isLoading || !window.location.hash) return
+    
+    const hash = window.location.hash.slice(1)
+    if (!hash) return
+    
+    // Debounce to avoid too frequent saves
+    const timer = setTimeout(() => {
+      saveToRecentProjects({
+        hash,
+        shortHash: getShortHash(),
+        title: getProjectTitle(workspace),
+        files: workspace.files.map(f => f.name),
+      })
+    }, 2000)
+    
+    return () => clearTimeout(timer)
+  }, [workspace, isLoading])
+  
   const activeFile = workspace.files.find(f => f.name === workspace.activeFile)
   
   const handleShare = async () => {
@@ -208,7 +234,7 @@ export default function IDE() {
   
   const handleShareX = () => {
     const url = getShareableURL(workspace)
-    const text = `Check out my code on HashIDE!`
+    const text = `Check out my code on HashIDEA!`
     const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
     window.open(xUrl, '_blank')
   }
@@ -429,7 +455,7 @@ export default function IDE() {
           <Link to="/" className="flex items-center gap-1 sm:gap-2 text-ide-muted hover:text-ide-text transition">
             <ChevronLeft className="w-4 h-4 hidden sm:block" />
             <Hash className="w-5 h-5 text-ide-accent" />
-            <span className="font-semibold hidden sm:inline">HashIDE</span>
+            <span className="font-semibold hidden sm:inline">HashIDEA</span>
           </Link>
         </div>
         
@@ -473,6 +499,12 @@ export default function IDE() {
             <Download className="w-4 h-4" />
           </button>
           
+          <RemixButton />
+          
+          <button onClick={() => setShowEmbed(true)} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-ide-text transition" title="Embed Project">
+            <Code className="w-4 h-4" />
+          </button>
+          
           <button onClick={handleShare} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition">
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             {copied ? 'Copied!' : 'Share'}
@@ -498,6 +530,13 @@ export default function IDE() {
           </button>
         </div>
       </header>
+      
+      {/* Remix attribution banner */}
+      {workspace.remix?.from && (
+        <div className="px-4 py-2 bg-ide-surface/50 border-b border-ide-border">
+          <RemixAttribution />
+        </div>
+      )}
       
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar - lower z-index so Monaco hovers appear above */}
@@ -656,6 +695,7 @@ export default function IDE() {
       <SearchPanel isOpen={showSearch} onClose={() => setShowSearch(false)} />
       <GitHubModal isOpen={showGitHub} onClose={() => setShowGitHub(false)} onImport={setSourceRepo} />
       <SourceControlPanel isOpen={showSourceControl} onClose={() => setShowSourceControl(false)} sourceRepo={sourceRepo} />
+      <EmbedModal isOpen={showEmbed} onClose={() => setShowEmbed(false)} />
     </div>
   )
 }

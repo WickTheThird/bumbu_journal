@@ -88,7 +88,7 @@ export default function SourceControlPanel({ isOpen, onClose, sourceRepo }: Sour
       setVcs(result.state)
       saveVCS(result.state)
       setWorkspace({
-        version: 1,
+        version: 2,
         files: result.files.map(f => ({ name: f.name, content: f.content })),
         activeFile: result.files[0]?.name,
         settings: workspace.settings,
@@ -113,7 +113,7 @@ export default function SourceControlPanel({ isOpen, onClose, sourceRepo }: Sour
       
       // Push files
       const files = workspace.files.map(f => ({ path: f.name, content: f.content }))
-      await pushFiles(fork.owner, fork.repo, branchName, files, commitMessage || 'Update from HashIDE')
+      await pushFiles(fork.owner, fork.repo, branchName, files, commitMessage || 'Update from HashIDEA')
       setPushStatus('Creating pull request...')
       
       // Create PR
@@ -122,8 +122,8 @@ export default function SourceControlPanel({ isOpen, onClose, sourceRepo }: Sour
         sourceRepo.repo,
         `${fork.owner}:${branchName}`,
         'main',
-        commitMessage || 'Update from HashIDE',
-        'Changes made in HashIDE'
+        commitMessage || 'Update from HashIDEA',
+        'Changes made in HashIDEA'
       )
       
       setPushStatus('')
@@ -357,7 +357,7 @@ export default function SourceControlPanel({ isOpen, onClose, sourceRepo }: Sour
                   <div className="text-center p-4 bg-ide-bg rounded-lg border border-ide-border">
                     <p className="text-sm text-ide-muted mb-3">Login to GitHub to push changes</p>
                     <a
-                      href="https://github.com/settings/tokens/new?scopes=public_repo&description=HashIDE"
+                      href="https://github.com/settings/tokens/new?scopes=public_repo&description=HashIDEA"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-ide-accent hover:underline text-sm"

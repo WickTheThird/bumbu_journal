@@ -5,7 +5,7 @@ import { Workspace, DEFAULT_WORKSPACE } from '../types/workspace'
 describe('hash encoding/decoding', () => {
   it('should encode and decode a workspace', () => {
     const workspace: Workspace = {
-      version: 1,
+      version: 2,
       files: [
         { name: 'test.py', content: 'print("hello")', language: 'python' },
       ],
@@ -46,7 +46,7 @@ describe('hash encoding/decoding', () => {
   
   it('should strip unknown fields during encoding', () => {
     const workspace = {
-      version: 1,
+      version: 2,
       files: [{ name: 'test.py', content: 'test', language: 'python' }],
       malicious: 'payload', // Unknown field - should be stripped
     }
@@ -62,7 +62,7 @@ describe('hash encoding/decoding', () => {
   
   it('should handle multiple files', () => {
     const workspace: Workspace = {
-      version: 1,
+      version: 2,
       files: [
         { name: 'main.py', content: 'import utils', language: 'python' },
         { name: 'utils.py', content: 'def helper(): pass', language: 'python' },
@@ -80,7 +80,7 @@ describe('hash encoding/decoding', () => {
   
   it('should preserve file content with special characters', () => {
     const workspace: Workspace = {
-      version: 1,
+      version: 2,
       files: [
         { 
           name: 'test.py', 

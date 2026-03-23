@@ -1,5 +1,5 @@
 import LZString from 'lz-string'
-import { Workspace, WorkspaceSchema, DEFAULT_WORKSPACE } from '../types/workspace'
+import { Workspace, WorkspaceSchema, WorkspaceSchemaV2, DEFAULT_WORKSPACE, migrateWorkspace } from '../types/workspace'
 
 const MAX_HASH_SIZE = 500_000 // 500KB max hash size
 const MAX_DECOMPRESSED_SIZE = 5_000_000 // 5MB max decompressed
@@ -16,7 +16,8 @@ export class HashError extends Error {
  */
 export function encodeWorkspace(workspace: Workspace): string {
   try {
-    const validated = WorkspaceSchema.parse(workspace)
+    // Always encode as v2
+    const validated = WorkspaceSchemaV2.parse(workspace)
     const json = JSON.stringify(validated)
     
     if (json.length > MAX_DECOMPRESSED_SIZE) {
@@ -61,9 +62,11 @@ export function decodeWorkspace(hash: string): Workspace {
     
     const parsed = JSON.parse(decompressed)
     
-    const validated = WorkspaceSchema.strict().parse(parsed)
+    // Parse with union schema (accepts v1 or v2)
+    const validated = WorkspaceSchema.parse(parsed)
     
-    return validated
+    // Migrate to v2 if needed
+    return migrateWorkspace(validated)
   } catch (error) {
     if (error instanceof HashError) throw error
     if (error instanceof SyntaxError) {
@@ -96,4 +99,45 @@ export function setWorkspaceHash(workspace: Workspace): void {
 export function getShareableURL(workspace: Workspace): string {
   const hash = encodeWorkspace(workspace)
   return `${window.location.origin}/ide#${hash}`
+}
+
+/**
+ * Get short hash identifier (first 8 chars) for remix tracking
+ */
+export function getShortHash(): string {
+  const hash = window.location.hash.slice(1)
+  return hash.slice(0, 8)
+}
+
+/**
+ * Create a remixed copy of the current workspace
+ */
+export function createRemix(workspace: Workspace, author?: string): Workspace {
+  const originalHash = getShortHash()
+  
+  return {
+    ...workspace,
+    version: 2,
+    remix: {
+      from: originalHash || undefined,
+      author: author || undefined,
+      created: Date.now(),
+      title: workspace.remix?.title || getProjectTitle(workspace),
+    },
+  }
+}
+
+/**
+ * Get project title from workspace (uses first file name or remix title)
+ */
+export function getProjectTitle(workspace: Workspace): string {
+  if (workspace.remix?.title) {
+    return workspace.remix.title
+  }
+  // Use first file name without extension as title
+  const firstFile = workspace.files[0]?.name
+  if (firstFile) {
+    return firstFile.replace(/\.[^.]+$/, '')
+  }
+  return 'Untitled Project'
 }
