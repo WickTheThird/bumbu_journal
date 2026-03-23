@@ -6,11 +6,10 @@ interface TerminalProps {
   isRunning: boolean
   loadingStatus?: string | null
   onClose: () => void
-  onRun?: () => void // Made optional, not used anymore
+  onRun?: () => void
 }
 
 export default function Terminal({ output, isRunning, loadingStatus, onClose }: TerminalProps) {
-  // Determine what text to show
   let displayText = ''
   let textColor = '#e2e8f0'
   

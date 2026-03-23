@@ -16,11 +16,9 @@ export class HashError extends Error {
  */
 export function encodeWorkspace(workspace: Workspace): string {
   try {
-    // Validate workspace before encoding
     const validated = WorkspaceSchema.parse(workspace)
     const json = JSON.stringify(validated)
     
-    // Check size before compression
     if (json.length > MAX_DECOMPRESSED_SIZE) {
       throw new HashError('Workspace too large', 'SIZE_EXCEEDED')
     }
@@ -42,12 +40,10 @@ export function encodeWorkspace(workspace: Workspace): string {
  * Decode URL hash to workspace with strict validation
  */
 export function decodeWorkspace(hash: string): Workspace {
-  // Treat hash as hostile input
   if (!hash || typeof hash !== 'string') {
     return DEFAULT_WORKSPACE
   }
   
-  // Size check before any processing
   if (hash.length > MAX_HASH_SIZE) {
     throw new HashError('Hash exceeds maximum size', 'HASH_TOO_LARGE')
   }
@@ -59,14 +55,12 @@ export function decodeWorkspace(hash: string): Workspace {
       throw new HashError('Failed to decompress hash', 'DECOMPRESS_FAILED')
     }
     
-    // Size check after decompression (prevent zip bombs)
     if (decompressed.length > MAX_DECOMPRESSED_SIZE) {
       throw new HashError('Decompressed content too large', 'DECOMPRESS_SIZE_EXCEEDED')
     }
     
     const parsed = JSON.parse(decompressed)
     
-    // Strict schema validation - rejects unknown fields
     const validated = WorkspaceSchema.strict().parse(parsed)
     
     return validated

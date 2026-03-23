@@ -31,25 +31,16 @@ interface PaneState {
   childStates?: [PaneState, PaneState]
 }
 
-// Global counter for unique instance IDs
-let instanceCounter = 0
-
 export default function EditorPane({ files, onFileChange, theme, settings, initialActiveFile, initialOpenTabs, depth = 0, externalSelectFile, onRequestClose }: EditorPaneProps) {
-  const paneId = useId() // Unique ID for this pane instance
-  const instanceId = useRef(++instanceCounter).current
+  const paneId = useId()
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
+
+  const [paneState, setPaneState] = useState<PaneState>(() => ({
+    type: 'editor' as const,
+    activeFile: initialActiveFile || files[0]?.name || null,
+    openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
+  }))
   
-  const [paneState, setPaneState] = useState<PaneState>(() => {
-    const initial = {
-      type: 'editor' as const,
-      activeFile: initialActiveFile || files[0]?.name || null,
-      openTabs: initialOpenTabs || files.slice(0, 3).map(f => f.name),
-    }
-    console.log(`[Instance ${instanceId} depth ${depth}] Initial state:`, initial)
-    return initial
-  })
-  
-  // Cleanup editor on unmount
   useEffect(() => {
     return () => {
       if (editorInstance) {
@@ -58,16 +49,12 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }
   }, [editorInstance])
   
-  // State tracking removed - was causing cascade issues
-  // Children will reinitialize from initialOpenTabs on collapse
-  
   // Handle external file selection (from file explorer) - only at root level
   useEffect(() => {
     if (depth === 0 && externalSelectFile && files.some(f => f.name === externalSelectFile)) {
       setPaneState(prev => {
         if (prev.type === 'split') {
-          // If split, update first child (or we could add to focused pane)
-          return prev // For now, don't change split state from external
+          return prev
         }
         return {
           ...prev,
@@ -83,7 +70,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
   const [dropZone, setDropZone] = useState<'left' | 'right' | 'top' | 'bottom' | 'center' | null>(null)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
-  const [tabDropIndex, setTabDropIndex] = useState<number | null>(null) // For reordering tabs
+  const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
 
   const handleSelectFile = useCallback((fileName: string) => {
     setPaneState(prev => ({
@@ -93,24 +80,17 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }))
   }, [])
 
-  // Track if we've already requested close to prevent duplicates
   const hasRequestedClose = useRef(false)
-  
+
   const handleCloseTab = useCallback((fileName: string) => {
-    console.log(`[Instance ${instanceId} depth ${depth}] handleCloseTab called for:`, fileName)
     setPaneState(prev => {
-      // Only handle if we're actually an editor (not a split)
       if (prev.type !== 'editor') return prev
-      
+
       const newTabs = prev.openTabs.filter(t => t !== fileName)
-      
-      // If closing last tab and we're in a split (depth > 0), request close
+
       if (newTabs.length === 0 && depth > 0 && onRequestClose && !hasRequestedClose.current) {
-        console.log(`[Instance ${instanceId} depth ${depth}] CALLING onRequestClose - all tabs closed`)
         hasRequestedClose.current = true
-        // Use setTimeout to avoid state update during render
         setTimeout(() => {
-          console.log(`[Instance ${instanceId} depth ${depth}] onRequestClose EXECUTING`)
           onRequestClose()
         }, 0)
       }
@@ -121,21 +101,18 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
         activeFile: prev.activeFile === fileName ? (newTabs[0] || null) : prev.activeFile,
       }
     })
-  }, [depth, onRequestClose, instanceId])
+  }, [depth, onRequestClose])
 
-  // Reorder tabs within this pane
   const handleReorderTab = useCallback((draggedFile: string, dropIndex: number) => {
     setPaneState(prev => {
       const currentIndex = prev.openTabs.indexOf(draggedFile)
       if (currentIndex === -1) {
-        // File not in tabs yet, insert it
         const newTabs = [...prev.openTabs]
         newTabs.splice(dropIndex, 0, draggedFile)
         return { ...prev, openTabs: newTabs, activeFile: draggedFile }
       }
       if (currentIndex === dropIndex) return prev
       
-      // Remove from current position and insert at new position
       const newTabs = prev.openTabs.filter(t => t !== draggedFile)
       const adjustedIndex = dropIndex > currentIndex ? dropIndex - 1 : dropIndex
       newTabs.splice(adjustedIndex, 0, draggedFile)
@@ -143,11 +120,9 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     })
   }, [])
 
-  // Handle drop - create split or add to tabs
   const handleDrop = useCallback((zone: 'left' | 'right' | 'top' | 'bottom' | 'center', draggedFile: string) => {
     if (!draggedFile) return
     
-    // Center drop = just add to this pane's tabs
     if (zone === 'center') {
       setPaneState(prev => ({
         ...prev,
@@ -157,7 +132,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
       return
     }
     
-    // Edge drop = create split
     const direction = (zone === 'left' || zone === 'right') ? 'horizontal' : 'vertical'
     const isFirst = zone === 'left' || zone === 'top'
     
@@ -176,39 +150,28 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     }))
   }, [])
 
-  // Handle child requesting to close - collapse split and restore other child
   const handleChildClose = useCallback((closedIndex: 0 | 1) => {
-    console.log(`[Instance ${instanceId} depth ${depth}] handleChildClose called, closedIndex:`, closedIndex)
     setPaneState(prev => {
-      console.log(`[EditorPane ${depth}] prev state:`, prev)
       if (prev.type !== 'split' || !prev.childStates) {
-        console.log(`[EditorPane ${depth}] Not a split, ignoring`)
         return prev
       }
-      
-      // Get the OTHER child's state (the one that's staying)
+
       const survivingIndex = closedIndex === 0 ? 1 : 0
       const survivingState = prev.childStates[survivingIndex]
-      
-      console.log(`[EditorPane ${depth}] Surviving state [${survivingIndex}]:`, survivingState)
-      
-      // Collapse to the surviving child's state
-      const newTabs = survivingState.openTabs.length > 0 
-        ? survivingState.openTabs 
+
+      const newTabs = survivingState.openTabs.length > 0
+        ? survivingState.openTabs
         : (survivingState.activeFile ? [survivingState.activeFile] : [])
-      
-      const newState = {
+
+      return {
         type: survivingState.type,
         activeFile: survivingState.activeFile || newTabs[0] || null,
         openTabs: newTabs,
         splitDirection: survivingState.splitDirection,
         childStates: survivingState.childStates,
       }
-      console.log(`[EditorPane ${depth}] New collapsed state:`, newState)
-      return newState
     })
     
-    // Force resize after collapse - aggressive timing to ensure Monaco renders
     requestAnimationFrame(() => {
       window.dispatchEvent(new Event('resize'))
       setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
@@ -219,11 +182,9 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
 
   const activeFile = files.find(f => f.name === paneState.activeFile)
   
-  // Configure Monaco on mount - disable strict CSS validation
   const handleEditorMount = useCallback((editorRef: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     setEditorInstance(editorRef)
     
-    // Disable CSS validation (it doesn't understand modern CSS well)
     monaco.languages.css?.cssDefaults?.setOptions({
       validate: false,
     })
@@ -235,9 +196,7 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     })
   }, [])
 
-  // Render split view - pass child states down
   if (paneState.type === 'split' && paneState.childStates) {
-    // Dispose current editor before rendering split (will be recreated on collapse)
     if (editorInstance) {
       try {
         editorInstance.dispose()
@@ -273,7 +232,6 @@ export default function EditorPane({ files, onFileChange, theme, settings, initi
     )
   }
 
-  // Render editor - key forces remount when returning from split
   return (
     <div key={`editor-${paneId}-${paneState.openTabs.join(',')}`} className="flex flex-col" style={{ height: '100%', width: '100%', minHeight: 0, minWidth: 0 }}>
       {/* Tab bar - drop here to add to tabs */}

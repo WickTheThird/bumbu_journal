@@ -25,14 +25,12 @@ export default function NewFileModal({ isOpen, onClose }: NewFileModalProps) {
   
   if (!isOpen) return null
   
-  // Support folder paths like "utils/helpers.py" or "src/components/Button.tsx"
   const normalizedPath = filePath.trim().replace(/\\/g, '/')
   const hasExtension = /\.\w+$/.test(normalizedPath)
   const fullPath = hasExtension ? normalizedPath : `${normalizedPath || 'untitled'}.${selectedExt}`
   const exists = workspace.files.some(f => f.name === fullPath)
   const isFolder = normalizedPath.endsWith('/')
   
-  // Extract folder hint from path
   const pathParts = fullPath.split('/')
   const hasFolder = pathParts.length > 1
   

@@ -12,7 +12,6 @@ export default function Landing() {
   const [demoCount, setDemoCount] = useState(0)
   const heroRef = useRef<HTMLDivElement>(null)
 
-  // Mouse tracking for grid highlight
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (heroRef.current) {
@@ -394,7 +393,6 @@ export default function Landing() {
         isOpen={showGitHub}
         onClose={() => setShowGitHub(false)}
         onImport={() => {
-          // Use window.location to preserve the hash that was just saved
           window.location.href = '/ide' + window.location.hash
         }}
       />

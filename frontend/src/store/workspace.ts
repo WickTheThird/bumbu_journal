@@ -7,7 +7,6 @@ interface WorkspaceState {
   isLoading: boolean
   error: string | null
   
-  // Actions
   loadFromHash: () => void
   saveToHash: () => void
   
@@ -56,14 +55,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         file.name === name ? { ...file, content } : file
       )
       const workspace = { ...state.workspace, files }
-      // Auto-save to hash on every change (debounce in component)
       return { workspace }
     })
   },
   
   createFile: (name: string, language?: string) => {
     set((state) => {
-      // Check if file exists
       if (state.workspace.files.some((f) => f.name === name)) {
         return { error: `File "${name}" already exists` }
       }

@@ -19,14 +19,11 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
   const [bundleImports, setBundleImports] = useState<string[]>([])
   const [isBundling, setIsBundling] = useState(false)
   
-  // Check if this is a React/framework project
   const isFrameworkProject = files && needsBundling(files)
   
-  // Check for markdown files
   const markdownFile = files?.find(f => f.name.endsWith('.md') || f.name.endsWith('.mdx'))
   const isMarkdownProject = !isFrameworkProject && markdownFile && !files?.some(f => f.name.endsWith('.html'))
   
-  // Bundle framework projects
   useEffect(() => {
     if (!isOpen || !isFrameworkProject || !files) return
     
@@ -69,7 +66,6 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
     return () => { cancelled = true }
   }, [isOpen, files, refreshKey, isFrameworkProject])
   
-  // Generate srcdoc for HTML projects
   const htmlSrcdoc = useMemo(() => {
     if (isFrameworkProject) return null
     
@@ -109,25 +105,21 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose }: H
 </html>`
   }, [html, css, js, refreshKey, isFrameworkProject])
   
-  // Generate srcdoc for React/framework projects
   const frameworkSrcdoc = useMemo(() => {
     if (!isFrameworkProject || !bundledCode) return null
     
-    // Find HTML file or create default
     const htmlFile = files?.find(f => f.name.endsWith('.html'))
     const cssFile = files?.find(f => f.name.endsWith('.css'))
     
     const htmlContent = htmlFile?.content || '<div id="root"></div>'
     const cssContent = cssFile?.content || ''
     
-    // Extract body content if full HTML provided
     let bodyContent = htmlContent
     const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*)<\/body>/i)
     if (bodyMatch) {
       bodyContent = bodyMatch[1]
     }
     
-    // Generate importmap for npm packages
     const importMap = generateImportMap(bundleImports)
     
     return `<!DOCTYPE html>
@@ -171,7 +163,6 @@ ${importMap}
 </html>`
   }, [bundledCode, bundleImports, files, isFrameworkProject])
   
-  // Generate srcdoc for Markdown projects
   const markdownSrcdoc = useMemo(() => {
     if (!isMarkdownProject || !markdownFile) return null
     
@@ -219,11 +210,9 @@ ${importMap}
   const srcdoc = isFrameworkProject ? frameworkSrcdoc : (isMarkdownProject ? markdownSrcdoc : htmlSrcdoc)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   
-  // Force iframe to resize when container changes
   useEffect(() => {
     const handleResize = () => {
       if (iframeRef.current) {
-        // Force reflow by reading and setting dimensions
         const iframe = iframeRef.current
         iframe.style.height = '0'
         requestAnimationFrame(() => {
@@ -233,7 +222,6 @@ ${importMap}
     }
     
     window.addEventListener('resize', handleResize)
-    // Also listen for any custom resize events
     const observer = new ResizeObserver(handleResize)
     if (iframeRef.current?.parentElement) {
       observer.observe(iframeRef.current.parentElement)

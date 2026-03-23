@@ -44,7 +44,6 @@ export default function CommandPalette({
   const { workspace, setActiveFile, createFile } = useWorkspaceStore()
   
   const commands: Command[] = [
-    // File commands
     ...workspace.files.map((file) => ({
       id: `file:${file.name}`,
       label: file.name,
@@ -54,7 +53,6 @@ export default function CommandPalette({
         onClose()
       },
     })),
-    // Action commands
     { id: 'run', label: 'Run Code', icon: <Play className="w-4 h-4" />, shortcut: '⌘↵', action: () => { onRun(); onClose() } },
     { id: 'share', label: 'Share Workspace', icon: <Share2 className="w-4 h-4" />, action: () => { onShare(); onClose() } },
     { id: 'download', label: 'Download as ZIP', icon: <Download className="w-4 h-4" />, action: () => { onDownload(); onClose() } },

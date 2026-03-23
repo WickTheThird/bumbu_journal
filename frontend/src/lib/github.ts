@@ -27,15 +27,8 @@ export interface GitHubRepo {
  * Parse GitHub URL to extract owner/repo
  */
 export function parseGitHubUrl(url: string): GitHubRepo | null {
-  // Handle various formats:
-  // https://github.com/owner/repo
-  // https://github.com/owner/repo/tree/branch
-  // github.com/owner/repo
-  // owner/repo
-  
   const cleaned = url.trim().replace(/\/$/, '')
   
-  // Try full URL
   const urlMatch = cleaned.match(/github\.com\/([^\/]+)\/([^\/]+)(?:\/tree\/([^\/]+))?/)
   if (urlMatch) {
     return {
@@ -45,7 +38,6 @@ export function parseGitHubUrl(url: string): GitHubRepo | null {
     }
   }
   
-  // Try owner/repo format
   const shortMatch = cleaned.match(/^([^\/]+)\/([^\/]+)$/)
   if (shortMatch) {
     return {
@@ -115,7 +107,6 @@ export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<
   
   const data = await response.json()
   
-  // Content is base64 encoded
   return atob(data.content.replace(/\n/g, ''))
 }
 
@@ -124,7 +115,6 @@ export async function fetchFileContent(repo: GitHubRepo, path: string): Promise<
  * Downloads the repo as a ZIP file and extracts in browser
  */
 export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ name: string; content: string }[]> {
-  // Download repo as ZIP via our CORS proxy - bypasses API rate limits
   const zipUrl = `https://hashide-proxy.bumbufilip22.workers.dev/zip/${repo.owner}/${repo.repo}/${repo.branch}`
   
   const response = await fetch(zipUrl)
@@ -139,7 +129,6 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
   const zipData = await response.arrayBuffer()
   const zip = await JSZip.loadAsync(zipData)
   
-  // Filter to text-based code files (exclude binaries)
   const codeExtensions = [
     // Web
     '.html', '.htm', '.css', '.scss', '.sass', '.less', '.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte',
@@ -161,7 +150,6 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
   
   const files: { name: string; content: string }[] = []
   
-  // ZIP has a root folder like "repo-branch/" - we need to strip it
   const zipFiles = Object.keys(zip.files)
   const rootFolder = zipFiles[0]?.split('/')[0] + '/'
   
@@ -169,7 +157,6 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
     if (file.dir) continue
     if (files.length >= maxFiles) break
     
-    // Strip root folder from path
     const relativePath = path.replace(rootFolder, '')
     if (!relativePath) continue
     
@@ -180,20 +167,14 @@ export async function importRepo(repo: GitHubRepo, maxFiles = 100): Promise<{ na
     
     try {
       const content = await file.async('string')
-      // Skip binary/corrupted files (they'll have weird characters)
       if (content.includes('\0')) continue
       files.push({ name: relativePath, content })
     } catch {
-      // Skip files that can't be read as text
     }
   }
   
   return files
 }
-
-// ============================================
-// Phase 2: GitHub Device Flow Authentication
-// ============================================
 
 interface DeviceCodeResponse {
   device_code: string
@@ -304,10 +285,6 @@ export function logout(): void {
   localStorage.removeItem('github_token')
 }
 
-// ============================================
-// Phase 2: Fork and PR
-// ============================================
-
 /**
  * Fork a repository
  */
@@ -335,7 +312,6 @@ export async function createOrUpdateFile(
   message: string,
   branch: string
 ): Promise<void> {
-  // First, try to get existing file SHA
   let sha: string | undefined
   try {
     const existing = await fetch(
@@ -347,7 +323,6 @@ export async function createOrUpdateFile(
       sha = data.sha
     }
   } catch {
-    // File doesn't exist, that's fine
   }
   
   const response = await fetch(
@@ -373,7 +348,6 @@ export async function createOrUpdateFile(
  * Create a new branch
  */
 export async function createBranch(owner: string, repoName: string, newBranch: string, fromBranch: string = 'main'): Promise<void> {
-  // Get SHA of source branch
   const refResponse = await fetch(
     `${GITHUB_API}/repos/${owner}/${repoName}/git/ref/heads/${fromBranch}`,
     { headers: getHeaders() }
@@ -386,7 +360,6 @@ export async function createBranch(owner: string, repoName: string, newBranch: s
   const refData = await refResponse.json()
   const sha = refData.object.sha
   
-  // Create new branch
   const response = await fetch(
     `${GITHUB_API}/repos/${owner}/${repoName}/git/refs`,
     {

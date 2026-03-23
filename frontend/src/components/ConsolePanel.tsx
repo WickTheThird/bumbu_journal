@@ -17,7 +17,6 @@ export default function ConsolePanel({ isOpen, onClose }: ConsolePanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
-    // Listen for messages from preview iframe
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'console') {
         setMessages(prev => [...prev, {

@@ -29,14 +29,12 @@ export default function SourceControlPanel({ isOpen, onClose, sourceRepo }: Sour
   
   const { workspace, setWorkspace } = useWorkspaceStore()
   
-  // Load VCS and check GitHub auth
   useEffect(() => {
     if (!isOpen) return
     setVcs(loadVCS())
     getCurrentUser().then(setUser).catch(() => setUser(null))
   }, [isOpen])
   
-  // Calculate changes vs last commit
   const changes = useMemo(() => {
     const files = workspace.files.map(f => ({ name: f.name, content: f.content }))
     return selectedCommit 
@@ -502,13 +500,11 @@ function DiffView({ diff }: { diff: VCSDiff }) {
     )
   }
   
-  // Modified - show unified diff
   const oldLines = (diff.oldContent || '').split('\n')
   const newLines = (diff.newContent || '').split('\n')
   
   const result: { type: 'ctx' | 'add' | 'del'; line: string; num?: number }[] = []
   
-  // Simple LCS-based diff
   let oi = 0, ni = 0
   
   while (oi < oldLines.length || ni < newLines.length) {
@@ -523,7 +519,6 @@ function DiffView({ diff }: { diff: VCSDiff }) {
       oi++
       ni++
     } else {
-      // Find if this line exists later in the other
       const oldInNew = newLines.indexOf(oldLines[oi], ni)
       const newInOld = oldLines.indexOf(newLines[ni], oi)
       

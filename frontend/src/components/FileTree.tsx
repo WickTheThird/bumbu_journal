@@ -47,7 +47,6 @@ function buildTree(files: { name: string }[]): TreeNode[] {
     }
   }
   
-  // Sort: folders first, then alphabetically
   const sortNodes = (nodes: TreeNode[]): TreeNode[] => {
     return nodes
       .map(n => ({ ...n, children: sortNodes(n.children) }))
@@ -94,7 +93,6 @@ function TreeItem({
   
   const handleRename = () => {
     if (renameValue.trim() && renameValue !== node.name) {
-      // For files in folders, keep the folder path
       const parts = node.path.split('/')
       parts[parts.length - 1] = renameValue.trim()
       onRenameFile(node.path, parts.join('/'))
@@ -211,7 +209,6 @@ export default function FileTree({ files, activeFile, onSelectFile, onDeleteFile
   
   const tree = buildTree(files)
   
-  // Auto-expand folders containing active file
   useState(() => {
     if (activeFile && activeFile.includes('/')) {
       const parts = activeFile.split('/')

@@ -14,5 +14,3 @@ export const editorThemes: EditorTheme[] = [
   { id: 'hc-black', name: 'High Contrast', monaco: 'hc-black' },
 ]
 
-// Custom theme definitions can be added here
-// Monaco allows defining custom themes via monaco.editor.defineTheme()

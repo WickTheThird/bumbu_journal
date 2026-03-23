@@ -22,7 +22,6 @@ export async function initBundler(): Promise<void> {
         worker: true,
       })
     } catch (e: any) {
-      // If worker fails, try without worker
       if (e.message?.includes('Worker') || e.message?.includes('go')) {
         await esbuild.initialize({
           wasmURL: 'https://unpkg.com/esbuild-wasm@0.27.4/esbuild.wasm',
@@ -45,7 +44,6 @@ function localPlugin(files: Map<string, string>): esbuild.Plugin {
   return {
     name: 'local-files',
     setup(build) {
-      // Mark all npm imports as external - they'll be loaded via importmap
       build.onResolve({ filter: /^[^./]/ }, (args) => {
         return { 
           path: args.path, 
@@ -53,12 +51,10 @@ function localPlugin(files: Map<string, string>): esbuild.Plugin {
         }
       })
       
-      // Handle relative imports from local files
       build.onResolve({ filter: /^\./ }, (args) => {
         const dir = args.importer ? args.importer.replace(/\/[^/]+$/, '') : ''
         let path = `${dir}/${args.path}`.replace(/\/\.\//g, '/')
         
-        // Normalize path
         const parts = path.split('/').filter(Boolean)
         const normalized: string[] = []
         for (const part of parts) {
@@ -67,7 +63,6 @@ function localPlugin(files: Map<string, string>): esbuild.Plugin {
         }
         path = '/' + normalized.join('/')
         
-        // Try with extensions
         const extensions = ['', '.tsx', '.ts', '.jsx', '.js', '.json', '.css']
         for (const ext of extensions) {
           const fullPath = path + ext
@@ -76,7 +71,6 @@ function localPlugin(files: Map<string, string>): esbuild.Plugin {
           }
         }
         
-        // Try index files
         for (const ext of ['/index.tsx', '/index.ts', '/index.jsx', '/index.js']) {
           const fullPath = path + ext
           if (files.has(fullPath)) {
@@ -87,7 +81,6 @@ function localPlugin(files: Map<string, string>): esbuild.Plugin {
         return { path, namespace: 'local' }
       })
       
-      // Handle entry point
       build.onResolve({ filter: /^\// }, (args) => {
         if (files.has(args.path)) {
           return { path: args.path, namespace: 'local' }
@@ -95,7 +88,6 @@ function localPlugin(files: Map<string, string>): esbuild.Plugin {
         return { path: args.path, namespace: 'local' }
       })
       
-      // Load local files
       build.onLoad({ filter: /.*/, namespace: 'local' }, (args) => {
         const content = files.get(args.path)
         if (!content) {
@@ -133,14 +125,12 @@ export interface BundleResult {
 export async function bundle(files: { name: string; content: string }[]): Promise<BundleResult> {
   await initBundler()
   
-  // Create file map with leading slash
   const fileMap = new Map<string, string>()
   for (const file of files) {
     const path = file.name.startsWith('/') ? file.name : '/' + file.name
     fileMap.set(path, file.content)
   }
   
-  // Find entry point (check both root and src/ directories)
   const entryPoints = [
     '/src/main.tsx', '/src/main.ts', '/src/main.jsx', '/src/main.js',
     '/src/index.tsx', '/src/index.ts', '/src/index.jsx', '/src/index.js',
@@ -158,7 +148,6 @@ export async function bundle(files: { name: string; content: string }[]): Promis
   }
   
   if (!entry) {
-    // If no standard entry, try to find any tsx/jsx file
     for (const [path] of fileMap) {
       if (path.endsWith('.tsx') || path.endsWith('.jsx')) {
         entry = path
@@ -171,10 +160,8 @@ export async function bundle(files: { name: string; content: string }[]): Promis
     return { code: '', imports: [], error: 'No entry point found (index.tsx, main.tsx, App.tsx, etc.)' }
   }
   
-  // Collect imports for the importmap
   const npmImports = new Set<string>()
   
-  // First check package.json for declared dependencies
   const pkgJsonContent = fileMap.get('/package.json')
   if (pkgJsonContent) {
     try {
@@ -184,18 +171,13 @@ export async function bundle(files: { name: string; content: string }[]): Promis
         npmImports.add(pkg)
       }
     } catch (e) {
-      // Invalid JSON, will be caught by import scanning
     }
   }
   
-  // Also scan files for npm imports (catches unlisted deps)
   for (const [, content] of fileMap) {
     const importMatches = content.matchAll(/import\s+(?:.*?\s+from\s+)?['"]([^.\/][^'"]*)['"]/g)
     for (const match of importMatches) {
       const pkg = match[1].split('/')[0]
-      if (pkg !== 'react' && pkg !== 'react-dom') {
-        // react/react-dom always included
-      }
       npmImports.add(pkg)
     }
   }

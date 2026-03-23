@@ -51,7 +51,6 @@ export default function SearchPanel({ isOpen, onClose }: SearchPanelProps) {
   
   const handleResultClick = (result: SearchResult) => {
     setActiveFile(result.fileName)
-    // Could also scroll to line if we had editor ref
   }
   
   if (!isOpen) return null

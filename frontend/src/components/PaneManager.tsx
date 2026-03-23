@@ -60,12 +60,10 @@ export function PaneManagerProvider({
     }
   })
   
-  // Reset state when workspace changes (new template loaded)
   const prevWorkspaceKey = useRef(workspaceKey)
   useEffect(() => {
     if (workspaceKey && workspaceKey !== prevWorkspaceKey.current) {
       prevWorkspaceKey.current = workspaceKey
-      // Full reset - create new root pane
       const newRootId = generatePaneId()
       setState({
         rootId: newRootId,
@@ -101,7 +99,6 @@ export function PaneManagerProvider({
       const child1Id = generatePaneId()
       const child2Id = generatePaneId()
 
-      // Original pane content goes to one child, new file to other
       const originalChild: PaneNode = {
         id: position === 'first' ? child2Id : child1Id,
         type: 'editor',
@@ -116,7 +113,6 @@ export function PaneManagerProvider({
         openTabs: [newFile],
       }
 
-      // Convert original pane to split
       const splitPaneNode: PaneNode = {
         id,
         type: 'split',
@@ -137,9 +133,7 @@ export function PaneManagerProvider({
   }, [])
 
   const closePane = useCallback((id: string) => {
-    console.log(`[PaneManager] closePane called for:`, id)
     setState(prev => {
-      // Find parent of this pane
       let parentId: string | null = null
       let childIndex: 0 | 1 = 0
 
@@ -159,35 +153,23 @@ export function PaneManagerProvider({
       }
 
       if (!parentId) {
-        console.log(`[PaneManager] No parent found for ${id}, cannot close root`)
-        return prev // Can't close root pane
+        return prev
       }
 
       const parent = prev.panes[parentId]
       if (parent.type !== 'split' || !parent.children) return prev
 
-      // Get surviving sibling
       const siblingId = parent.children[childIndex === 0 ? 1 : 0]
       const sibling = prev.panes[siblingId]
 
-      console.log(`[PaneManager] Collapsing ${parentId}, keeping sibling ${siblingId}`)
-
-      // Replace parent with sibling's content
       const newPanes = { ...prev.panes }
       
-      // Delete the closed pane and the sibling (sibling's content moves to parent)
       delete newPanes[id]
       delete newPanes[siblingId]
 
-      // Parent takes on sibling's role
       newPanes[parentId] = {
         ...sibling,
-        id: parentId, // Keep parent's ID
-      }
-
-      // If sibling was a split, update its children to point to new parent
-      if (sibling.type === 'split' && sibling.children) {
-        // Children already exist in newPanes, no need to update their references
+        id: parentId,
       }
 
       return { ...prev, panes: newPanes }
@@ -195,17 +177,13 @@ export function PaneManagerProvider({
   }, [])
 
   const closeTab = useCallback((paneId: string, fileName: string) => {
-    console.log(`[PaneManager] closeTab called: pane=${paneId}, file=${fileName}`)
     setState(prev => {
       const pane = prev.panes[paneId]
       if (!pane || pane.type !== 'editor') return prev
 
       const newTabs = (pane.openTabs || []).filter(t => t !== fileName)
       
-      // If no tabs left and not root, close the pane
       if (newTabs.length === 0 && paneId !== prev.rootId) {
-        console.log(`[PaneManager] No tabs left in ${paneId}, scheduling close`)
-        // Use setTimeout to avoid state update during setState
         setTimeout(() => closePane(paneId), 0)
         return prev
       }
@@ -253,7 +231,6 @@ export function PaneManagerProvider({
       const currentIndex = tabs.indexOf(draggedFile)
       
       if (currentIndex === -1) {
-        // File not in tabs, insert it
         const newTabs = [...tabs]
         newTabs.splice(dropIndex, 0, draggedFile)
         return {
@@ -281,10 +258,8 @@ export function PaneManagerProvider({
     })
   }, [])
 
-  // Open file from external source (file explorer) - finds first editor pane
   const openFileExternal = useCallback((fileName: string) => {
     setState(prev => {
-      // Find first editor pane (depth-first search)
       const findFirstEditor = (paneId: string): string | null => {
         const pane = prev.panes[paneId]
         if (!pane) return null
@@ -316,7 +291,6 @@ export function PaneManagerProvider({
     })
   }, [])
 
-  // Sync all panes with available files - remove tabs for files that don't exist
   const syncWithFiles = useCallback((fileNames: string[]) => {
     const fileSet = new Set(fileNames)
     setState(prev => {

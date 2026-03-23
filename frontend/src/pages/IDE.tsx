@@ -1,13 +1,10 @@
 import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
-// Monaco types for future use
-// import type { Monaco } from '@monaco-editor/react'
-import { 
+import {
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
   ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff
 } from 'lucide-react'
 
-// X (formerly Twitter) icon
 const XIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -37,7 +34,6 @@ import { PaneManagerProvider, usePaneManager } from '../components/PaneManager'
 import { GitHubRepo } from '../lib/github'
 import { File } from '../types/workspace'
 
-// Wrapper component to access PaneManager context
 function EditorPaneRoot({ 
   files, 
   onFileChange, 
@@ -59,14 +55,12 @@ function EditorPaneRoot({
 }) {
   const { state, openFileExternal, syncWithFiles } = usePaneManager()
   
-  // Expose API to parent once mounted
   useEffect(() => {
     if (onReady) {
       onReady({ openFile: openFileExternal })
     }
   }, [onReady, openFileExternal])
   
-  // Sync tabs with available files when workspace changes
   useEffect(() => {
     syncWithFiles(files.map(f => f.name))
   }, [files, syncWithFiles])
@@ -97,7 +91,6 @@ export default function IDE() {
   const [copied, setCopied] = useState(false)
   const [isSaved, setIsSaved] = useState(true)
   
-  // Track save status when workspace changes
   useEffect(() => {
     setIsSaved(false)
     const timer = setTimeout(() => setIsSaved(true), 1000)
@@ -121,38 +114,30 @@ export default function IDE() {
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [loadingStatus, setLoadingStatus] = useState<string | null>(null)
-  // Editor ref removed - EditorPane manages its own editor
-  // Editor state is now managed by EditorPane component
   const [terminalHeight, setTerminalHeight] = useState(200)
   const [isResizingTerminal, setIsResizingTerminal] = useState(false)
   const [previewWidth, setPreviewWidth] = useState(400)
   const [isResizingPreview, setIsResizingPreview] = useState(false)
   
-  // Editor API for opening files from outside
   const [editorApi, setEditorApi] = useState<{ openFile: (fileName: string) => void } | null>(null)
   
-  // Wrapper for file selection that uses editor API
   const handleSelectFile = useCallback((fileName: string) => {
     if (editorApi) {
       editorApi.openFile(fileName)
     }
   }, [editorApi])
   
-  // Load workspace from hash on mount
   useEffect(() => {
     loadFromHash()
     getCurrentUser().then(setGithubUser).catch(() => setGithubUser(null))
     
-    // Preload Pyodide in background to avoid freeze on first Python run
     preloadPyodide()
-    
-    // Listen for hash changes (back/forward navigation)
+
     const handleHashChange = () => loadFromHash()
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [loadFromHash])
   
-  // Terminal resize handling
   useEffect(() => {
     if (!isResizingTerminal) return
     
@@ -176,7 +161,6 @@ export default function IDE() {
     }
   }, [isResizingTerminal])
   
-  // Preview resize handling
   useEffect(() => {
     if (!isResizingPreview) return
     
@@ -200,14 +184,12 @@ export default function IDE() {
     }
   }, [isResizingPreview])
   
-  // Auto-save to hash with debounce
   useEffect(() => {
     if (isLoading) return
     const timer = setTimeout(() => saveToHash(), 500)
     return () => clearTimeout(timer)
   }, [workspace, isLoading, saveToHash])
   
-  // Save snapshot to history periodically (every 30 seconds of activity)
   useEffect(() => {
     if (isLoading) return
     const timer = setTimeout(() => saveSnapshot(workspace), 30000)
@@ -245,34 +227,27 @@ export default function IDE() {
     setShowMobileMenu(false)
     setLoadingStatus(null)
     
-    // Set up loading callback for Python
     if (activeFile.language === 'python' && !isPyodideLoaded()) {
       setLoadingCallback((status) => setLoadingStatus(status))
     }
     
     try {
-      console.log('[IDE] Executing:', activeFile.language, activeFile.content.substring(0, 50))
-      
-      // For Python, pass all .py files to enable imports
       let result
       if (activeFile.language === 'python') {
         const pythonFiles: ProjectFile[] = workspace.files
           .filter(f => f.name.endsWith('.py'))
           .map(f => ({ name: f.name, content: f.content }))
         
-        console.log('[IDE] Python project files:', pythonFiles.map(f => f.name))
         result = await execute(activeFile.content, 'python', activeFile.name, pythonFiles)
       } else {
         result = await execute(activeFile.content, activeFile.language || 'plaintext')
       }
       
-      console.log('[IDE] Execution result:', result)
       setLoadingCallback(null)
       setLoadingStatus(null)
       setIsRunning(false)
       setOutput(result)
     } catch (e) {
-      console.error('[IDE] Execution error:', e)
       setLoadingCallback(null)
       setLoadingStatus(null)
       setIsRunning(false)
@@ -285,7 +260,6 @@ export default function IDE() {
     }
   }, [activeFile, isRunning, workspace.files])
   
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
@@ -315,8 +289,6 @@ export default function IDE() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleRun, saveToHash])
   
-  // Monaco editor setup moved to EditorPane component
-  
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-ide-bg">
@@ -330,7 +302,6 @@ export default function IDE() {
   
   const canRun = activeFile && ['javascript', 'typescript', 'python'].includes(activeFile.language || '')
   
-  // Check if project has framework files (React/Vue)
   const hasFrameworkFiles = workspace.files.some(f => 
     f.name.endsWith('.tsx') || f.name.endsWith('.jsx')
   )
@@ -338,7 +309,6 @@ export default function IDE() {
   const cssFile = workspace.files.find(f => f.name.endsWith('.css'))
   const jsFile = workspace.files.find(f => f.name.endsWith('.js') && !f.name.endsWith('.test.js'))
   
-  // Can preview if has HTML file OR has framework files OR has markdown
   const hasMarkdown = workspace.files.some(f => f.name.endsWith('.md') || f.name.endsWith('.mdx'))
   const canPreview = htmlFile || hasFrameworkFiles || hasMarkdown
   

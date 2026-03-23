@@ -77,7 +77,6 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
         return
       }
       
-      // Load into workspace
       const newWorkspace = {
         version: 1 as const,
         files: files.map(f => ({
@@ -90,7 +89,6 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
       }
       setWorkspace(newWorkspace)
       
-      // Save to hash so /ide can load it
       saveToHash()
       
       setSourceRepo(parsed)
@@ -140,14 +138,11 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
     setLoading(true)
     
     try {
-      // 1. Fork the repo
       const fork = await forkRepo(sourceRepo.owner, sourceRepo.repo)
-      
-      // 2. Create a new branch
+
       const branchName = prBranch || `hashide-${Date.now()}`
       await createBranch(fork.owner, fork.repo, branchName, sourceRepo.branch)
       
-      // 3. Push all files
       for (const file of workspace.files) {
         await createOrUpdateFile(
           { owner: fork.owner, repo: fork.repo, branch: branchName },
@@ -158,7 +153,6 @@ export default function GitHubModal({ isOpen, onClose, onImport }: GitHubModalPr
         )
       }
       
-      // 4. Create PR
       const result = await createPullRequest(
         sourceRepo.owner,
         sourceRepo.repo,

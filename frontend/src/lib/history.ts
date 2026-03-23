@@ -36,7 +36,6 @@ export function saveSnapshot(workspace: Workspace, label?: string): void {
     const hash = encodeWorkspace(workspace)
     const history = getHistory()
     
-    // Don't save duplicate consecutive snapshots
     if (history.length > 0 && history[0].hash === hash) {
       return
     }
@@ -47,11 +46,9 @@ export function saveSnapshot(workspace: Workspace, label?: string): void {
       label,
     }
     
-    // Add to beginning, limit size
     const newHistory = [snapshot, ...history].slice(0, MAX_HISTORY)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory))
   } catch {
-    // Silently fail if localStorage is full or unavailable
   }
 }
 
@@ -107,7 +104,6 @@ export function compareWorkspaces(hash1: string, hash2: string): {
   const filesRemoved: string[] = []
   const filesModified: string[] = []
   
-  // Check for removed and modified files
   for (const [name, content] of files1) {
     if (!files2.has(name)) {
       filesRemoved.push(name)
@@ -116,7 +112,6 @@ export function compareWorkspaces(hash1: string, hash2: string): {
     }
   }
   
-  // Check for added files
   for (const name of files2.keys()) {
     if (!files1.has(name)) {
       filesAdded.push(name)

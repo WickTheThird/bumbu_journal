@@ -63,7 +63,6 @@ export function unstageAll(state: VCSState): VCSState {
 }
 
 export function commit(state: VCSState, message: string, files: VCSFile[]): VCSState {
-  // Only include staged files (or all if none staged)
   const filesToCommit = state.staged.length > 0
     ? files.filter(f => state.staged.includes(f.name))
     : files
@@ -94,7 +93,6 @@ export function getHeadCommit(state: VCSState): VCSCommit | undefined {
 }
 
 export function getCommitHistory(state: VCSState): VCSCommit[] {
-  // Return commits in reverse chronological order
   return [...state.commits].reverse()
 }
 
@@ -110,7 +108,6 @@ export function diffFiles(oldFiles: VCSFile[], newFiles: VCSFile[]): FileDiff[] 
   const oldMap = new Map(oldFiles.map(f => [f.name, f.content]))
   const newMap = new Map(newFiles.map(f => [f.name, f.content]))
 
-  // Check new and modified files
   for (const [name, content] of newMap) {
     const oldContent = oldMap.get(name)
     if (oldContent === undefined) {
@@ -120,7 +117,6 @@ export function diffFiles(oldFiles: VCSFile[], newFiles: VCSFile[]): FileDiff[] 
     }
   }
 
-  // Check deleted files
   for (const [name, content] of oldMap) {
     if (!newMap.has(name)) {
       diffs.push({ name, status: 'deleted', oldContent: content })
@@ -158,7 +154,6 @@ export function resetVCS(): VCSState {
   return newState
 }
 
-// Initialize with first commit from current files
 export function initializeVCS(files: VCSFile[], message: string = 'Initial commit'): VCSState {
   const state = loadVCS()
   if (state.commits.length === 0 && files.length > 0) {

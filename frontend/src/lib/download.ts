@@ -26,12 +26,10 @@ export function downloadFile(filename: string, content: string): void {
 export async function downloadWorkspaceAsZip(workspace: Workspace): Promise<void> {
   const zip = new JSZip()
   
-  // Add all files to the ZIP
   for (const file of workspace.files) {
     zip.file(file.name, file.content)
   }
   
-  // Generate the ZIP and trigger download
   const blob = await zip.generateAsync({ type: 'blob' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

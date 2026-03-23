@@ -12,7 +12,6 @@ export default function ImportFiles({ onComplete }: ImportFilesProps) {
   
   const handleFiles = async (files: FileList) => {
     for (const file of Array.from(files)) {
-      // Limit file size to 1MB
       if (file.size > 1_000_000) {
         alert(`File "${file.name}" is too large (max 1MB)`)
         continue
@@ -21,7 +20,6 @@ export default function ImportFiles({ onComplete }: ImportFilesProps) {
       try {
         const content = await file.text()
         
-        // Check if file already exists
         const exists = workspace.files.some(f => f.name === file.name)
         if (exists) {
           if (confirm(`File "${file.name}" already exists. Overwrite?`)) {
@@ -29,7 +27,6 @@ export default function ImportFiles({ onComplete }: ImportFilesProps) {
           }
         } else {
           createFile(file.name)
-          // Small delay to ensure file is created
           setTimeout(() => updateFile(file.name, content), 10)
         }
       } catch (e) {

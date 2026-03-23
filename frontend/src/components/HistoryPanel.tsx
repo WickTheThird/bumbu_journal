@@ -31,7 +31,6 @@ export default function HistoryPanel({ isOpen, onClose }: HistoryPanelProps) {
   const currentHash = encodeWorkspace(workspace)
   
   const handleRestore = (hash: string) => {
-    // Navigate to the restored workspace
     window.location.hash = hash
     window.location.reload()
   }

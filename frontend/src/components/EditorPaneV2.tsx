@@ -30,7 +30,6 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
   const [isTabBarDragOver, setIsTabBarDragOver] = useState(false)
   const [tabDropIndex, setTabDropIndex] = useState<number | null>(null)
 
-  // Cleanup editor on unmount
   useEffect(() => {
     return () => {
       if (editorInstance) {
@@ -42,12 +41,10 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
   const handleEditorMount = useCallback((editorRef: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     setEditorInstance(editorRef)
     
-    // Disable CSS validation (doesn't understand modern CSS well)
     monaco.languages.css?.cssDefaults?.setOptions({ validate: false })
     monaco.languages.css?.scssDefaults?.setOptions({ validate: false })
     monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
     
-    // Configure TypeScript/JavaScript for JSX support
     const tsCompilerOptions = {
       jsx: monaco.languages.typescript.JsxEmit.React,
       jsxFactory: 'React.createElement',
@@ -57,7 +54,7 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
       moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
       allowNonTsExtensions: true,
       allowJs: true,
-      checkJs: false, // Don't type-check JS files
+      checkJs: false,
       esModuleInterop: true,
       noEmit: true,
       skipLibCheck: true,
@@ -68,9 +65,8 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions(tsCompilerOptions)
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions(tsCompilerOptions)
     
-    // Disable semantic validation for JS files (they shouldn't show TS-only errors)
     monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true, // Disable semantic checks for JS/JSX
+      noSemanticValidation: true,
       noSyntaxValidation: false,
     })
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
@@ -96,7 +92,6 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
     return <div className="flex items-center justify-center h-full text-ide-text-secondary">Pane not found</div>
   }
 
-  // Render split
   if (pane.type === 'split' && pane.children) {
     if (editorInstance) {
       try { editorInstance.dispose() } catch (e) { /* ignore */ }
@@ -125,7 +120,6 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
     )
   }
 
-  // Render editor
   const openTabs = pane.openTabs || []
   const activeFileName = pane.activeFile
   const activeFile = files.find(f => f.name === activeFileName)
@@ -291,7 +285,6 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
               automaticLayout: true,
               scrollBeyondLastLine: false,
               padding: { top: 8 },
-              // Bracket/autocomplete settings
               autoClosingBrackets: 'languageDefined',
               autoClosingQuotes: 'languageDefined',
               autoSurround: 'languageDefined',
