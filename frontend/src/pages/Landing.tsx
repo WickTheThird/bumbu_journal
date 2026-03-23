@@ -7,13 +7,48 @@ import RecentProjects from '../components/RecentProjects'
 import { TEMPLATES } from '../lib/templates'
 import { encodeWorkspace } from '../lib/hash'
 
+const DEMO_FILES = [
+  { name: 'package.json', color: 'text-yellow-400', content: `{
+  "name": "counter-app",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}` },
+  { name: 'App.tsx', color: 'text-purple-400', content: null }, // Special case - rendered with JSX
+  { name: 'index.css', color: 'text-cyan-400', content: `body {
+  font-family: system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button {
+  cursor: pointer;
+}` },
+  { name: 'index.html', color: 'text-orange-400', content: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Counter App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>` },
+]
+
 export default function Landing() {
   const [showTemplates, setShowTemplates] = useState(false)
   const [showGitHub, setShowGitHub] = useState(false)
   const [demoCount, setDemoCount] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [activeFile, setActiveFile] = useState(1) // App.tsx
 
-  const demoUrl = 'hashidea.com/#eJzT0yMAAGTvBe4'
+  const demoUrl = 'hashideea.com/#eJzT0yMAAGTvBe4'
+  const embedUrl = '/embed#eJzT0yMAAGTvBe4'
   
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(`https://${demoUrl}`)
@@ -139,78 +174,79 @@ export default function Landing() {
               <div className="hidden md:block w-52 bg-[#0c0c0e] border-r border-white/5 p-4">
                 <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Explorer</div>
                 <div className="space-y-1">
-                  {['package.json', 'App.tsx', 'index.css', 'index.html'].map((file, i) => (
-                    <div 
-                      key={file}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded text-sm ${
-                        i === 1 ? 'bg-purple-500/20 text-white' : 'text-gray-400 hover:bg-white/5'
+                  {DEMO_FILES.map((file, i) => (
+                    <button 
+                      key={file.name}
+                      onClick={() => setActiveFile(i)}
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors ${
+                        i === activeFile ? 'bg-purple-500/20 text-white' : 'text-gray-400 hover:bg-white/5'
                       }`}
                     >
-                      <FileCode className={`w-4 h-4 ${
-                        i === 0 ? 'text-yellow-400' : 
-                        i === 1 ? 'text-purple-400' : 
-                        i === 2 ? 'text-cyan-400' : 'text-orange-400'
-                      }`} />
-                      {file}
-                    </div>
+                      <FileCode className={`w-4 h-4 ${file.color}`} />
+                      {file.name}
+                    </button>
                   ))}
                 </div>
               </div>
               
               {/* Editor */}
               <div className="flex-1 bg-[#0f0f11] p-6 overflow-hidden font-mono text-sm">
-                <pre className="leading-relaxed">
-                  <code>
-                    <span className="text-purple-400">import</span>
-                    <span className="text-gray-300"> {'{ useState }'} </span>
-                    <span className="text-purple-400">from</span>
-                    <span className="text-green-400"> 'react'</span>
-                    {'\n\n'}
-                    <span className="text-purple-400">export default function</span>
-                    <span className="text-yellow-400"> App</span>
-                    <span className="text-gray-300">() {'{'}</span>
-                    {'\n  '}
-                    <span className="text-purple-400">const</span>
-                    <span className="text-gray-300"> [count, setCount] = </span>
-                    <span className="text-yellow-400">useState</span>
-                    <span className="text-gray-300">(0)</span>
-                    {'\n\n  '}
-                    <span className="text-purple-400">return</span>
-                    <span className="text-gray-300"> (</span>
-                    {'\n    '}
-                    <span className="text-gray-500">{'<'}</span>
-                    <span className="text-cyan-400">div</span>
-                    <span className="text-gray-500">{'>'}</span>
-                    {'\n      '}
-                    <span className="text-gray-500">{'<'}</span>
-                    <span className="text-cyan-400">h1</span>
-                    <span className="text-gray-500">{'>'}</span>
-                    <span className="text-gray-300">{'{'}{demoCount}{'}'}</span>
-                    <span className="text-gray-500">{'</'}</span>
-                    <span className="text-cyan-400">h1</span>
-                    <span className="text-gray-500">{'>'}</span>
-                    {'\n      '}
-                    <span className="text-gray-500">{'<'}</span>
-                    <span className="text-cyan-400">button</span>
-                    <span className="text-purple-400"> onClick</span>
-                    <span className="text-gray-300">={'{() => setCount(c => c + 1)}'}</span>
-                    <span className="text-gray-500">{'>'}</span>
-                    {'\n        '}
-                    <span className="text-gray-300">Click me</span>
-                    {'\n      '}
-                    <span className="text-gray-500">{'</'}</span>
-                    <span className="text-cyan-400">button</span>
-                    <span className="text-gray-500">{'>'}</span>
-                    {'\n    '}
-                    <span className="text-gray-500">{'</'}</span>
-                    <span className="text-cyan-400">div</span>
-                    <span className="text-gray-500">{'>'}</span>
-                    {'\n  '}
-                    <span className="text-gray-300">)</span>
-                    {'\n'}
-                    <span className="text-gray-300">{'}'}</span>
-                  </code>
-                </pre>
+                {activeFile === 1 ? (
+                  <pre className="leading-relaxed">
+                    <code>
+                      <span className="text-purple-400">import</span>
+                      <span className="text-gray-300"> {'{ useState }'} </span>
+                      <span className="text-purple-400">from</span>
+                      <span className="text-green-400"> 'react'</span>
+                      {'\n\n'}
+                      <span className="text-purple-400">export default function</span>
+                      <span className="text-yellow-400"> App</span>
+                      <span className="text-gray-300">() {'{'}</span>
+                      {'\n  '}
+                      <span className="text-purple-400">const</span>
+                      <span className="text-gray-300"> [count, setCount] = </span>
+                      <span className="text-yellow-400">useState</span>
+                      <span className="text-gray-300">(0)</span>
+                      {'\n\n  '}
+                      <span className="text-purple-400">return</span>
+                      <span className="text-gray-300"> (</span>
+                      {'\n    '}
+                      <span className="text-gray-500">{'<'}</span>
+                      <span className="text-cyan-400">div</span>
+                      <span className="text-gray-500">{'>'}</span>
+                      {'\n      '}
+                      <span className="text-gray-500">{'<'}</span>
+                      <span className="text-cyan-400">h1</span>
+                      <span className="text-gray-500">{'>'}</span>
+                      <span className="text-gray-300">{'{'}{demoCount}{'}'}</span>
+                      <span className="text-gray-500">{'</'}</span>
+                      <span className="text-cyan-400">h1</span>
+                      <span className="text-gray-500">{'>'}</span>
+                      {'\n      '}
+                      <span className="text-gray-500">{'<'}</span>
+                      <span className="text-cyan-400">button</span>
+                      <span className="text-purple-400"> onClick</span>
+                      <span className="text-gray-300">={'{() => setCount(c => c + 1)}'}</span>
+                      <span className="text-gray-500">{'>'}</span>
+                      {'\n        '}
+                      <span className="text-gray-300">Click me</span>
+                      {'\n      '}
+                      <span className="text-gray-500">{'</'}</span>
+                      <span className="text-cyan-400">button</span>
+                      <span className="text-gray-500">{'>'}</span>
+                      {'\n    '}
+                      <span className="text-gray-500">{'</'}</span>
+                      <span className="text-cyan-400">div</span>
+                      <span className="text-gray-500">{'>'}</span>
+                      {'\n  '}
+                      <span className="text-gray-300">)</span>
+                      {'\n'}
+                      <span className="text-gray-300">{'}'}</span>
+                    </code>
+                  </pre>
+                ) : (
+                  <pre className="leading-relaxed text-gray-300 whitespace-pre-wrap">{DEMO_FILES[activeFile].content}</pre>
+                )}
               </div>
               
               {/* Preview */}
@@ -220,7 +256,9 @@ export default function Landing() {
                     <div className="w-2 h-2 rounded-full bg-green-500" />
                     Preview
                   </div>
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <Link to={embedUrl} target="_blank" className="hover:text-gray-700 transition-colors">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
                 <div className="flex-1 flex flex-col items-center justify-center p-8">
                   <div className="text-6xl font-bold text-gray-900 mb-8">{demoCount}</div>
