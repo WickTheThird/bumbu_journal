@@ -390,7 +390,7 @@ export default function Landing() {
           </div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {TEMPLATES.slice(0, 8).map((template) => (
+            {TEMPLATES.slice(0, 12).map((template) => (
               <Link
                 key={template.id}
                 to={`/ide#${encodeWorkspace(template.workspace)}`}
