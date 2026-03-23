@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Github, FileCode, Share2, Zap, Code2, Copy, Check, ExternalLink, Sparkles, Users, Briefcase, GraduationCap } from 'lucide-react'
+import { ArrowRight, Github, FileCode, Share2, Zap, Code2, Copy, Check, ExternalLink, Sparkles, Users, Briefcase, GraduationCap, Atom, Gamepad2, BarChart3, Layout, Plug, Type } from 'lucide-react'
 import TemplateGallery from '../components/TemplateGallery'
 import GitHubModal from '../components/GitHubModal'
 import RecentProjects from '../components/RecentProjects'
@@ -351,30 +351,32 @@ export default function Landing() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {TEMPLATES.map((template) => (
-              <Link
-                key={template.id}
-                to={`/ide#${encodeWorkspace(template.workspace)}`}
-                className="group p-4 bg-[#0c0c0e] rounded-lg border border-white/5 hover:border-purple-500/30 transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">
-                    {template.icon === 'react' ? '⚛️' : 
-                     template.icon === 'typescript' ? '📘' :
-                     template.icon === 'game' ? '🎮' :
-                     template.icon === 'chart' ? '📊' :
-                     template.icon === 'animation' ? '✨' :
-                     template.icon === 'particle' ? '🎆' :
-                     template.icon === 'api' ? '🔌' :
-                     template.icon === 'portfolio' ? '💼' : '📄'}
-                  </span>
-                  <span className="font-medium text-white text-sm group-hover:text-purple-400 transition-colors truncate">
-                    {template.name}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 line-clamp-2">{template.description}</p>
-              </Link>
-            ))}
+            {TEMPLATES.map((template) => {
+              const IconComponent = template.icon === 'react' ? Atom : 
+                template.icon === 'typescript' ? Type :
+                template.icon === 'game' ? Gamepad2 :
+                template.icon === 'chart' ? BarChart3 :
+                template.icon === 'animation' ? Sparkles :
+                template.icon === 'particle' ? Sparkles :
+                template.icon === 'api' ? Plug :
+                template.icon === 'portfolio' ? Layout : FileCode
+              
+              return (
+                <Link
+                  key={template.id}
+                  to={`/ide#${encodeWorkspace(template.workspace)}`}
+                  className="group p-4 bg-[#0c0c0e] rounded-lg border border-white/5 hover:border-purple-500/30 transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <IconComponent className="w-4 h-4 text-purple-400" />
+                    <span className="font-medium text-white text-sm group-hover:text-purple-400 transition-colors truncate">
+                      {template.name}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 line-clamp-2">{template.description}</p>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>
