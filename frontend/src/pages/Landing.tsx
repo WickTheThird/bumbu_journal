@@ -82,13 +82,13 @@ export default function Landing() {
           <p className="text-purple-400 text-sm font-medium tracking-[0.2em] uppercase mb-6">
             Browser IDE
           </p>
-          
+
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[0.9]">
             <span className="text-white">Build full apps</span>
             <br />
             <span className="text-purple-400">from a link.</span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light">
             A browser-based development environment with live preview, npm packages, and projects that live entirely in the URL.
           </p>
