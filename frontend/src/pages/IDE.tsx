@@ -35,8 +35,10 @@ import SearchPanel from '../components/SearchPanel'
 import GitHubModal from '../components/GitHubModal'
 import SourceControlPanel from '../components/SourceControlPanel'
 import EditorPaneV2 from '../components/EditorPaneV2'
+import UpgradeModal from '../components/UpgradeModal'
 import { PaneManagerProvider, usePaneManager } from '../components/PaneManager'
 import { GitHubRepo } from '../lib/github'
+import { ApiError } from '../lib/api'
 import { File } from '../types/workspace'
 
 function EditorPaneRoot({ 
@@ -120,6 +122,9 @@ export default function IDE() {
   const [showGitHub, setShowGitHub] = useState(false)
   const [showSourceControl, setShowSourceControl] = useState(false)
   const [showEmbed, setShowEmbed] = useState(false)
+  const [showUpgrade, setShowUpgrade] = useState(false)
+  const [upgradeReason, setUpgradeReason] = useState<'cloud_limit' | 'private_project' | 'generic'>('generic')
+  const [upgradeMessage, setUpgradeMessage] = useState<string | undefined>()
   const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
   const [githubUser, setGithubUser] = useState<{ login: string; avatar_url: string } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
@@ -250,19 +255,30 @@ export default function IDE() {
   }
 
   const handleSaveToCloud = async () => {
-    let id: string | null
-    if (cloudProjectId) {
-      await updateCloud()
-      id = cloudProjectId
-    } else {
-      const title = getProjectTitle(workspace)
-      id = await saveToCloud({ title })
-    }
-    if (id) {
-      const url = `${window.location.origin}/p/${id}`
-      await navigator.clipboard.writeText(url)
-      setShowCloudSaved(true)
-      setTimeout(() => setShowCloudSaved(false), 3000)
+    try {
+      let id: string | null
+      if (cloudProjectId) {
+        await updateCloud()
+        id = cloudProjectId
+      } else {
+        const title = getProjectTitle(workspace)
+        id = await saveToCloud({ title })
+      }
+      if (id) {
+        const url = `${window.location.origin}/p/${id}`
+        await navigator.clipboard.writeText(url)
+        setShowCloudSaved(true)
+        setTimeout(() => setShowCloudSaved(false), 3000)
+      }
+    } catch (e: any) {
+      if (e instanceof ApiError && e.code === 'plan_limit') {
+        setUpgradeReason(e.feature === 'private_projects' ? 'private_project' : 'cloud_limit')
+        setUpgradeMessage(e.message)
+        setShowUpgrade(true)
+      } else {
+        // Show generic error for network failures, auth errors, etc.
+        useWorkspaceStore.setState({ error: e?.message || 'Failed to save project' })
+      }
     }
   }
   
@@ -734,6 +750,7 @@ export default function IDE() {
       <GitHubModal isOpen={showGitHub} onClose={() => setShowGitHub(false)} onImport={setSourceRepo} />
       <SourceControlPanel isOpen={showSourceControl} onClose={() => setShowSourceControl(false)} sourceRepo={sourceRepo} />
       <EmbedModal isOpen={showEmbed} onClose={() => setShowEmbed(false)} />
+      <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} reason={upgradeReason} message={upgradeMessage} />
     </div>
   )
 }

@@ -70,15 +70,18 @@ export default function Landing() {
             <span className="text-lg font-semibold text-white">HashIDEA</span>
           </Link>
           <div className="flex items-center gap-4">
-            <a 
-              href="https://github.com/WickTheThird/HashIDEA" 
-              target="_blank" 
+            <Link to="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Pricing
+            </Link>
+            <a
+              href="https://github.com/WickTheThird/HashIDEA"
+              target="_blank"
               rel="noopener"
               className="text-gray-400 hover:text-white transition-colors"
             >
               <Github className="w-5 h-5" />
             </a>
-            <Link 
+            <Link
               to="/ide"
               className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded transition-colors"
             >
@@ -450,6 +453,7 @@ export default function Landing() {
             <span className="text-gray-400">HashIDEA</span>
           </div>
           <div className="flex items-center gap-6">
+            <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
             <a href="https://github.com/WickTheThird/HashIDEA" target="_blank" rel="noopener" className="hover:text-white transition-colors">GitHub</a>
             <span>Built by <a href="https://github.com/WickTheThird" target="_blank" rel="noopener" className="hover:text-white transition-colors">WickTheThird</a></span>
           </div>

@@ -50,10 +50,14 @@ function getAuthHeaders(): HeadersInit {
   return headers
 }
 
-class ApiError extends Error {
-  constructor(message: string, public status: number) {
+export class ApiError extends Error {
+  public code: string
+  public feature?: string
+  constructor(message: string, public status: number, code?: string, feature?: string) {
     super(message)
     this.name = 'ApiError'
+    this.code = code || 'error'
+    this.feature = feature
   }
 }
 
@@ -66,10 +70,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     },
   })
 
-  const data = await res.json()
+  const data = await res.json() as any
 
   if (!res.ok) {
-    throw new ApiError(data.error || 'Request failed', res.status)
+    throw new ApiError(
+      data.message || data.error || 'Request failed',
+      res.status,
+      data.error,          // 'plan_limit' or other error code
+      data.feature,        // 'private_projects' etc.
+    )
   }
 
   return data as T
@@ -130,4 +139,30 @@ export async function getMyProjects(): Promise<{ projects: ProjectListItem[] }> 
 
 export async function getUserProjects(userId: string): Promise<{ projects: ProjectListItem[] }> {
   return request(`/api/users/${userId}/projects`)
+}
+
+// ── Billing ────────────────────────────────────────
+
+export interface BillingStatus {
+  plan: 'free' | 'starter' | 'pro' | 'team'
+  status: 'active' | 'canceled' | 'past_due' | 'none'
+  current_period_end: string | null
+  cancel_at_period_end: boolean
+}
+
+export async function getBillingStatus(): Promise<BillingStatus> {
+  return request('/api/billing/status')
+}
+
+export async function createCheckout(priceId: string): Promise<{ url: string }> {
+  return request('/api/billing/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ price_id: priceId }),
+  })
+}
+
+export async function createPortalSession(): Promise<{ url: string }> {
+  return request('/api/billing/portal', {
+    method: 'POST',
+  })
 }

@@ -94,13 +94,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       })
       set({ cloudProjectId: result.id, isSaving: false })
       return result.id
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save to cloud:', error)
-      set({
-        isSaving: false,
-        error: error instanceof Error ? error.message : 'Failed to save project',
-      })
-      return null
+      set({ isSaving: false })
+      // Re-throw plan_limit errors so the UI can show the upgrade modal
+      throw error
     }
   },
 
@@ -113,10 +111,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set({ isSaving: false })
     } catch (error) {
       console.error('Failed to update cloud project:', error)
-      set({
-        isSaving: false,
-        error: error instanceof Error ? error.message : 'Failed to update project',
-      })
+      set({ isSaving: false })
+      throw error
     }
   },
 

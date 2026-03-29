@@ -5,6 +5,7 @@ import IDE from './pages/IDE'
 import Embed from './pages/Embed'
 import ProjectPage from './pages/ProjectPage'
 import UserProfile from './pages/UserProfile'
+import Pricing from './pages/Pricing'
 
 function App() {
   const navigate = useNavigate()
@@ -27,6 +28,7 @@ function App() {
       <Route path="/embed" element={<Embed />} />
       <Route path="/p/:id" element={<ProjectPage />} />
       <Route path="/u/:username" element={<UserProfile />} />
+      <Route path="/pricing" element={<Pricing />} />
     </Routes>
   )
 }
