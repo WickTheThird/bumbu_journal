@@ -46,9 +46,7 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
     monaco.languages.css?.lessDefaults?.setOptions({ validate: false })
     
     const tsCompilerOptions = {
-      jsx: monaco.languages.typescript.JsxEmit.React,
-      jsxFactory: 'React.createElement',
-      jsxFragmentFactory: 'React.Fragment',
+      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
       target: monaco.languages.typescript.ScriptTarget.ESNext,
       module: monaco.languages.typescript.ModuleKind.ESNext,
       moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
@@ -70,7 +68,7 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
       noSyntaxValidation: false,
     })
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: false,
+      noSemanticValidation: true,
       noSyntaxValidation: false,
     })
   }, [])
@@ -268,6 +266,7 @@ export default function EditorPaneV2({ paneId, files, onFileChange, theme, setti
           <Editor
             height="100%"
             language={activeFile.language}
+            path={activeFile.name}
             value={activeFile.content}
             theme={theme === 'dark' ? 'vs-dark' : 'light'}
             onChange={(value) => {

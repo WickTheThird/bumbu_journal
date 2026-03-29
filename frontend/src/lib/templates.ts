@@ -24,45 +24,13 @@ export const TEMPLATES: Template[] = [
           content: `{
   "name": "react-counter",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
   }
 }`,
           language: 'json',
-        },
-        {
-          name: 'vite.config.ts',
-          content: `import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 3000,
-    open: true
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true
-  }
-})`,
-          language: 'typescript',
         },
         {
           name: 'index.html',
@@ -75,7 +43,6 @@ export default defineConfig({
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>`,
           language: 'html',
@@ -158,29 +125,13 @@ const btnStyle = (bg: string) => ({
           content: `{
   "name": "react-todo",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
   }
 }`,
           language: 'json',
-        },
-        {
-          name: 'vite.config.ts',
-          content: `import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-})`,
-          language: 'typescript',
         },
         {
           name: 'src/main.tsx',
@@ -274,30 +225,14 @@ export default function App() {
           content: `{
   "name": "react-framer",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "framer-motion": "^10.16.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
   }
 }`,
           language: 'json',
-        },
-        {
-          name: 'vite.config.ts',
-          content: `import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-})`,
-          language: 'typescript',
         },
         {
           name: 'src/main.tsx',
@@ -678,7 +613,7 @@ main { padding: 0 5%; }
   {
     id: 'blank-react',
     name: 'Blank React',
-    description: 'Empty React + Vite project',
+    description: 'Empty React project',
     icon: 'react',
     workspace: {
       version: 2,
@@ -688,32 +623,13 @@ main { padding: 0 5%; }
           content: `{
   "name": "my-react-app",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "vite": "^5.0.0"
   }
 }`,
           language: 'json',
-        },
-        {
-          name: 'vite.config.ts',
-          content: `import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-})`,
-          language: 'typescript',
         },
         {
           name: 'src/main.tsx',
@@ -1896,16 +1812,10 @@ button {
           content: `{
   "name": "react-notes",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
   }
 }`,
           language: 'json',
@@ -1929,7 +1839,6 @@ createRoot(document.getElementById('root')!).render(<App />)` ,
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>`,
           language: 'html',
@@ -2005,16 +1914,10 @@ export default function App() {
           content: `{
   "name": "react-stopwatch",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
   }
 }`,
           language: 'json',
@@ -2038,7 +1941,6 @@ createRoot(document.getElementById('root')!).render(<App />)` ,
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>`,
           language: 'html',

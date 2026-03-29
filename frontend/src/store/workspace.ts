@@ -1,21 +1,31 @@
 import { create } from 'zustand'
 import { File, Workspace, DEFAULT_WORKSPACE } from '../types/workspace'
 import { getWorkspaceFromHash, setWorkspaceHash } from '../lib/hash'
+import * as api from '../lib/api'
 
 interface WorkspaceState {
   workspace: Workspace
   isLoading: boolean
   error: string | null
-  
+
+  // Cloud project state
+  cloudProjectId: string | null
+  isSaving: boolean
+
   loadFromHash: () => void
   saveToHash: () => void
-  
+
+  // Cloud operations
+  loadFromCloud: (id: string) => Promise<void>
+  saveToCloud: (opts?: { title?: string; description?: string }) => Promise<string | null>
+  updateCloud: () => Promise<void>
+
   updateFile: (name: string, content: string) => void
   createFile: (name: string, language?: string) => void
   deleteFile: (name: string) => void
   renameFile: (oldName: string, newName: string) => void
   setActiveFile: (name: string) => void
-  
+
   updateSettings: (settings: Partial<NonNullable<Workspace['settings']>>) => void
   setWorkspace: (workspace: Workspace) => void
 }
@@ -24,7 +34,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   workspace: DEFAULT_WORKSPACE,
   isLoading: true,
   error: null,
-  
+  cloudProjectId: null,
+  isSaving: false,
+
   loadFromHash: () => {
     try {
       const workspace = getWorkspaceFromHash()
@@ -48,7 +60,66 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set({ error: error instanceof Error ? error.message : 'Failed to save workspace' })
     }
   },
-  
+
+  loadFromCloud: async (id: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const project = await api.getProject(id)
+      set({
+        workspace: project.workspace,
+        cloudProjectId: id,
+        isLoading: false,
+        error: null,
+      })
+    } catch (error) {
+      console.error('Failed to load from cloud:', error)
+      set({
+        workspace: DEFAULT_WORKSPACE,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to load project',
+      })
+    }
+  },
+
+  saveToCloud: async (opts) => {
+    const { workspace } = get()
+    set({ isSaving: true, error: null })
+    try {
+      const title = opts?.title || workspace.remix?.title || 'Untitled'
+      const result = await api.saveProject({
+        workspace,
+        title,
+        description: opts?.description,
+        remix_from: workspace.remix?.from,
+      })
+      set({ cloudProjectId: result.id, isSaving: false })
+      return result.id
+    } catch (error) {
+      console.error('Failed to save to cloud:', error)
+      set({
+        isSaving: false,
+        error: error instanceof Error ? error.message : 'Failed to save project',
+      })
+      return null
+    }
+  },
+
+  updateCloud: async () => {
+    const { workspace, cloudProjectId } = get()
+    if (!cloudProjectId) return
+    set({ isSaving: true, error: null })
+    try {
+      await api.updateProject(cloudProjectId, { workspace })
+      set({ isSaving: false })
+    } catch (error) {
+      console.error('Failed to update cloud project:', error)
+      set({
+        isSaving: false,
+        error: error instanceof Error ? error.message : 'Failed to update project',
+      })
+    }
+  },
+
   updateFile: (name: string, content: string) => {
     set((state) => {
       const files = state.workspace.files.map((file) =>

@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { X, Eye, RefreshCw, Loader2 } from 'lucide-react'
 import { bundle, needsBundling, initBundler, generateImportMap } from '../lib/bundler'
-import { buildCachedImportMap } from '../lib/packageCache'
 import { marked } from 'marked'
 
 interface HTMLPreviewProps {
@@ -21,7 +20,6 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
   const [bundleError, setBundleError] = useState<string | null>(null)
   const [bundleImports, setBundleImports] = useState<string[]>([])
   const [isBundling, setIsBundling] = useState(false)
-  const [importMapText, setImportMapText] = useState<string | null>(null)
   
   const isFrameworkProject = files && needsBundling(files)
   
@@ -72,34 +70,12 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
   }, [isOpen, files, isFrameworkProject, bundleKey])
   
   useEffect(() => {
-    if (!isFrameworkProject) {
-      setImportMapText(null)
-      return
-    }
-    
-    let active = true
-    setImportMapText(null)
-    ;(async () => {
-      try {
-        const map = await buildCachedImportMap(bundleImports)
-        if (active) setImportMapText(map)
-      } catch {
-        if (active) setImportMapText(generateImportMap(bundleImports))
-      }
-    })()
-    
-    return () => {
-      active = false
-    }
-  }, [bundleImports, isFrameworkProject])
-  
-  useEffect(() => {
     if (!isOpen) return
     const timer = setTimeout(() => {
       setRefreshKey((k) => k + 1)
     }, 250)
     return () => clearTimeout(timer)
-  }, [html, css, js, bundledCode, markdownFile?.content, isOpen, importMapText])
+  }, [html, css, js, bundledCode, markdownFile?.content, isOpen, bundleImports])
   
   const htmlSrcdoc = useMemo(() => {
     if (isFrameworkProject) return null
@@ -155,8 +131,10 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
     if (bodyMatch) {
       bodyContent = bodyMatch[1]
     }
+    // Strip local script tags (e.g. <script src="/src/main.tsx">) — the bundler handles these
+    bodyContent = bodyContent.replace(/<script[^>]*\ssrc=["']\/[^"']*["'][^>]*>\s*<\/script>/gi, '')
     
-    const importMap = importMapText || generateImportMap(bundleImports)
+    const importMap = generateImportMap(bundleImports)
     
     return `<!DOCTYPE html>
 <html>
@@ -197,7 +175,7 @@ ${importMap}
   <\/script>
 </body>
 </html>`
-  }, [bundledCode, bundleImports, files, isFrameworkProject, importMapText])
+  }, [bundledCode, bundleImports, files, isFrameworkProject])
   
   const markdownSrcdoc = useMemo(() => {
     if (!isMarkdownProject || !markdownFile) return null

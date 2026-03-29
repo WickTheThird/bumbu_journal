@@ -166,7 +166,7 @@ export async function bundle(files: { name: string; content: string }[]): Promis
   if (pkgJsonContent) {
     try {
       const pkgJson = JSON.parse(pkgJsonContent)
-      const deps = { ...pkgJson.dependencies, ...pkgJson.devDependencies }
+      const deps = { ...pkgJson.dependencies }
       for (const pkg of Object.keys(deps)) {
         npmImports.add(pkg)
       }
@@ -174,10 +174,14 @@ export async function bundle(files: { name: string; content: string }[]): Promis
     }
   }
   
-  for (const [, content] of fileMap) {
+  for (const [path, content] of fileMap) {
+    if (!/\.(tsx?|jsx?|mjs)$/.test(path)) continue
     const importMatches = content.matchAll(/import\s+(?:.*?\s+from\s+)?['"]([^.\/][^'"]*)['"]/g)
     for (const match of importMatches) {
-      const pkg = match[1].split('/')[0]
+      const specifier = match[1]
+      const pkg = specifier.startsWith('@')
+        ? specifier.split('/').slice(0, 2).join('/')
+        : specifier.split('/')[0]
       npmImports.add(pkg)
     }
   }

@@ -82,19 +82,24 @@ function EditorPaneRoot({
 }
 
 export default function IDE() {
-  const { 
-    workspace, 
+  const {
+    workspace,
     isLoading,
     error,
-    loadFromHash, 
+    loadFromHash,
     saveToHash,
-    updateFile, 
+    saveToCloud,
+    updateCloud,
+    cloudProjectId,
+    isSaving,
+    updateFile,
     deleteFile,
     renameFile,
   } = useWorkspaceStore()
-  
+
   const [copied, setCopied] = useState(false)
   const [isSaved, setIsSaved] = useState(true)
+  const [showCloudSaved, setShowCloudSaved] = useState(false)
   
   useEffect(() => {
     setIsSaved(false)
@@ -116,7 +121,7 @@ export default function IDE() {
   const [showSourceControl, setShowSourceControl] = useState(false)
   const [showEmbed, setShowEmbed] = useState(false)
   const [sourceRepo, setSourceRepo] = useState<GitHubRepo | null>(null)
-  const [githubUser, setGithubUser] = useState<{ login: string } | null>(null)
+  const [githubUser, setGithubUser] = useState<{ login: string; avatar_url: string } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [output, setOutput] = useState<ExecutionResult | null>(null)
   const [loadingStatus, setLoadingStatus] = useState<string | null>(null)
@@ -242,6 +247,23 @@ export default function IDE() {
   const handleDownload = async () => {
     await downloadWorkspaceAsZip(workspace)
     setShowMobileMenu(false)
+  }
+
+  const handleSaveToCloud = async () => {
+    let id: string | null
+    if (cloudProjectId) {
+      await updateCloud()
+      id = cloudProjectId
+    } else {
+      const title = getProjectTitle(workspace)
+      id = await saveToCloud({ title })
+    }
+    if (id) {
+      const url = `${window.location.origin}/p/${id}`
+      await navigator.clipboard.writeText(url)
+      setShowCloudSaved(true)
+      setTimeout(() => setShowCloudSaved(false), 3000)
+    }
   }
   
   const handleRun = useCallback(async () => {
@@ -457,6 +479,13 @@ export default function IDE() {
             <Hash className="w-5 h-5 text-ide-accent" />
             <span className="font-semibold hidden sm:inline">HashIDEA</span>
           </Link>
+
+          {githubUser && (
+            <div className="hidden sm:flex items-center gap-2 ml-2 pl-2 border-l border-ide-border">
+              <img src={githubUser.avatar_url} alt={githubUser.login} className="w-5 h-5 rounded-full" />
+              <span className="text-xs text-ide-muted">{githubUser.login}</span>
+            </div>
+          )}
         </div>
         
         {/* Desktop toolbar */}
@@ -505,11 +534,22 @@ export default function IDE() {
             <Code className="w-4 h-4" />
           </button>
           
+          <button onClick={handleSaveToCloud} disabled={isSaving} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-50" title={cloudProjectId ? 'Update cloud project' : 'Save to cloud'}>
+            {isSaving ? (
+              <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+            ) : showCloudSaved ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <Cloud className="w-4 h-4" />
+            )}
+            {isSaving ? 'Saving...' : showCloudSaved ? 'Copied!' : cloudProjectId ? 'Update' : 'Save to Cloud'}
+          </button>
+
           <button onClick={handleShare} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition">
             {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
             {copied ? 'Copied!' : 'Share'}
           </button>
-          
+
           <button onClick={handleShareX} className="p-1.5 rounded-lg bg-ide-border/50 text-ide-muted hover:text-[#1DA1F2] transition" title="Share on X">
             <XIcon className="w-4 h-4" />
           </button>
@@ -587,10 +627,8 @@ export default function IDE() {
             >
               {githubUser ? (
                 <>
-                  <div className="w-4 h-4 rounded-full bg-ide-accent/20 flex items-center justify-center text-xs text-ide-accent">
-                    {githubUser.login[0].toUpperCase()}
-                  </div>
-                  <span className="text-ide-text">{githubUser.login}</span>
+                  <img src={githubUser.avatar_url} alt={githubUser.login} className="w-5 h-5 rounded-full" />
+                  <span className="text-ide-text truncate">{githubUser.login}</span>
                 </>
               ) : (
                 <>
