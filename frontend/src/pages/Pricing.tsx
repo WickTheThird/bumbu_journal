@@ -10,9 +10,9 @@ import { createCheckout, createPortalSession, getBillingStatus, BillingStatus } 
 import { useEffect } from 'react'
 
 const PRICE_IDS = {
-  starter: 'price_1TGPPPIrHmPnoiiOWJrVPXGb',
-  pro: 'price_1TGPPmIrHmPnoiiOAugd3a1E',
-  team: 'price_1TGPQ7IrHmPnoiiOwzY8mG5y',
+  starter: 'price_1TGQH1Isg0HKgiZiwoJS8dsL',
+  pro: 'price_1TGQH1Isg0HKgiZilKpkTzhH',
+  team: 'price_1TGQH1Isg0HKgiZiVYwMcaks',
 } as const
 
 const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, team: 3 }

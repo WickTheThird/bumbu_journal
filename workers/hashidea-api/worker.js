@@ -15,9 +15,9 @@
  */
 
 const PRICE_TO_PLAN = {
-  'price_1TGPPPIrHmPnoiiOWJrVPXGb': 'starter',
-  'price_1TGPPmIrHmPnoiiOAugd3a1E': 'pro',
-  'price_1TGPQ7IrHmPnoiiOwzY8mG5y': 'team',
+  'price_1TGQH1Isg0HKgiZiwoJS8dsL': 'starter',
+  'price_1TGQH1Isg0HKgiZilKpkTzhH': 'pro',
+  'price_1TGQH1Isg0HKgiZiVYwMcaks': 'team',
 };
 
 // ── Plan limits ─────────────────────────────────────
