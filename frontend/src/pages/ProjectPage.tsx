@@ -1,5 +1,5 @@
 /**
- * ProjectPage — loads a cloud project by ID, shows metadata, then opens in IDE
+ * ProjectPage - loads a cloud project by ID, shows metadata, then opens in IDE
  * Route: /p/:id
  */
 import { useEffect, useState } from 'react'

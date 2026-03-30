@@ -59,7 +59,7 @@ export const DEFAULT_WORKSPACE: Workspace = {
       name: 'main.py',
       content: `# Welcome to HashIDEA!
 # Your entire workspace lives in the URL hash.
-# Edit, run, and share — all in one link.
+# Edit, run, and share - all in one link.
 
 def greet(name: str) -> str:
     return f"Hello, {name}! Welcome to HashIDEA."

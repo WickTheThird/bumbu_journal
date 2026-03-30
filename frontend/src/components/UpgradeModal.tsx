@@ -1,5 +1,5 @@
 /**
- * UpgradeModal — shown when user hits a plan limit
+ * UpgradeModal - shown when user hits a plan limit
  * Nudges them to upgrade with context about what they tried to do
  */
 import { Link } from 'react-router-dom'

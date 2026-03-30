@@ -1,5 +1,5 @@
 /**
- * Pricing page — value-framed tiers
+ * Pricing page - value-framed tiers
  * Free (Play) → Starter (Keep) → Pro (Ship) → Team (Build together)
  */
 import { useState } from 'react'
@@ -34,7 +34,7 @@ const TIERS: Tier[] = [
     name: 'Free',
     verb: 'Play',
     price: null,
-    description: 'Build and share apps instantly — no account needed',
+    description: 'Build and share apps instantly - no account needed',
     features: [
       'Unlimited apps in URL',
       'Public sharing & embedding',

@@ -5,6 +5,8 @@ export interface Template {
   name: string
   description: string
   icon: string
+  category: 'react' | 'interactive' | 'layout' | 'data' | 'python' | 'typescript' | 'starter'
+  featured?: boolean
   workspace: Workspace
 }
 
@@ -14,8 +16,10 @@ export const TEMPLATES: Template[] = [
   {
     id: 'react-counter',
     name: 'React Counter',
-    description: 'Interactive counter with hooks',
+    description: 'Stateful counter using React hooks',
     icon: 'react',
+    category: 'react',
+    featured: true,
     workspace: {
       version: 2,
       files: [
@@ -115,8 +119,10 @@ const btnStyle = (bg: string) => ({
   {
     id: 'react-todo',
     name: 'React Todo',
-    description: 'Todo list with TypeScript',
+    description: 'Task manager with add, complete, and filter',
     icon: 'react',
+    category: 'react',
+    featured: true,
     workspace: {
       version: 2,
       files: [
@@ -215,8 +221,9 @@ export default function App() {
   {
     id: 'react-framer',
     name: 'React + Framer Motion',
-    description: 'Animations with framer-motion',
-    icon: 'react',
+    description: 'Spring animations with Framer Motion',
+    icon: 'animation',
+    category: 'react',
     workspace: {
       version: 2,
       files: [
@@ -340,8 +347,10 @@ export default function App() {
   {
     id: 'particles',
     name: 'Particle System',
-    description: 'Canvas animation with mouse interaction',
+    description: 'Mouse-reactive particle system on canvas',
     icon: 'particle',
+    category: 'interactive',
+    featured: true,
     workspace: {
       version: 2,
       files: [
@@ -463,8 +472,10 @@ animate();`,
   {
     id: 'portfolio',
     name: 'Portfolio',
-    description: 'Minimal portfolio with CSS animations',
+    description: 'Developer portfolio with projects grid',
     icon: 'portfolio',
+    category: 'layout',
+    featured: true,
     workspace: {
       version: 2,
       files: [
@@ -613,8 +624,10 @@ main { padding: 0 5%; }
   {
     id: 'blank-react',
     name: 'Blank React',
-    description: 'Empty React project',
+    description: 'Clean React + TypeScript starter',
     icon: 'react',
+    category: 'starter',
+    featured: true,
     workspace: {
       version: 2,
       files: [
@@ -659,8 +672,9 @@ createRoot(document.getElementById('root')!).render(<App />)`,
   {
     id: 'blank-html',
     name: 'Blank HTML',
-    description: 'Empty HTML/CSS/JS project',
+    description: 'Minimal HTML/CSS/JS boilerplate',
     icon: 'file',
+    category: 'starter',
     workspace: {
       version: 2,
       files: [
@@ -704,8 +718,9 @@ createRoot(document.getElementById('root')!).render(<App />)`,
   {
     id: 'pricing-page',
     name: 'Pricing Page',
-    description: 'SaaS pricing layout with tiers',
+    description: 'Three-tier pricing table with toggle',
     icon: 'portfolio',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -819,8 +834,9 @@ button {
   {
     id: 'saas-landing',
     name: 'SaaS Landing',
-    description: 'Hero, features, and CTA sections',
+    description: 'Landing page with hero, features, and CTA',
     icon: 'portfolio',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -923,8 +939,9 @@ button {
   {
     id: 'markdown-docs',
     name: 'Markdown Docs',
-    description: 'Docs layout in Markdown',
+    description: 'Markdown documentation template',
     icon: 'file',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -963,8 +980,9 @@ curl https://api.nova.dev/v1/status \\
   {
     id: 'glass-login',
     name: 'Glass Login',
-    description: 'Glassmorphism login card',
+    description: 'Frosted glass login form with blur effects',
     icon: 'portfolio',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -1047,8 +1065,10 @@ button {
   {
     id: 'dashboard-ui',
     name: 'Analytics Dashboard',
-    description: 'Cards and charts layout',
+    description: 'Analytics dashboard with metric cards',
     icon: 'chart',
+    category: 'data',
+    featured: true,
     workspace: {
       version: 2,
       files: [
@@ -1168,8 +1188,9 @@ button {
   {
     id: 'calculator',
     name: 'Calculator',
-    description: 'Simple calculator UI and logic',
+    description: 'Four-function calculator with keyboard input',
     icon: 'file',
+    category: 'interactive',
     workspace: {
       version: 2,
       files: [
@@ -1332,8 +1353,9 @@ update()
   {
     id: 'kanban-board',
     name: 'Kanban Board',
-    description: 'Drag-free kanban columns',
+    description: 'Three-column task board with add and remove',
     icon: 'file',
+    category: 'interactive',
     workspace: {
       version: 2,
       files: [
@@ -1423,8 +1445,9 @@ header button {
   {
     id: 'weather-widget',
     name: 'Weather Widget',
-    description: 'Fetch-based weather card',
-    icon: 'api',
+    description: 'Weather card with API fetch pattern',
+    icon: 'weather',
+    category: 'data',
     workspace: {
       version: 2,
       files: [
@@ -1496,8 +1519,9 @@ fetch('https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&cur
   {
     id: 'css-animations',
     name: 'CSS Buttons',
-    description: 'Animated button styles',
-    icon: 'file',
+    description: 'Hover and click animation showcase',
+    icon: 'animation',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -1568,8 +1592,9 @@ button {
   {
     id: 'blog-layout',
     name: 'Blog Layout',
-    description: 'Article + sidebar layout',
+    description: 'Blog post layout with sidebar navigation',
     icon: 'portfolio',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -1652,8 +1677,9 @@ aside {
   {
     id: 'product-hero',
     name: 'Product Hero',
-    description: 'Hero section with stats',
+    description: 'Product hero with statistics bar',
     icon: 'portfolio',
+    category: 'layout',
     workspace: {
       version: 2,
       files: [
@@ -1726,8 +1752,9 @@ button {
   {
     id: 'music-player',
     name: 'Music Player',
-    description: 'Compact player UI',
+    description: 'Audio player interface with controls',
     icon: 'file',
+    category: 'interactive',
     workspace: {
       version: 2,
       files: [
@@ -1802,8 +1829,9 @@ button {
   {
     id: 'react-notes',
     name: 'React Notes',
-    description: 'Notes app with tags',
+    description: 'Tagged notes with search and filter',
     icon: 'react',
+    category: 'react',
     workspace: {
       version: 2,
       files: [
@@ -1904,8 +1932,9 @@ export default function App() {
   {
     id: 'react-stopwatch',
     name: 'React Stopwatch',
-    description: 'Timer with laps',
-    icon: 'react',
+    description: 'Stopwatch with lap tracking',
+    icon: 'timer',
+    category: 'react',
     workspace: {
       version: 2,
       files: [
@@ -2003,5 +2032,1989 @@ export default function App() {
       settings: defaultSettings,
     },
   },
+  {
+    id: 'python-basics',
+    name: 'Python Basics',
+    description: 'Functions, classes, and data structures',
+    icon: 'file',
+    category: 'python',
+    featured: true,
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'main.py',
+          content: `"""
+Python Basics - Functions, Classes, and Data Structures
+========================================================
+A guided tour of core Python patterns with clear output.
+"""
+
+from utils import format_table
+
+# ---------------------------------------------------------------------------
+# 1. Functions & f-string formatting
+# ---------------------------------------------------------------------------
+
+def greet(name: str, greeting: str = "Hello") -> str:
+    """Return a personalised greeting using an f-string."""
+    return f"{greeting}, {name}! Welcome to Python."
+
+# Call our greeting function
+print(greet("Alice"))
+print(greet("Bob", greeting="Hey"))
+print()
+
+# ---------------------------------------------------------------------------
+# 2. A simple Task class
+# ---------------------------------------------------------------------------
+
+class Task:
+    """Represents a to-do item with a title, priority, and done flag."""
+
+    def __init__(self, title: str, priority: int = 3):
+        self.title = title
+        self.priority = priority  # 1 = highest, 5 = lowest
+        self.done = False
+
+    def complete(self) -> None:
+        """Mark the task as done."""
+        self.done = True
+
+    def __repr__(self) -> str:
+        status = "done" if self.done else "pending"
+        return f"Task({self.title!r}, priority={self.priority}, {status})"
+
+# Create a handful of tasks
+tasks = [
+    Task("Write unit tests", priority=1),
+    Task("Update README", priority=2),
+    Task("Refactor auth module", priority=2),
+    Task("Add dark mode", priority=3),
+    Task("Fix typo on homepage", priority=4),
 ]
 
+# Mark a couple as done
+tasks[0].complete()
+tasks[4].complete()
+
+print("All tasks:")
+for t in tasks:
+    print(f"  {t}")
+print()
+
+# ---------------------------------------------------------------------------
+# 3. List comprehensions
+# ---------------------------------------------------------------------------
+
+# Filter to only pending tasks, sorted by priority
+pending = sorted(
+    [t for t in tasks if not t.done],
+    key=lambda t: t.priority,
+)
+print("Pending tasks (by priority):")
+for t in pending:
+    print(f"  [{t.priority}] {t.title}")
+print()
+
+# ---------------------------------------------------------------------------
+# 4. Dictionary operations
+# ---------------------------------------------------------------------------
+
+# Group tasks by their status
+groups: dict[str, list[str]] = {"done": [], "pending": []}
+for t in tasks:
+    key = "done" if t.done else "pending"
+    groups[key].append(t.title)
+
+print("Grouped by status:")
+for status, titles in groups.items():
+    print(f"  {status}: {', '.join(titles)}")
+print()
+
+# ---------------------------------------------------------------------------
+# 5. Using our utility - format_table
+# ---------------------------------------------------------------------------
+
+headers = ["Task", "Priority", "Status"]
+rows = [
+    [t.title, str(t.priority), "done" if t.done else "pending"]
+    for t in tasks
+]
+
+print("Task summary table:")
+format_table(headers, rows)
+`,
+          language: 'python',
+        },
+        {
+          name: 'utils.py',
+          content: `"""
+utils.py - Small helper utilities
+"""
+
+
+def format_table(headers: list[str], rows: list[list[str]]) -> None:
+    """Print a nicely formatted ASCII table.
+
+    Args:
+        headers: Column header strings.
+        rows:    A list of rows, each row being a list of cell strings.
+
+    Example output:
+        +------------------+----------+--------+
+        | Task             | Priority | Status |
+        +------------------+----------+--------+
+        | Write unit tests | 1        | done   |
+        | Update README    | 2        | pending|
+        +------------------+----------+--------+
+    """
+    # Determine the max width for each column
+    all_rows = [headers] + rows
+    col_widths = [
+        max(len(str(cell)) for cell in col)
+        for col in zip(*all_rows)
+    ]
+
+    def make_separator() -> str:
+        return "+" + "+".join("-" * (w + 2) for w in col_widths) + "+"
+
+    def make_row(cells: list[str]) -> str:
+        padded = [
+            " " + str(cell).ljust(w) + " "
+            for cell, w in zip(cells, col_widths)
+        ]
+        return "|" + "|".join(padded) + "|"
+
+    sep = make_separator()
+    print(sep)
+    print(make_row(headers))
+    print(sep)
+    for row in rows:
+        print(make_row(row))
+    print(sep)
+`,
+          language: 'python',
+        },
+      ],
+      activeFile: 'main.py',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'python-data',
+    name: 'Python Data',
+    description: 'Statistics and data processing',
+    icon: 'chart',
+    category: 'python',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'main.py',
+          content: `"""
+Python Data - Statistics & Data Processing
+============================================
+Analyse a sample dataset of student scores using only the standard library.
+"""
+
+import statistics
+import json
+from collections import Counter
+
+# ---------------------------------------------------------------------------
+# Sample dataset - each dict represents one student's test result
+# ---------------------------------------------------------------------------
+
+students = [
+    {"name": "Alice",   "score": 92, "grade": "A"},
+    {"name": "Bob",     "score": 78, "grade": "B"},
+    {"name": "Charlie", "score": 85, "grade": "B"},
+    {"name": "Diana",   "score": 96, "grade": "A"},
+    {"name": "Eve",     "score": 73, "grade": "C"},
+    {"name": "Frank",   "score": 88, "grade": "B"},
+    {"name": "Grace",   "score": 91, "grade": "A"},
+    {"name": "Hank",    "score": 67, "grade": "D"},
+    {"name": "Ivy",     "score": 82, "grade": "B"},
+    {"name": "Jack",    "score": 95, "grade": "A"},
+    {"name": "Karen",   "score": 74, "grade": "C"},
+    {"name": "Leo",     "score": 88, "grade": "B"},
+]
+
+scores = [s["score"] for s in students]
+
+# ---------------------------------------------------------------------------
+# 1. Descriptive statistics
+# ---------------------------------------------------------------------------
+
+print("=" * 50)
+print("  STUDENT SCORE ANALYSIS")
+print("=" * 50)
+print()
+
+print(f"  Students enrolled : {len(students)}")
+print(f"  Mean score        : {statistics.mean(scores):.1f}")
+print(f"  Median score      : {statistics.median(scores):.1f}")
+print(f"  Mode score        : {statistics.mode(scores)}")
+print(f"  Std deviation     : {statistics.stdev(scores):.2f}")
+print(f"  Highest score     : {max(scores)}")
+print(f"  Lowest score      : {min(scores)}")
+print(f"  Range             : {max(scores) - min(scores)}")
+print()
+
+# ---------------------------------------------------------------------------
+# 2. Grade distribution using Counter
+# ---------------------------------------------------------------------------
+
+grade_counts = Counter(s["grade"] for s in students)
+
+print("-" * 50)
+print("  GRADE DISTRIBUTION")
+print("-" * 50)
+print()
+
+for grade in sorted(grade_counts):
+    count = grade_counts[grade]
+    bar = "#" * (count * 3)
+    pct = count / len(students) * 100
+    print(f"  Grade {grade} : {bar} {count} ({pct:.0f}%)")
+print()
+
+# ---------------------------------------------------------------------------
+# 3. Students grouped by grade
+# ---------------------------------------------------------------------------
+
+print("-" * 50)
+print("  STUDENTS BY GRADE")
+print("-" * 50)
+print()
+
+groups: dict[str, list[str]] = {}
+for s in students:
+    groups.setdefault(s["grade"], []).append(s["name"])
+
+for grade in sorted(groups):
+    names = ", ".join(groups[grade])
+    avg = statistics.mean(
+        s["score"] for s in students if s["grade"] == grade
+    )
+    print(f"  {grade}: {names}")
+    print(f"     Average: {avg:.1f}")
+    print()
+
+# ---------------------------------------------------------------------------
+# 4. Top performers
+# ---------------------------------------------------------------------------
+
+print("-" * 50)
+print("  TOP 5 PERFORMERS")
+print("-" * 50)
+print()
+
+ranked = sorted(students, key=lambda s: s["score"], reverse=True)
+for i, s in enumerate(ranked[:5], start=1):
+    print(f"  {i}. {s['name']:<10} {s['score']}  ({s['grade']})")
+print()
+
+# ---------------------------------------------------------------------------
+# 5. Serialise results to JSON (common data-processing pattern)
+# ---------------------------------------------------------------------------
+
+summary = {
+    "total_students": len(students),
+    "mean": round(statistics.mean(scores), 2),
+    "median": statistics.median(scores),
+    "grade_distribution": dict(grade_counts),
+}
+
+print("-" * 50)
+print("  JSON SUMMARY")
+print("-" * 50)
+print()
+print(json.dumps(summary, indent=2))
+`,
+          language: 'python',
+        },
+      ],
+      activeFile: 'main.py',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'snake-game',
+    name: 'Snake Game',
+    description: 'Classic snake with canvas controls',
+    icon: 'game',
+    category: 'interactive',
+    featured: true,
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <div class="hud">
+      <span id="score">Score: 0</span>
+      <span id="high">Best: 0</span>
+    </div>
+    <canvas id="game" width="400" height="400"></canvas>
+    <p id="message">Press any arrow key to start</p>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'style.css',
+          content: `@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #0b0b12;
+  font-family: 'Press Start 2P', monospace;
+  color: #e2e8f0;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hud {
+  width: 400px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+canvas {
+  border: 2px solid #1e293b;
+  border-radius: 8px;
+  background: #111827;
+}
+
+#message {
+  font-size: 0.65rem;
+  color: #64748b;
+  min-height: 1.4em;
+  text-align: center;
+}
+`,
+          language: 'css',
+        },
+        {
+          name: 'game.js',
+          content: `/**
+ * Snake Game - Canvas Implementation
+ * -----------------------------------
+ * Arrow keys to move, eat food to grow, avoid walls and yourself.
+ * Press Space to restart after game over.
+ */
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const highEl = document.getElementById('high');
+const messageEl = document.getElementById('message');
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+const CELL = 20;                        // size of each grid cell in px
+const COLS = canvas.width / CELL;       // 20
+const ROWS = canvas.height / CELL;      // 20
+const TICK_MS = 100;                    // ms between game ticks
+
+// Colours
+const BG        = '#111827';
+const SNAKE_CLR = '#22d3ee';
+const HEAD_CLR  = '#06b6d4';
+const FOOD_CLR  = '#f43f5e';
+const GRID_CLR  = '#1a2233';
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let snake, dir, nextDir, food, score, highScore, running, gameOver, lastTick;
+
+highScore = parseInt(localStorage.getItem('snake-high') || '0', 10);
+highEl.textContent = 'Best: ' + highScore;
+
+/** Initialise / reset the game state. */
+function init() {
+  const midY = Math.floor(ROWS / 2);
+  snake = [
+    { x: 5, y: midY },
+    { x: 4, y: midY },
+    { x: 3, y: midY },
+  ];
+  dir = { x: 1, y: 0 };
+  nextDir = { ...dir };
+  score = 0;
+  running = false;
+  gameOver = false;
+  lastTick = 0;
+  scoreEl.textContent = 'Score: 0';
+  messageEl.textContent = 'Press any arrow key to start';
+  placeFood();
+  draw();
+}
+
+// ---------------------------------------------------------------------------
+// Food placement
+// ---------------------------------------------------------------------------
+
+/** Place food on a random empty cell. */
+function placeFood() {
+  const occupied = new Set(snake.map(s => s.x + ',' + s.y));
+  let pos;
+  do {
+    pos = {
+      x: Math.floor(Math.random() * COLS),
+      y: Math.floor(Math.random() * ROWS),
+    };
+  } while (occupied.has(pos.x + ',' + pos.y));
+  food = pos;
+}
+
+// ---------------------------------------------------------------------------
+// Input handling
+// ---------------------------------------------------------------------------
+
+const KEY_MAP = {
+  ArrowUp:    { x:  0, y: -1 },
+  ArrowDown:  { x:  0, y:  1 },
+  ArrowLeft:  { x: -1, y:  0 },
+  ArrowRight: { x:  1, y:  0 },
+};
+
+document.addEventListener('keydown', (e) => {
+  // Restart on Space after game over
+  if (e.code === 'Space' && gameOver) {
+    init();
+    return;
+  }
+
+  const newDir = KEY_MAP[e.key];
+  if (!newDir) return;
+  e.preventDefault();
+
+  // Prevent reversing into yourself
+  if (newDir.x === -dir.x && newDir.y === -dir.y) return;
+
+  nextDir = newDir;
+
+  // Start the game on first arrow press
+  if (!running && !gameOver) {
+    running = true;
+    messageEl.textContent = '';
+    lastTick = performance.now();
+    requestAnimationFrame(loop);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Game loop
+// ---------------------------------------------------------------------------
+
+function loop(now) {
+  if (!running) return;
+
+  if (now - lastTick >= TICK_MS) {
+    lastTick = now;
+    update();
+    draw();
+  }
+
+  if (running) {
+    requestAnimationFrame(loop);
+  }
+}
+
+/** Advance the game by one tick. */
+function update() {
+  dir = { ...nextDir };
+
+  const head = {
+    x: snake[0].x + dir.x,
+    y: snake[0].y + dir.y,
+  };
+
+  // Wall collision
+  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+    return endGame();
+  }
+
+  // Self collision
+  if (snake.some(s => s.x === head.x && s.y === head.y)) {
+    return endGame();
+  }
+
+  snake.unshift(head);
+
+  // Check food
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    scoreEl.textContent = 'Score: ' + score;
+    placeFood();
+  } else {
+    snake.pop();   // remove tail unless we just ate
+  }
+}
+
+function endGame() {
+  running = false;
+  gameOver = true;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('snake-high', String(highScore));
+    highEl.textContent = 'Best: ' + highScore;
+  }
+  messageEl.textContent = 'Game Over! Press Space to restart';
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+function draw() {
+  // Background
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid lines (subtle)
+  ctx.strokeStyle = GRID_CLR;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= COLS; x++) {
+    ctx.beginPath();
+    ctx.moveTo(x * CELL, 0);
+    ctx.lineTo(x * CELL, canvas.height);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= ROWS; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * CELL);
+    ctx.lineTo(canvas.width, y * CELL);
+    ctx.stroke();
+  }
+
+  // Food (pulsing glow)
+  const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 200);
+  ctx.shadowColor = FOOD_CLR;
+  ctx.shadowBlur = 12 * pulse;
+  ctx.fillStyle = FOOD_CLR;
+  ctx.beginPath();
+  ctx.arc(
+    food.x * CELL + CELL / 2,
+    food.y * CELL + CELL / 2,
+    CELL / 2 - 2,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Snake body
+  snake.forEach((seg, i) => {
+    const isHead = i === 0;
+    ctx.fillStyle = isHead ? HEAD_CLR : SNAKE_CLR;
+    const pad = isHead ? 1 : 2;
+    ctx.beginPath();
+    ctx.roundRect(
+      seg.x * CELL + pad,
+      seg.y * CELL + pad,
+      CELL - pad * 2,
+      CELL - pad * 2,
+      4,
+    );
+    ctx.fill();
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Start
+// ---------------------------------------------------------------------------
+
+init();
+`,
+          language: 'javascript',
+        },
+      ],
+      activeFile: 'game.js',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'typescript-utils',
+    name: 'TypeScript Playground',
+    description: 'Generics, types, and utility functions',
+    icon: 'typescript',
+    category: 'typescript',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'main.ts',
+          content: `/**
+ * TypeScript Playground - Generics, Types & Utility Functions
+ * ============================================================
+ * All code here is valid when types are stripped (no enums, no
+ * parameter properties, no namespaces). Run it as plain JS too!
+ */
+
+// ---------------------------------------------------------------------------
+// 1. Result<T, E> - a simple discriminated union for error handling
+// ---------------------------------------------------------------------------
+
+type Result<T, E = string> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+function ok<T>(value: T): Result<T, never> {
+  return { ok: true, value };
+}
+
+function err<E>(error: E): Result<never, E> {
+  return { ok: false, error };
+}
+
+/** Parse a string to a positive integer, returning a Result. */
+function parsePositiveInt(input: string): Result<number, string> {
+  const n = Number(input);
+  if (!Number.isInteger(n)) return err(\`"\${input}" is not an integer\`);
+  if (n <= 0) return err(\`\${n} is not positive\`);
+  return ok(n);
+}
+
+// Demonstrate Result usage
+const tests = ["42", "-3", "hello", "7"];
+console.log("=== Result<T, E> ===");
+for (const t of tests) {
+  const result = parsePositiveInt(t);
+  if (result.ok) {
+    console.log(\`  parsePositiveInt("\${t}") => \${result.value}\`);
+  } else {
+    console.log(\`  parsePositiveInt("\${t}") => ERROR: \${result.error}\`);
+  }
+}
+console.log();
+
+// ---------------------------------------------------------------------------
+// 2. Generic Stack<T> class
+// ---------------------------------------------------------------------------
+
+class Stack<T> {
+  private items: T[] = [];
+
+  push(item: T): void {
+    this.items.push(item);
+  }
+
+  pop(): T | undefined {
+    return this.items.pop();
+  }
+
+  peek(): T | undefined {
+    return this.items[this.items.length - 1];
+  }
+
+  get size(): number {
+    return this.items.length;
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+
+  toArray(): T[] {
+    return [...this.items];
+  }
+}
+
+console.log("=== Stack<T> ===");
+const numStack = new Stack<number>();
+numStack.push(10);
+numStack.push(20);
+numStack.push(30);
+console.log("  Stack contents:", numStack.toArray());
+console.log("  Peek:", numStack.peek());
+console.log("  Pop:", numStack.pop());
+console.log("  After pop:", numStack.toArray());
+console.log();
+
+// ---------------------------------------------------------------------------
+// 3. Union types & type guards
+// ---------------------------------------------------------------------------
+
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "rectangle"; width: number; height: number }
+  | { kind: "triangle"; base: number; height: number };
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle":
+      return Math.PI * shape.radius ** 2;
+    case "rectangle":
+      return shape.width * shape.height;
+    case "triangle":
+      return 0.5 * shape.base * shape.height;
+  }
+}
+
+/** Type guard - narrows unknown to Shape. */
+function isShape(value: unknown): value is Shape {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return v.kind === "circle" || v.kind === "rectangle" || v.kind === "triangle";
+}
+
+const shapes: Shape[] = [
+  { kind: "circle", radius: 5 },
+  { kind: "rectangle", width: 4, height: 6 },
+  { kind: "triangle", base: 3, height: 8 },
+];
+
+console.log("=== Union Types & Type Guards ===");
+for (const s of shapes) {
+  console.log(\`  \${s.kind} => area = \${area(s).toFixed(2)}\`);
+}
+
+// Demonstrate the type guard
+const mystery: unknown = { kind: "circle", radius: 10 };
+if (isShape(mystery)) {
+  console.log(\`  Type guard passed: area = \${area(mystery).toFixed(2)}\`);
+}
+console.log();
+
+// ---------------------------------------------------------------------------
+// 4. Mapped types & utility types
+// ---------------------------------------------------------------------------
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  isAdmin: boolean;
+}
+
+/** Make every property optional and readonly (like a patch DTO). */
+type ReadonlyPartial<T> = {
+  readonly [K in keyof T]?: T[K];
+};
+
+/** Pick only string-valued keys from a type. */
+type StringKeys<T> = {
+  [K in keyof T as T[K] extends string ? K : never]: T[K];
+};
+
+// Demonstrate mapped types (compile-time only - show the shapes via objects)
+const userPatch: ReadonlyPartial<User> = { name: "Alice" };
+const userStrings: StringKeys<User> = { name: "Alice", email: "alice@example.com" };
+
+console.log("=== Mapped Types ===");
+console.log("  ReadonlyPartial<User> patch:", userPatch);
+console.log("  StringKeys<User>:", userStrings);
+console.log();
+
+// ---------------------------------------------------------------------------
+// 5. Generic utility functions
+// ---------------------------------------------------------------------------
+
+/** Group an array by a key-selector function. */
+function groupBy<T, K extends string | number>(
+  items: T[],
+  keyFn: (item: T) => K,
+): Record<K, T[]> {
+  const result = {} as Record<K, T[]>;
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!result[key]) result[key] = [];
+    result[key].push(item);
+  }
+  return result;
+}
+
+/** Deduplicate an array, preserving order. */
+function unique<T>(items: T[], keyFn: (item: T) => unknown = (x) => x): T[] {
+  const seen = new Set<unknown>();
+  return items.filter((item) => {
+    const key = keyFn(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+const people = [
+  { name: "Alice", dept: "eng" },
+  { name: "Bob", dept: "design" },
+  { name: "Charlie", dept: "eng" },
+  { name: "Diana", dept: "design" },
+  { name: "Eve", dept: "eng" },
+];
+
+console.log("=== Generic Utilities ===");
+console.log("  groupBy dept:", groupBy(people, (p) => p.dept));
+console.log("  unique depts:", unique(people.map((p) => p.dept)));
+`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'main.ts',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'contact-form',
+    name: 'Contact Form',
+    description: 'Multi-field form with live validation',
+    icon: 'file',
+    category: 'interactive',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Form</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="card">
+    <h1>Get in Touch</h1>
+    <p class="subtitle">We'd love to hear from you. Fill out the form below.</p>
+
+    <form id="contactForm" novalidate>
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Jane Doe" autocomplete="name" />
+        <span class="error" id="nameError"></span>
+      </div>
+
+      <div class="field">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="jane@example.com" autocomplete="email" />
+        <span class="error" id="emailError"></span>
+      </div>
+
+      <div class="field">
+        <label for="subject">Subject</label>
+        <select id="subject">
+          <option value="">Choose a topic...</option>
+          <option value="general">General inquiry</option>
+          <option value="support">Technical support</option>
+          <option value="billing">Billing question</option>
+          <option value="feedback">Feedback</option>
+        </select>
+        <span class="error" id="subjectError"></span>
+      </div>
+
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" rows="4" placeholder="Tell us what's on your mind..."></textarea>
+        <span class="error" id="messageError"></span>
+        <span class="char-count" id="charCount">0 / 500</span>
+      </div>
+
+      <button type="submit" id="submitBtn">Send Message</button>
+    </form>
+
+    <!-- Success overlay -->
+    <div class="success-overlay" id="successOverlay">
+      <div class="checkmark">&#10003;</div>
+      <h2>Message Sent!</h2>
+      <p>We'll get back to you within 24 hours.</p>
+      <button id="resetBtn">Send Another</button>
+    </div>
+  </div>
+
+  <script src="form.js"></script>
+</body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'style.css',
+          content: `* { box-sizing: border-box; margin: 0; }
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #0b0b12;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #e2e8f0;
+  padding: 2rem;
+}
+
+/* Card container */
+.card {
+  position: relative;
+  width: min(480px, 100%);
+  background: #111827;
+  border-radius: 1.25rem;
+  padding: 2.5rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+
+/* Form fields */
+.field {
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid #1e293b;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+/* Validation states */
+input.valid, textarea.valid, select.valid {
+  border-color: #22c55e;
+}
+
+input.invalid, textarea.invalid, select.invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.error {
+  display: block;
+  font-size: 0.78rem;
+  color: #ef4444;
+  margin-top: 0.3rem;
+  min-height: 1.2em;
+  transition: opacity 0.2s;
+}
+
+.char-count {
+  display: block;
+  font-size: 0.75rem;
+  color: #475569;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.char-count.warn {
+  color: #f59e0b;
+}
+
+.char-count.over {
+  color: #ef4444;
+}
+
+/* Select arrow */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6.5 6 6.5-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+select option {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Submit button */
+button[type="submit"] {
+  width: 100%;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+  margin-top: 0.5rem;
+}
+
+button[type="submit"]:hover {
+  transform: translateY(-1px);
+}
+
+button[type="submit"]:active {
+  transform: translateY(0);
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Success overlay */
+.success-overlay {
+  position: absolute;
+  inset: 0;
+  background: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.success-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.checkmark {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  color: white;
+  animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.success-overlay h2 {
+  font-size: 1.3rem;
+}
+
+.success-overlay p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+#resetBtn {
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  border: 2px solid #6366f1;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: #6366f1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+#resetBtn:hover {
+  background: #6366f1;
+  color: white;
+}
+
+/* Textarea resize */
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+`,
+          language: 'css',
+        },
+        {
+          name: 'form.js',
+          content: `/**
+ * Contact Form - Real-time Validation
+ * ------------------------------------
+ * Validates fields as the user types and on submit.
+ * Simulates a network request before showing a success state.
+ */
+
+// ---------------------------------------------------------------------------
+// DOM references
+// ---------------------------------------------------------------------------
+const form        = document.getElementById('contactForm');
+const nameInput   = document.getElementById('name');
+const emailInput  = document.getElementById('email');
+const subjectSel  = document.getElementById('subject');
+const messageArea = document.getElementById('message');
+const charCount   = document.getElementById('charCount');
+const submitBtn   = document.getElementById('submitBtn');
+const successEl   = document.getElementById('successOverlay');
+const resetBtn    = document.getElementById('resetBtn');
+
+const MAX_MSG = 500;
+
+// ---------------------------------------------------------------------------
+// Validation rules
+// ---------------------------------------------------------------------------
+
+const EMAIL_RE = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/;
+
+const validators = {
+  name: (v) => {
+    if (!v.trim()) return 'Name is required';
+    if (v.trim().length < 2) return 'Name must be at least 2 characters';
+    return '';
+  },
+  email: (v) => {
+    if (!v.trim()) return 'Email is required';
+    if (!EMAIL_RE.test(v)) return 'Please enter a valid email address';
+    return '';
+  },
+  subject: (v) => {
+    if (!v) return 'Please choose a subject';
+    return '';
+  },
+  message: (v) => {
+    if (!v.trim()) return 'Message is required';
+    if (v.trim().length < 10) return 'Message must be at least 10 characters';
+    if (v.length > MAX_MSG) return 'Message is too long';
+    return '';
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Show or clear an error for a field. Returns true if valid. */
+function validateField(input, name) {
+  const errorEl = document.getElementById(name + 'Error');
+  const msg = validators[name](input.value);
+  errorEl.textContent = msg;
+
+  input.classList.toggle('invalid', !!msg);
+  input.classList.toggle('valid', !msg && input.value.length > 0);
+  return !msg;
+}
+
+/** Check all fields and return true if the form is valid. */
+function validateAll() {
+  const a = validateField(nameInput, 'name');
+  const b = validateField(emailInput, 'email');
+  const c = validateField(subjectSel, 'subject');
+  const d = validateField(messageArea, 'message');
+  return a && b && c && d;
+}
+
+// ---------------------------------------------------------------------------
+// Real-time validation (on input / change)
+// ---------------------------------------------------------------------------
+
+nameInput.addEventListener('input', () => validateField(nameInput, 'name'));
+emailInput.addEventListener('input', () => validateField(emailInput, 'email'));
+subjectSel.addEventListener('change', () => validateField(subjectSel, 'subject'));
+
+messageArea.addEventListener('input', () => {
+  validateField(messageArea, 'message');
+
+  // Character counter
+  const len = messageArea.value.length;
+  charCount.textContent = len + ' / ' + MAX_MSG;
+  charCount.classList.toggle('warn', len > MAX_MSG * 0.8 && len <= MAX_MSG);
+  charCount.classList.toggle('over', len > MAX_MSG);
+});
+
+// ---------------------------------------------------------------------------
+// Submit handler
+// ---------------------------------------------------------------------------
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!validateAll()) return;
+
+  // Disable button and show loading state
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  // Simulate a network request (1.2 s delay)
+  await new Promise((resolve) => setTimeout(resolve, 1200));
+
+  // Show success overlay
+  successEl.classList.add('visible');
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Send Message';
+});
+
+// ---------------------------------------------------------------------------
+// Reset
+// ---------------------------------------------------------------------------
+
+resetBtn.addEventListener('click', () => {
+  form.reset();
+  successEl.classList.remove('visible');
+
+  // Clear validation classes
+  [nameInput, emailInput, subjectSel, messageArea].forEach((el) => {
+    el.classList.remove('valid', 'invalid');
+  });
+  document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
+  charCount.textContent = '0 / ' + MAX_MSG;
+  charCount.classList.remove('warn', 'over');
+});
+`,
+          language: 'javascript',
+        },
+      ],
+      activeFile: 'form.js',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'react-quiz',
+    name: 'React Quiz',
+    description: 'Multi-step quiz with score tracking',
+    icon: 'react',
+    category: 'react',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'package.json',
+          content: `{
+  "name": "react-quiz",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Dev Quiz</title>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'src/main.tsx',
+          content: `import { createRoot } from 'react-dom/client'
+import App from './App'
+
+createRoot(document.getElementById('root')!).render(<App />)`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `import { useState } from 'react'
+
+/**
+ * React Quiz - Web Development Trivia
+ * ====================================
+ * 5 multiple-choice questions, progress bar, answer highlighting,
+ * and a final score screen with restart.
+ */
+
+// ---------------------------------------------------------------------------
+// Question data
+// ---------------------------------------------------------------------------
+
+interface Question {
+  question: string
+  options: string[]
+  correct: number // index of the correct option
+}
+
+const QUESTIONS: Question[] = [
+  {
+    question: 'What does CSS stand for?',
+    options: [
+      'Creative Style Sheets',
+      'Cascading Style Sheets',
+      'Computer Style Sheets',
+      'Colorful Style Sheets',
+    ],
+    correct: 1,
+  },
+  {
+    question: 'Which hook is used for side effects in React?',
+    options: ['useMemo', 'useRef', 'useEffect', 'useCallback'],
+    correct: 2,
+  },
+  {
+    question: 'What does the "DOM" stand for?',
+    options: [
+      'Document Object Model',
+      'Digital Ordinance Map',
+      'Document Oriented Markup',
+      'Data Object Model',
+    ],
+    correct: 0,
+  },
+  {
+    question: 'Which HTTP method is idempotent?',
+    options: ['POST', 'PATCH', 'PUT', 'CONNECT'],
+    correct: 2,
+  },
+  {
+    question: 'What is the default position value in CSS?',
+    options: ['relative', 'absolute', 'fixed', 'static'],
+    correct: 3,
+  },
+]
+
+// ---------------------------------------------------------------------------
+// Styles (inline for portability)
+// ---------------------------------------------------------------------------
+
+const styles = {
+  wrapper: {
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    minHeight: '100vh',
+    display: 'grid',
+    placeItems: 'center',
+    background: '#0b0b12',
+    color: '#e2e8f0',
+    padding: '2rem',
+  } as React.CSSProperties,
+  card: {
+    width: 'min(520px, 100%)',
+    background: '#111827',
+    borderRadius: '1.25rem',
+    padding: '2rem 2.5rem',
+    boxShadow: '0 24px 48px rgba(0,0,0,0.4)',
+  } as React.CSSProperties,
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    background: '#1e293b',
+    marginBottom: '1.5rem',
+    overflow: 'hidden',
+  } as React.CSSProperties,
+  progressBar: (pct: number) =>
+    ({
+      height: '100%',
+      width: pct + '%',
+      background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+      borderRadius: 3,
+      transition: 'width 0.4s ease',
+    }) as React.CSSProperties,
+  meta: {
+    fontSize: '0.8rem',
+    color: '#64748b',
+    marginBottom: '0.5rem',
+  } as React.CSSProperties,
+  question: {
+    fontSize: '1.15rem',
+    fontWeight: 600,
+    marginBottom: '1.25rem',
+    lineHeight: 1.4,
+  } as React.CSSProperties,
+  option: (state: 'idle' | 'correct' | 'wrong' | 'dimmed') => {
+    const base: React.CSSProperties = {
+      display: 'block',
+      width: '100%',
+      textAlign: 'left' as const,
+      padding: '0.85rem 1rem',
+      marginBottom: '0.6rem',
+      borderRadius: '0.75rem',
+      border: '2px solid #1e293b',
+      background: '#0f172a',
+      color: '#e2e8f0',
+      fontSize: '0.95rem',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    }
+    if (state === 'correct') {
+      base.border = '2px solid #22c55e'
+      base.background = 'rgba(34,197,94,0.12)'
+      base.color = '#4ade80'
+    }
+    if (state === 'wrong') {
+      base.border = '2px solid #ef4444'
+      base.background = 'rgba(239,68,68,0.12)'
+      base.color = '#f87171'
+    }
+    if (state === 'dimmed') {
+      base.opacity = 0.45
+      base.cursor = 'default'
+    }
+    return base
+  },
+  nextBtn: {
+    marginTop: '1rem',
+    padding: '0.7rem 1.4rem',
+    borderRadius: '0.75rem',
+    border: 'none',
+    background: '#6366f1',
+    color: 'white',
+    fontWeight: 600,
+    fontSize: '0.95rem',
+    cursor: 'pointer',
+  } as React.CSSProperties,
+  scoreCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    display: 'grid',
+    placeItems: 'center',
+    margin: '1rem auto',
+  } as React.CSSProperties,
+  scoreText: {
+    fontSize: '2rem',
+    fontWeight: 700,
+  } as React.CSSProperties,
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function App() {
+  const [current, setCurrent] = useState(0)
+  const [selected, setSelected] = useState<number | null>(null)
+  const [score, setScore] = useState(0)
+  const [finished, setFinished] = useState(false)
+
+  const total = QUESTIONS.length
+  const q = QUESTIONS[current]
+  const answered = selected !== null
+
+  /** Handle clicking an answer option. */
+  function handleSelect(idx: number) {
+    if (answered) return
+    setSelected(idx)
+    if (idx === q.correct) setScore((s) => s + 1)
+  }
+
+  /** Advance to the next question or show final score. */
+  function handleNext() {
+    if (current + 1 >= total) {
+      setFinished(true)
+    } else {
+      setCurrent((c) => c + 1)
+      setSelected(null)
+    }
+  }
+
+  /** Restart the quiz from scratch. */
+  function handleRestart() {
+    setCurrent(0)
+    setSelected(null)
+    setScore(0)
+    setFinished(false)
+  }
+
+  /** Get the visual state for an option button. */
+  function optionState(idx: number): 'idle' | 'correct' | 'wrong' | 'dimmed' {
+    if (!answered) return 'idle'
+    if (idx === q.correct) return 'correct'
+    if (idx === selected) return 'wrong'
+    return 'dimmed'
+  }
+
+  // -------------------------------------------------------------------------
+  // Final score screen
+  // -------------------------------------------------------------------------
+  if (finished) {
+    const pct = Math.round((score / total) * 100)
+    const message =
+      pct === 100
+        ? 'Perfect score!'
+        : pct >= 60
+          ? 'Great job!'
+          : 'Keep learning!'
+
+    return (
+      <div style={styles.wrapper}>
+        <div style={{ ...styles.card, textAlign: 'center' as const }}>
+          <h2 style={{ marginBottom: '0.25rem' }}>Quiz Complete</h2>
+          <p style={{ color: '#94a3b8', marginBottom: '1rem' }}>{message}</p>
+          <div style={styles.scoreCircle}>
+            <span style={styles.scoreText}>
+              {score}/{total}
+            </span>
+          </div>
+          <p style={{ color: '#64748b', margin: '1rem 0' }}>
+            You scored {pct}%
+          </p>
+          <button style={styles.nextBtn} onClick={handleRestart}>
+            Play Again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // -------------------------------------------------------------------------
+  // Question screen
+  // -------------------------------------------------------------------------
+  const progress = ((current + (answered ? 1 : 0)) / total) * 100
+
+  return (
+    <div style={styles.wrapper}>
+      <div style={styles.card}>
+        {/* Progress bar */}
+        <div style={styles.progressTrack}>
+          <div style={styles.progressBar(progress)} />
+        </div>
+
+        {/* Meta */}
+        <p style={styles.meta}>
+          Question {current + 1} of {total}
+        </p>
+
+        {/* Question text */}
+        <h2 style={styles.question}>{q.question}</h2>
+
+        {/* Options */}
+        {q.options.map((opt, idx) => (
+          <button
+            key={idx}
+            style={styles.option(optionState(idx))}
+            onClick={() => handleSelect(idx)}
+          >
+            {opt}
+          </button>
+        ))}
+
+        {/* Next / Finish button */}
+        {answered && (
+          <button style={styles.nextBtn} onClick={handleNext}>
+            {current + 1 >= total ? 'See Results' : 'Next Question'}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'bar-chart',
+    name: 'Bar Chart',
+    description: 'Interactive bar chart with pure CSS and JS',
+    icon: 'chart',
+    category: 'data',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bar Chart</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Monthly Revenue</h1>
+      <p class="subtitle">2025 fiscal year - click a bar to highlight</p>
+    </header>
+
+    <div class="chart-wrapper">
+      <div class="y-axis" id="yAxis"></div>
+      <div class="chart" id="chart"></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <!-- Tooltip (positioned absolutely) -->
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <script src="chart.js"></script>
+</body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'style.css',
+          content: `* { box-sizing: border-box; margin: 0; }
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #0b0b12;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #e2e8f0;
+  padding: 2rem;
+}
+
+.container {
+  width: min(680px, 100%);
+  background: #111827;
+  border-radius: 1.25rem;
+  padding: 2rem 2.5rem 2rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+header { margin-bottom: 1.5rem; }
+h1 { font-size: 1.3rem; }
+.subtitle { color: #64748b; font-size: 0.85rem; margin-top: 0.25rem; }
+
+/* Chart layout */
+.chart-wrapper {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 0.25rem;
+  height: 260px;
+  margin-bottom: 1rem;
+}
+
+/* Y-axis labels */
+.y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 4px 8px 24px 0;
+  font-size: 0.72rem;
+  color: #475569;
+}
+
+/* Bar area */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  border-bottom: 2px solid #1e293b;
+  border-left: 2px solid #1e293b;
+  padding: 0 6px;
+  position: relative;
+}
+
+/* Individual bar column */
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.25s,
+              box-shadow 0.25s;
+  min-width: 20px;
+  position: relative;
+}
+
+/* Default gradient */
+.bar { background: linear-gradient(180deg, #818cf8, #6366f1); }
+
+/* Highlighted state */
+.bar.highlighted {
+  background: linear-gradient(180deg, #c084fc, #8b5cf6);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+/* Dimmed when another bar is highlighted */
+.bar.dimmed {
+  opacity: 0.35;
+}
+
+/* Bar label (month) */
+.bar-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: #1e293b;
+  color: #f1f5f9;
+  font-size: 0.82rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+.tooltip strong {
+  color: #a5b4fc;
+}
+`,
+          language: 'css',
+        },
+        {
+          name: 'chart.js',
+          content: `/**
+ * Bar Chart - Interactive Revenue Visualisation
+ * -----------------------------------------------
+ * Renders animated bars from data, hover tooltips, click-to-highlight.
+ */
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+
+const DATA = [
+  { month: 'Jan', value: 12400, color: '#818cf8' },
+  { month: 'Feb', value: 15800, color: '#818cf8' },
+  { month: 'Mar', value: 14200, color: '#818cf8' },
+  { month: 'Apr', value: 18600, color: '#818cf8' },
+  { month: 'May', value: 22100, color: '#818cf8' },
+  { month: 'Jun', value: 19800, color: '#818cf8' },
+  { month: 'Jul', value: 24500, color: '#a78bfa' },
+  { month: 'Aug', value: 27300, color: '#a78bfa' },
+  { month: 'Sep', value: 23100, color: '#a78bfa' },
+  { month: 'Oct', value: 29800, color: '#c084fc' },
+  { month: 'Nov', value: 31200, color: '#c084fc' },
+  { month: 'Dec', value: 35000, color: '#c084fc' },
+];
+
+// ---------------------------------------------------------------------------
+// DOM refs
+// ---------------------------------------------------------------------------
+
+const chartEl   = document.getElementById('chart');
+const yAxisEl   = document.getElementById('yAxis');
+const legendEl  = document.getElementById('legend');
+const tooltipEl = document.getElementById('tooltip');
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const maxVal = Math.max(...DATA.map((d) => d.value));
+
+/** Round up to a nice ceiling for the Y axis. */
+function niceCeiling(n) {
+  const magnitude = Math.pow(10, Math.floor(Math.log10(n)));
+  return Math.ceil(n / magnitude) * magnitude;
+}
+
+const ceiling = niceCeiling(maxVal);
+
+function formatCurrency(n) {
+  return '$' + n.toLocaleString('en-US');
+}
+
+// ---------------------------------------------------------------------------
+// Y-axis labels
+// ---------------------------------------------------------------------------
+
+const Y_TICKS = 5;
+for (let i = Y_TICKS; i >= 0; i--) {
+  const label = document.createElement('span');
+  const val = Math.round((ceiling / Y_TICKS) * i);
+  label.textContent = val >= 1000 ? (val / 1000).toFixed(0) + 'k' : String(val);
+  yAxisEl.appendChild(label);
+}
+
+// ---------------------------------------------------------------------------
+// Render bars
+// ---------------------------------------------------------------------------
+
+let highlightedIndex = null;
+const barEls = [];
+
+DATA.forEach((d, i) => {
+  const col = document.createElement('div');
+  col.className = 'bar-col';
+
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  bar.style.height = '0%'; // start at 0 for animation
+  bar.style.background = 'linear-gradient(180deg, ' + d.color + ', #6366f1)';
+
+  const label = document.createElement('span');
+  label.className = 'bar-label';
+  label.textContent = d.month;
+
+  col.appendChild(bar);
+  col.appendChild(label);
+  chartEl.appendChild(col);
+  barEls.push(bar);
+
+  // --- Hover: show tooltip ---
+  col.addEventListener('mouseenter', (e) => {
+    tooltipEl.innerHTML =
+      '<strong>' + d.month + '</strong><br>' + formatCurrency(d.value);
+    tooltipEl.classList.add('visible');
+  });
+
+  col.addEventListener('mousemove', (e) => {
+    const rect = document.querySelector('.container').getBoundingClientRect();
+    tooltipEl.style.left = e.clientX - rect.left + 12 + 'px';
+    tooltipEl.style.top = e.clientY - rect.top - 40 + 'px';
+  });
+
+  col.addEventListener('mouseleave', () => {
+    tooltipEl.classList.remove('visible');
+  });
+
+  // --- Click: highlight / toggle ---
+  col.addEventListener('click', () => {
+    if (highlightedIndex === i) {
+      // Un-highlight
+      highlightedIndex = null;
+      barEls.forEach((b) => {
+        b.classList.remove('highlighted', 'dimmed');
+      });
+    } else {
+      highlightedIndex = i;
+      barEls.forEach((b, j) => {
+        b.classList.toggle('highlighted', j === i);
+        b.classList.toggle('dimmed', j !== i);
+      });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Animated entrance - stagger the bars growing in
+// ---------------------------------------------------------------------------
+
+requestAnimationFrame(() => {
+  barEls.forEach((bar, i) => {
+    const pct = (DATA[i].value / ceiling) * 100;
+    setTimeout(() => {
+      bar.style.height = pct + '%';
+    }, i * 60);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Legend (group by quarter based on colour)
+// ---------------------------------------------------------------------------
+
+const quarters = [
+  { label: 'Q1-Q2', color: '#818cf8' },
+  { label: 'Q3',    color: '#a78bfa' },
+  { label: 'Q4',    color: '#c084fc' },
+];
+
+quarters.forEach((q) => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+
+  const dot = document.createElement('span');
+  dot.className = 'legend-dot';
+  dot.style.background = q.color;
+
+  const text = document.createElement('span');
+  text.textContent = q.label;
+
+  item.appendChild(dot);
+  item.appendChild(text);
+  legendEl.appendChild(item);
+});
+`,
+          language: 'javascript',
+        },
+      ],
+      activeFile: 'chart.js',
+      settings: defaultSettings,
+    },
+  },
+]

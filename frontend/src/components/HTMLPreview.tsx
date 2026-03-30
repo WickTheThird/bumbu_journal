@@ -131,7 +131,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
     if (bodyMatch) {
       bodyContent = bodyMatch[1]
     }
-    // Strip local script tags (e.g. <script src="/src/main.tsx">) — the bundler handles these
+    // Strip local script tags (e.g. <script src="/src/main.tsx">) - the bundler handles these
     bodyContent = bodyContent.replace(/<script[^>]*\ssrc=["']\/[^"']*["'][^>]*>\s*<\/script>/gi, '')
     
     const importMap = generateImportMap(bundleImports)

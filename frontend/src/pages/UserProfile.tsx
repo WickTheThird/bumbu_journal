@@ -1,5 +1,5 @@
 /**
- * UserProfile — public profile showing a user's cloud projects
+ * UserProfile - public profile showing a user's cloud projects
  * Route: /u/:username
  */
 import { useEffect, useState } from 'react'

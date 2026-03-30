@@ -107,7 +107,7 @@ export default function Landing() {
 
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Build, preview, and share complete web applications directly in your browser. 
-            Your entire project lives in the URL—no accounts, no servers, no setup.
+            Your entire project lives in the URL-no accounts, no servers, no setup.
           </p>
 
           {/* CTA */}
@@ -300,7 +300,7 @@ export default function Landing() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Share instantly</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Copy the URL, paste it anywhere. Recipients see your running app immediately—no downloads, no setup.
+                Copy the URL, paste it anywhere. Recipients see your running app immediately-no downloads, no setup.
               </p>
             </div>
 
@@ -310,7 +310,7 @@ export default function Landing() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Live bundling</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                esbuild runs in your browser. Changes preview instantly. Import any npm package—dependencies resolve automatically.
+                esbuild runs in your browser. Changes preview instantly. Import any npm package-dependencies resolve automatically.
               </p>
             </div>
 
@@ -394,13 +394,15 @@ export default function Landing() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {TEMPLATES.map((template) => {
-              const IconComponent = template.icon === 'react' ? Atom : 
+            {TEMPLATES.filter(t => t.featured).map((template) => {
+              const IconComponent = template.icon === 'react' ? Atom :
                 template.icon === 'typescript' ? Type :
                 template.icon === 'game' ? Gamepad2 :
                 template.icon === 'chart' ? BarChart3 :
                 template.icon === 'animation' ? Sparkles :
                 template.icon === 'particle' ? Sparkles :
+                template.icon === 'timer' ? Atom :
+                template.icon === 'weather' ? Plug :
                 template.icon === 'api' ? Plug :
                 template.icon === 'portfolio' ? Layout : FileCode
               

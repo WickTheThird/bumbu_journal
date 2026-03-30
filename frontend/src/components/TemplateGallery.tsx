@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TEMPLATES } from '../lib/templates'
+import { TEMPLATES, Template } from '../lib/templates'
 import { encodeWorkspace } from '../lib/hash'
 import { ArrowRight, FileCode, BarChart3, Sparkles, Plug, File, Atom, X, Palette, Timer, Type, Layout, Cloud, Gamepad2 } from 'lucide-react'
 
@@ -18,6 +19,21 @@ const iconMap: Record<string, React.ReactNode> = {
   weather: <Cloud className="w-5 h-5" />,
 }
 
+const CATEGORIES = [
+  { id: 'all', label: 'All' },
+  { id: 'react', label: 'React' },
+  { id: 'interactive', label: 'Interactive' },
+  { id: 'layout', label: 'Layouts' },
+  { id: 'data', label: 'Data & APIs' },
+  { id: 'languages', label: 'Languages' },
+] as const
+
+function filterTemplates(category: string): Template[] {
+  if (category === 'all') return TEMPLATES
+  if (category === 'languages') return TEMPLATES.filter(t => t.category === 'python' || t.category === 'typescript')
+  return TEMPLATES.filter(t => t.category === category || (category === 'all' && true))
+}
+
 interface TemplateGalleryProps {
   isOpen: boolean
   onClose: () => void
@@ -25,21 +41,25 @@ interface TemplateGalleryProps {
 }
 
 export default function TemplateGallery({ isOpen, onClose }: TemplateGalleryProps) {
+  const [activeCategory, setActiveCategory] = useState('all')
+
   if (!isOpen) return null
-  
+
+  const filtered = filterTemplates(activeCategory)
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.1s_ease-out]"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="relative w-full max-w-4xl max-h-[80vh] overflow-hidden bg-[#0A0A0F] border border-purple-500/30 chamfer">
         {/* Scanlines */}
         <div className="absolute inset-0 pointer-events-none opacity-30 scanlines" />
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-purple-500/20">
           <div>
@@ -47,7 +67,7 @@ export default function TemplateGallery({ isOpen, onClose }: TemplateGalleryProp
               Select Template
             </h2>
             <p className="text-sm text-gray-500 mt-1 font-mono">
-              {'>'} Choose a starting point for your project
+              {'>'} {filtered.length} template{filtered.length !== 1 ? 's' : ''} available
             </p>
           </div>
           <button
@@ -57,10 +77,33 @@ export default function TemplateGallery({ isOpen, onClose }: TemplateGalleryProp
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
+        {/* Category tabs */}
+        <div className="flex items-center gap-1 px-6 py-3 border-b border-purple-500/10 overflow-x-auto">
+          {CATEGORIES.map((cat) => {
+            const count = cat.id === 'all' ? TEMPLATES.length : filterTemplates(cat.id).length
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-mono whitespace-nowrap transition ${
+                  activeCategory === cat.id
+                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                {cat.label}
+                <span className={`text-xs ${activeCategory === cat.id ? 'text-purple-400/70' : 'text-gray-600'}`}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
         {/* Grid */}
-        <div className="p-6 overflow-y-auto max-h-[60vh] grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {TEMPLATES.map((template) => (
+        <div className="p-6 overflow-y-auto max-h-[55vh] grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((template) => (
             <Link
               key={template.id}
               to={`/ide#${encodeWorkspace(template.workspace)}`}
