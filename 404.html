@@ -3,15 +3,174 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirecting... — HashIDEA</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>HashIDEA — Free Online Code Editor | Browser IDE for React, Python & JavaScript</title>
+    <meta name="title" content="HashIDEA — Free Online Code Editor | Browser IDE for React, Python & JavaScript" />
+    <meta name="description" content="Free online code editor and browser IDE. Write React, Python, JavaScript and TypeScript with live preview, npm packages, and instant sharing — no signup, no install. Your entire project lives in the URL." />
+    <meta name="keywords" content="online code editor, browser IDE, free code editor, online IDE, code playground, React playground, Python online, JavaScript editor, TypeScript editor, live preview, code sharing, CodePen alternative, StackBlitz alternative, web IDE, online compiler, run code online, JSX editor, npm packages online, esbuild, instant coding, no signup IDE, URL code sharing, shareable code" />
+    <meta name="author" content="Filip Bumbu" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="language" content="English" />
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="3 days" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://hashideea.com/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hashideea.com/" />
+    <meta property="og:title" content="HashIDEA — Free Online Code Editor & Browser IDE" />
+    <meta property="og:description" content="Write React, Python, JavaScript in your browser with live preview and npm packages. No signup required — share projects instantly via URL." />
+    <meta property="og:image" content="https://hashideea.com/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="HashIDEA - Online code editor with live preview showing React code and output side by side" />
+    <meta property="og:site_name" content="HashIDEA" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://hashideea.com/" />
+    <meta name="twitter:title" content="HashIDEA — Free Online Code Editor & Browser IDE" />
+    <meta name="twitter:description" content="Write React, Python, JavaScript in your browser with live preview and npm packages. No signup — share projects via URL." />
+    <meta name="twitter:image" content="https://hashideea.com/og-image.svg" />
+    <meta name="twitter:image:alt" content="HashIDEA - Online code editor with live preview" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/bumbu_journal/apple-touch-icon.png" />
+    
+    <!-- Theme -->
+    <meta name="theme-color" content="#050508" />
+    <meta name="color-scheme" content="dark" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    
+    <!-- Google Analytics - Replace GA_MEASUREMENT_ID with your actual ID -->
+    <!-- Get your ID at: https://analytics.google.com/ -->
+    <!--
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
     <script>
-      // SPA redirect for GitHub Pages
-      // Preserve the path and redirect to index.html
-      const path = window.location.pathname + window.location.search + window.location.hash;
-      window.location.replace('/' + '?redirect=' + encodeURIComponent(path));
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID');
     </script>
+    -->
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "HashIDEA",
+      "alternateName": ["HashIDE", "Hash IDE"],
+      "headline": "Free Online Code Editor & Browser IDE",
+      "description": "A free browser-based code editor and IDE that supports React, Python, JavaScript, and TypeScript with live preview, npm packages, and instant URL-based code sharing.",
+      "url": "https://hashideea.com/",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Code Editor",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires a modern web browser with JavaScript enabled",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Filip Bumbu",
+        "url": "https://www.linkedin.com/in/filip-bumbu-410741262"
+      },
+      "featureList": [
+        "Online code editor with syntax highlighting",
+        "Live preview for HTML, CSS, React and JavaScript",
+        "Python execution in the browser via Pyodide",
+        "Full npm package support via esm.sh",
+        "Monaco Editor (VS Code editor engine)",
+        "Multi-file project support",
+        "Instant code sharing via URL",
+        "GitHub repository import",
+        "TypeScript and JSX/TSX support"
+      ],
+      "keywords": "online code editor, browser IDE, code playground, React editor, Python online, JavaScript IDE"
+    }
+    </script>
+    <!-- FAQ Structured Data for rich search results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is HashIDEA?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "HashIDEA is a free online code editor and browser-based IDE that lets you write, run, and share code directly in your browser. It supports React, Python, JavaScript, and TypeScript with live preview and npm packages — no installation or signup required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does code sharing work in HashIDEA?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Your entire project — all files, code, and settings — is compressed and encoded into the URL hash. To share your project, just copy the URL and send it to anyone. They'll see your exact code and can run or edit it instantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What programming languages does HashIDEA support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "HashIDEA supports JavaScript, TypeScript, JSX/TSX (React), Python, HTML, and CSS. JavaScript and TypeScript run in a sandboxed iframe, while Python runs via Pyodide directly in the browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use npm packages in HashIDEA?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. HashIDEA supports the full npm ecosystem. Just import any package in your code and it will be automatically loaded from esm.sh. React, Framer Motion, Lodash, and thousands of other packages work out of the box."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is HashIDEA free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, HashIDEA is completely free and open source. There are no accounts, no subscriptions, and no limits. Your code lives in the URL, so there's nothing stored on our servers."
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="module" crossorigin src="/assets/index-DNJZSOmd.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DZz1jbB-.css">
   </head>
   <body>
-    <p>Redirecting...</p>
+    <div id="root"></div>
+    <noscript>
+      <div style="max-width:800px;margin:0 auto;padding:2rem;font-family:system-ui,sans-serif;color:#e2e8f0;background:#050508">
+        <h1>HashIDEA — Free Online Code Editor & Browser IDE</h1>
+        <p>HashIDEA is a free, open-source online code editor that runs entirely in your browser. Write React, Python, JavaScript, and TypeScript code with live preview, npm package support, and instant sharing via URL.</p>
+        <h2>Features</h2>
+        <ul>
+          <li><strong>Online Code Editor</strong> — Full-featured Monaco editor (the engine behind VS Code) with syntax highlighting, autocomplete, and multi-file support</li>
+          <li><strong>Live Preview</strong> — See your HTML, CSS, React, and JavaScript changes in real-time as you type</li>
+          <li><strong>Run Python Online</strong> — Execute Python code directly in the browser using Pyodide with multi-file project and import support</li>
+          <li><strong>npm Packages</strong> — Import any npm package. Dependencies resolve automatically via esm.sh</li>
+          <li><strong>URL-Based Sharing</strong> — Your entire project is encoded in the URL. Share code by sharing a link — no accounts needed</li>
+          <li><strong>GitHub Import</strong> — Import any public GitHub repository directly into the editor</li>
+          <li><strong>React & TypeScript</strong> — Full JSX/TSX support with esbuild-wasm bundling in the browser</li>
+        </ul>
+        <p><a href="/ide">Open HashIDEA Editor</a> | <a href="https://github.com/WickTheThird/HashIDEA">View Source on GitHub</a></p>
+      </div>
+    </noscript>
   </body>
 </html>
