@@ -1,13 +1,13 @@
 /**
  * Pricing page - value-framed tiers
- * Free (Play) → Starter (Keep) → Pro (Ship) → Team (Build together)
+ * Free (Play) -> Starter (Keep) -> Pro (Ship) -> Team (Build together)
  */
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Check, ArrowRight, Sparkles, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Check, ArrowRight, Sparkles, Loader2, Github, CheckCircle, XCircle } from 'lucide-react'
 import { isAuthenticated } from '../lib/github'
 import { createCheckout, createPortalSession, getBillingStatus, BillingStatus } from '../lib/api'
-import { useEffect } from 'react'
+import GitHubModal from '../components/GitHubModal'
 
 const PRICE_IDS = {
   starter: 'price_1TGQH1Isg0HKgiZiwoJS8dsL',
@@ -96,11 +96,17 @@ const TIERS: Tier[] = [
 ]
 
 export default function Pricing() {
-  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [billing, setBilling] = useState<BillingStatus | null>(null)
   const [loading, setLoading] = useState<string | null>(null)
-  const authed = isAuthenticated()
+  const [showLogin, setShowLogin] = useState(false)
+  const [pendingTier, setPendingTier] = useState<'starter' | 'pro' | 'team' | null>(null)
+  const [authed, setAuthed] = useState(isAuthenticated())
 
+  const success = searchParams.get('success') === 'true'
+  const canceled = searchParams.get('canceled') === 'true'
+
+  // Fetch billing status when authenticated
   useEffect(() => {
     if (!authed) return
     getBillingStatus()
@@ -108,9 +114,30 @@ export default function Pricing() {
       .catch(() => {})
   }, [authed])
 
+  // After GitHub login completes, proceed with pending checkout
+  useEffect(() => {
+    if (authed && pendingTier) {
+      const tier = pendingTier
+      setPendingTier(null)
+      handleUpgrade(tier)
+    }
+  }, [authed])
+
+  // Dismiss success/cancel banners after 10s
+  useEffect(() => {
+    if (success || canceled) {
+      const timer = setTimeout(() => {
+        setSearchParams({}, { replace: true })
+      }, 10000)
+      return () => clearTimeout(timer)
+    }
+  }, [success, canceled])
+
   const handleUpgrade = async (tierId: 'starter' | 'pro' | 'team') => {
-    if (!authed) {
-      navigate('/ide')
+    if (!isAuthenticated()) {
+      // Save which tier they wanted, then show login
+      setPendingTier(tierId)
+      setShowLogin(true)
       return
     }
 
@@ -135,6 +162,17 @@ export default function Pricing() {
     }
   }
 
+  const handleLoginClose = () => {
+    setShowLogin(false)
+    // Re-check auth in case they logged in
+    const nowAuthed = isAuthenticated()
+    if (nowAuthed) {
+      setAuthed(true)
+    } else {
+      setPendingTier(null)
+    }
+  }
+
   const currentPlan = billing?.plan || 'free'
 
   return (
@@ -155,6 +193,42 @@ export default function Pricing() {
           </div>
         </div>
       </nav>
+
+      {/* Success/Cancel banners */}
+      {success && (
+        <div className="bg-emerald-500/10 border-b border-emerald-500/20">
+          <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+            <div>
+              <p className="text-emerald-300 font-medium">Subscription activated!</p>
+              <p className="text-emerald-400/70 text-sm">Your plan has been upgraded. Enjoy your new features.</p>
+            </div>
+            <button
+              onClick={() => setSearchParams({}, { replace: true })}
+              className="ml-auto text-emerald-400/50 hover:text-emerald-400 text-sm"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+      {canceled && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20">
+          <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+            <XCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <div>
+              <p className="text-amber-300 font-medium">Checkout canceled</p>
+              <p className="text-amber-400/70 text-sm">No charges were made. You can upgrade anytime.</p>
+            </div>
+            <button
+              onClick={() => setSearchParams({}, { replace: true })}
+              className="ml-auto text-amber-400/50 hover:text-amber-400 text-sm"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <section className="pt-20 pb-12 px-6 text-center">
@@ -255,8 +329,10 @@ export default function Pricing() {
                   >
                     {loading === tier.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : !authed ? (
+                      <Github className="w-4 h-4" />
                     ) : null}
-                    {tier.cta}
+                    {!authed ? `Log in to upgrade` : tier.cta}
                   </button>
                 ) : null}
               </div>
@@ -297,6 +373,13 @@ export default function Pricing() {
           </div>
         </div>
       </footer>
+
+      {/* GitHub Login Modal */}
+      <GitHubModal
+        isOpen={showLogin}
+        onClose={handleLoginClose}
+        onImport={() => {}}
+      />
     </div>
   )
 }
