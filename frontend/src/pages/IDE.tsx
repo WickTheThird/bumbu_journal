@@ -374,8 +374,8 @@ export default function IDE() {
   
   const canRun = activeFile && ['javascript', 'typescript', 'python'].includes(activeFile.language || '')
   
-  const hasFrameworkFiles = workspace.files.some(f => 
-    f.name.endsWith('.tsx') || f.name.endsWith('.jsx')
+  const hasFrameworkFiles = workspace.files.some(f =>
+    f.name.endsWith('.tsx') || f.name.endsWith('.jsx') || f.name.endsWith('.svelte')
   )
   const htmlFile = workspace.files.find(f => f.name.endsWith('.html'))
   const cssFile = workspace.files.find(f => f.name.endsWith('.css'))

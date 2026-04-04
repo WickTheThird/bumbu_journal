@@ -5,7 +5,7 @@ export interface Template {
   name: string
   description: string
   icon: string
-  category: 'react' | 'interactive' | 'layout' | 'data' | 'python' | 'typescript' | 'starter'
+  category: 'react' | 'preact' | 'vue' | 'svelte' | 'solid' | 'interactive' | 'layout' | 'data' | 'python' | 'typescript' | 'starter'
   featured?: boolean
   workspace: Workspace
 }
@@ -4014,6 +4014,489 @@ quarters.forEach((q) => {
         },
       ],
       activeFile: 'chart.js',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'preact-counter',
+    name: 'Preact Counter',
+    description: 'Lightweight counter with Preact signals',
+    icon: 'react',
+    category: 'preact',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'package.json',
+          content: `{
+  "name": "preact-counter",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "preact": "^10.19.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preact Counter</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'src/main.tsx',
+          content: `import { render } from 'preact'
+import App from './App'
+
+render(<App />, document.getElementById('root')!)`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `import { useState } from 'preact/hooks'
+
+export default function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#0a0a0f',
+      fontFamily: 'system-ui, sans-serif',
+      color: 'white',
+    }}>
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '2rem', color: '#a78bfa' }}>
+        Preact Counter
+      </h1>
+      <div style={{ fontSize: '4rem', fontWeight: 'bold', marginBottom: '2rem' }}>
+        {count}
+      </div>
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <button
+          onClick={() => setCount(count - 1)}
+          style={{
+            padding: '0.5rem 1.5rem',
+            fontSize: '1.1rem',
+            border: 'none',
+            borderRadius: '0.5rem',
+            background: '#8b5cf6',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          -
+        </button>
+        <button
+          onClick={() => setCount(0)}
+          style={{
+            padding: '0.5rem 1.5rem',
+            fontSize: '1.1rem',
+            border: 'none',
+            borderRadius: '0.5rem',
+            background: '#8b5cf6',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          Reset
+        </button>
+        <button
+          onClick={() => setCount(count + 1)}
+          style={{
+            padding: '0.5rem 1.5rem',
+            fontSize: '1.1rem',
+            border: 'none',
+            borderRadius: '0.5rem',
+            background: '#8b5cf6',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  )
+}`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'vue-counter',
+    name: 'Vue Counter',
+    description: 'Reactive counter with Vue 3 Composition API',
+    icon: 'file',
+    category: 'vue',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'package.json',
+          content: `{
+  "name": "vue-counter",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vue": "^3.4.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue Counter</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'src/main.tsx',
+          content: `import { createApp } from 'vue'
+import App from './App'
+
+createApp(App).mount('#app')`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `import { defineComponent, ref } from 'vue'
+
+export default defineComponent({
+  name: 'App',
+  setup() {
+    const count = ref(0)
+
+    const increment = () => { count.value++ }
+    const decrement = () => { count.value-- }
+    const reset = () => { count.value = 0 }
+
+    return () => (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0a0a0f',
+        fontFamily: 'system-ui, sans-serif',
+        color: 'white',
+      }}>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '2rem', color: '#a78bfa' }}>
+          Vue Counter
+        </h1>
+        <div style={{ fontSize: '4rem', fontWeight: 'bold', marginBottom: '2rem' }}>
+          {count.value}
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            onClick={decrement}
+            style={{
+              padding: '0.5rem 1.5rem',
+              fontSize: '1.1rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              background: '#8b5cf6',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            -
+          </button>
+          <button
+            onClick={reset}
+            style={{
+              padding: '0.5rem 1.5rem',
+              fontSize: '1.1rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              background: '#8b5cf6',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            Reset
+          </button>
+          <button
+            onClick={increment}
+            style={{
+              padding: '0.5rem 1.5rem',
+              fontSize: '1.1rem',
+              border: 'none',
+              borderRadius: '0.5rem',
+              background: '#8b5cf6',
+              color: 'white',
+              cursor: 'pointer',
+            }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+    )
+  },
+})`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'src/App.tsx',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'svelte-counter',
+    name: 'Svelte Counter',
+    description: 'Compiled counter with Svelte reactivity',
+    icon: 'file',
+    category: 'svelte',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'package.json',
+          content: `{
+  "name": "svelte-counter",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "svelte": "^4.2.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Svelte Counter</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'src/main.js',
+          content: `import App from './App.svelte'
+
+const app = new App({ target: document.getElementById('root') })
+
+export default app`,
+          language: 'javascript',
+        },
+        {
+          name: 'src/App.svelte',
+          content: `<script>
+  let count = 0
+  function increment() { count += 1 }
+  function decrement() { count -= 1 }
+  function reset() { count = 0 }
+</script>
+
+<div class="container">
+  <h1>Svelte Counter</h1>
+  <div class="count">{count}</div>
+  <div class="buttons">
+    <button on:click={decrement}>-</button>
+    <button on:click={reset}>Reset</button>
+    <button on:click={increment}>+</button>
+  </div>
+</div>
+
+<style>
+  .container {
+    font-family: system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #0a0a0f;
+    color: white;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #a78bfa;
+  }
+  .count {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+  .buttons {
+    display: flex;
+    gap: 0.75rem;
+  }
+  button {
+    padding: 0.5rem 1.5rem;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: #8b5cf6;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #a78bfa;
+  }
+</style>`,
+          language: 'html',
+        },
+      ],
+      activeFile: 'src/App.svelte',
+      settings: defaultSettings,
+    },
+  },
+  {
+    id: 'solid-counter',
+    name: 'Solid Counter',
+    description: 'Fine-grained reactive counter with Solid',
+    icon: 'file',
+    category: 'solid',
+    workspace: {
+      version: 2,
+      files: [
+        {
+          name: 'package.json',
+          content: `{
+  "name": "solid-counter",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "solid-js": "^1.8.0"
+  }
+}`,
+          language: 'json',
+        },
+        {
+          name: 'index.html',
+          content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solid Counter</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>`,
+          language: 'html',
+        },
+        {
+          name: 'src/main.tsx',
+          content: `import { render } from 'solid-js/web'
+import App from './App'
+
+render(() => <App />, document.getElementById('root')!)`,
+          language: 'typescript',
+        },
+        {
+          name: 'src/App.tsx',
+          content: `import { createSignal } from 'solid-js'
+
+export default function App() {
+  const [count, setCount] = createSignal(0)
+
+  return (
+    <div style={{
+      'min-height': '100vh',
+      display: 'flex',
+      'flex-direction': 'column',
+      'align-items': 'center',
+      'justify-content': 'center',
+      background: '#0a0a0f',
+      'font-family': 'system-ui, sans-serif',
+      color: 'white',
+    }}>
+      <h1 style={{ 'font-size': '1.5rem', 'margin-bottom': '2rem', color: '#a78bfa' }}>
+        Solid Counter
+      </h1>
+      <div style={{ 'font-size': '4rem', 'font-weight': 'bold', 'margin-bottom': '2rem' }}>
+        {count()}
+      </div>
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <button
+          onClick={() => setCount(c => c - 1)}
+          style={{
+            padding: '0.5rem 1.5rem',
+            'font-size': '1.1rem',
+            border: 'none',
+            'border-radius': '0.5rem',
+            background: '#8b5cf6',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          -
+        </button>
+        <button
+          onClick={() => setCount(0)}
+          style={{
+            padding: '0.5rem 1.5rem',
+            'font-size': '1.1rem',
+            border: 'none',
+            'border-radius': '0.5rem',
+            background: '#8b5cf6',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          Reset
+        </button>
+        <button
+          onClick={() => setCount(c => c + 1)}
+          style={{
+            padding: '0.5rem 1.5rem',
+            'font-size': '1.1rem',
+            border: 'none',
+            'border-radius': '0.5rem',
+            background: '#8b5cf6',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  )
+}`,
+          language: 'typescript',
+        },
+      ],
+      activeFile: 'src/App.tsx',
       settings: defaultSettings,
     },
   },

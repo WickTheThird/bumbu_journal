@@ -245,6 +245,8 @@ function detectLanguage(filename: string): string {
     sh: 'shell',
     bash: 'shell',
     sql: 'sql',
+    svelte: 'html',
+    vue: 'html',
   }
   return map[ext || ''] || 'plaintext'
 }

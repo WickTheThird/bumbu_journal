@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { X, Eye, RefreshCw, Loader2 } from 'lucide-react'
-import { bundle, needsBundling, initBundler, generateImportMap } from '../lib/bundler'
+import { bundle, needsBundling, initBundler, generateImportMap, Framework } from '../lib/bundler'
 import { marked } from 'marked'
 
 interface HTMLPreviewProps {
@@ -20,6 +20,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
   const [bundleError, setBundleError] = useState<string | null>(null)
   const [bundleImports, setBundleImports] = useState<string[]>([])
   const [isBundling, setIsBundling] = useState(false)
+  const [detectedFramework, setDetectedFramework] = useState<Framework>('react')
   
   const isFrameworkProject = files && needsBundling(files)
   
@@ -48,6 +49,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
         } else {
           setBundledCode(result.code)
           setBundleImports(result.imports)
+          setDetectedFramework(result.framework)
           setBundleError(null)
         }
       } catch (e: any) {
@@ -134,7 +136,7 @@ export default function HTMLPreview({ html, css, js, files, isOpen, onClose, hid
     // Strip local script tags (e.g. <script src="/src/main.tsx">) - the bundler handles these
     bodyContent = bodyContent.replace(/<script[^>]*\ssrc=["']\/[^"']*["'][^>]*>\s*<\/script>/gi, '')
     
-    const importMap = generateImportMap(bundleImports)
+    const importMap = generateImportMap(bundleImports, detectedFramework)
     
     return `<!DOCTYPE html>
 <html>
@@ -175,7 +177,7 @@ ${importMap}
   <\/script>
 </body>
 </html>`
-  }, [bundledCode, bundleImports, files, isFrameworkProject])
+  }, [bundledCode, bundleImports, files, isFrameworkProject, detectedFramework])
   
   const markdownSrcdoc = useMemo(() => {
     if (!isMarkdownProject || !markdownFile) return null
@@ -259,7 +261,12 @@ ${importMap}
             <Eye className="w-4 h-4 text-ide-accent" />
             <span className="text-sm font-medium">Preview</span>
             {isFrameworkProject && (
-              <span className="text-xs bg-ide-accent/20 text-ide-accent px-1.5 py-0.5 rounded">React</span>
+              <span className="text-xs bg-ide-accent/20 text-ide-accent px-1.5 py-0.5 rounded">
+                {detectedFramework === 'preact' ? 'Preact' :
+                 detectedFramework === 'vue' ? 'Vue' :
+                 detectedFramework === 'svelte' ? 'Svelte' :
+                 detectedFramework === 'solid' ? 'Solid' : 'React'}
+              </span>
             )}
             {isBundling && (
               <Loader2 className="w-3 h-3 animate-spin text-ide-muted" />

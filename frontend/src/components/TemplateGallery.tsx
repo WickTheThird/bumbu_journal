@@ -21,17 +21,21 @@ const iconMap: Record<string, React.ReactNode> = {
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },
-  { id: 'react', label: 'React' },
+  { id: 'frameworks', label: 'Frameworks' },
   { id: 'interactive', label: 'Interactive' },
   { id: 'layout', label: 'Layouts' },
   { id: 'data', label: 'Data & APIs' },
   { id: 'languages', label: 'Languages' },
 ] as const
 
+const FRAMEWORK_CATEGORIES = new Set(['react', 'preact', 'vue', 'svelte', 'solid'])
+const LANGUAGE_CATEGORIES = new Set(['python', 'typescript'])
+
 function filterTemplates(category: string): Template[] {
   if (category === 'all') return TEMPLATES
-  if (category === 'languages') return TEMPLATES.filter(t => t.category === 'python' || t.category === 'typescript')
-  return TEMPLATES.filter(t => t.category === category || (category === 'all' && true))
+  if (category === 'frameworks') return TEMPLATES.filter(t => FRAMEWORK_CATEGORIES.has(t.category))
+  if (category === 'languages') return TEMPLATES.filter(t => LANGUAGE_CATEGORIES.has(t.category))
+  return TEMPLATES.filter(t => t.category === category)
 }
 
 interface TemplateGalleryProps {
