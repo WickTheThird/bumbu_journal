@@ -30,62 +30,62 @@ export default function UserProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+      <div className="min-h-screen bg-ide-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-ide-accent" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-white">
+    <div className="relative z-10 min-h-screen bg-ide-bg text-white">
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-        <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-          <Hash className="w-5 h-5 text-purple-500" />
+      <nav className="flex items-center justify-between px-6 py-4 border-b border-ide-border">
+        <Link to="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-all duration-300">
+          <Hash className="w-5 h-5 text-ide-accent" />
           <span className="font-semibold">HashIDEA</span>
         </Link>
-        <Link to="/ide" className="text-sm text-gray-400 hover:text-white transition">
+        <Link to="/ide" className="text-sm text-slate-400 hover:text-white transition-all duration-300">
           Open IDE
         </Link>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Profile header */}
         <div className="flex items-center gap-4 mb-8">
           <img
             src={`https://github.com/${username}.png?size=80`}
             alt={username}
-            className="w-16 h-16 rounded-full bg-white/5"
+            className="w-16 h-16 rounded-full bg-ide-surface"
           />
           <div>
             <h1 className="text-2xl font-bold">@{username}</h1>
-            <p className="text-gray-400 text-sm">{projects.length} public project{projects.length !== 1 ? 's' : ''}</p>
+            <p className="text-slate-400 text-sm">{projects.length} public project{projects.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
         {error && (
-          <p className="text-gray-400 text-center py-8">{error}</p>
+          <p className="text-slate-400 text-center py-8">{error}</p>
         )}
 
         {/* Projects grid */}
         {projects.length === 0 && !error ? (
-          <p className="text-gray-500 text-center py-12">No public projects yet</p>
+          <p className="text-ide-muted text-center py-12">No public projects yet</p>
         ) : (
           <div className="grid gap-4">
             {projects.map((p) => (
               <Link
                 key={p.id}
                 to={`/p/${p.id}`}
-                className="block bg-white/[0.03] border border-white/10 rounded-xl p-5 hover:border-purple-500/30 hover:bg-white/[0.05] transition"
+                className="block bg-ide-surface border border-ide-border rounded-xl p-5 hover:border-ide-accent/30 hover:bg-ide-surface-2 cursor-pointer transition-all duration-300"
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="font-semibold text-lg mb-1">{p.title}</h2>
                     {p.description && (
-                      <p className="text-gray-400 text-sm">{p.description}</p>
+                      <p className="text-slate-400 text-sm">{p.description}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 text-xs text-ide-muted">
                     <span className="flex items-center gap-1">
                       <Eye className="w-3.5 h-3.5" />
                       {p.view_count}
