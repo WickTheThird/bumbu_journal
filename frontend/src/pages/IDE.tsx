@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Hash, Share2, Plus, FileCode, X, Trash2, Github, GitBranch, FolderGit2,
-  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff, Code
+  ChevronLeft, Check, Play, Terminal as TerminalIcon, Settings, History, Keyboard, Download, Upload, Eye, Search as SearchIcon, Menu, FolderOpen, Cloud, CloudOff, Code, Lock
 } from 'lucide-react'
 
 const XIcon = ({ className }: { className?: string }) => (
@@ -16,7 +16,7 @@ import RemixAttribution from '../components/RemixAttribution'
 import EmbedModal from '../components/EmbedModal'
 import { saveToRecentProjects } from '../lib/recentProjects'
 import { getShortHash, getProjectTitle, getWorkspaceSize } from '../lib/hash'
-import { getCurrentUser } from '../lib/github'
+import { getCurrentUser, isAuthenticated } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
 import { getShareableURL } from '../lib/hash'
@@ -255,6 +255,12 @@ export default function IDE() {
   }
 
   const handleSaveToCloud = async () => {
+    // Gate: require GitHub login first
+    if (!isAuthenticated()) {
+      setShowGitHub(true)
+      return
+    }
+
     try {
       let id: string | null
       if (cloudProjectId) {
@@ -275,8 +281,10 @@ export default function IDE() {
         setUpgradeReason(e.feature === 'private_projects' ? 'private_project' : 'cloud_limit')
         setUpgradeMessage(e.message)
         setShowUpgrade(true)
+      } else if (e instanceof ApiError && e.status === 401) {
+        // Token expired or invalid — prompt re-login
+        setShowGitHub(true)
       } else {
-        // Show generic error for network failures, auth errors, etc.
         useWorkspaceStore.setState({ error: e?.message || 'Failed to save project' })
       }
     }
@@ -590,16 +598,20 @@ export default function IDE() {
           <button onClick={handleSaveToCloud} disabled={isSaving} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition disabled:opacity-50 cursor-pointer ${
             error === 'hash_size_exceeded'
               ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40 animate-pulse-slow'
+              : !githubUser
+              ? 'bg-ide-border/50 text-ide-muted hover:text-emerald-400 hover:bg-emerald-500/10'
               : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-          }`} title={cloudProjectId ? 'Update cloud project' : 'Save to cloud'}>
+          }`} title={!githubUser ? 'Sign in to save to cloud' : cloudProjectId ? 'Update cloud project' : 'Save to cloud'}>
             {isSaving ? (
               <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
             ) : showCloudSaved ? (
               <Check className="w-4 h-4" />
+            ) : !githubUser ? (
+              <Lock className="w-4 h-4" />
             ) : (
               <Cloud className="w-4 h-4" />
             )}
-            {isSaving ? 'Saving...' : showCloudSaved ? 'Copied!' : cloudProjectId ? 'Update' : 'Save to Cloud'}
+            {isSaving ? 'Saving...' : showCloudSaved ? 'Copied!' : !githubUser ? 'Sign in to Save' : cloudProjectId ? 'Update' : 'Save to Cloud'}
           </button>
 
           <button onClick={handleShare} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ide-accent/10 text-ide-accent hover:bg-ide-accent/20 transition">
