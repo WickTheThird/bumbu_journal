@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { File, Workspace, DEFAULT_WORKSPACE } from '../types/workspace'
-import { getWorkspaceFromHash, setWorkspaceHash } from '../lib/hash'
+import { getWorkspaceFromHash, setWorkspaceHash, HashError } from '../lib/hash'
 import * as api from '../lib/api'
 
 interface WorkspaceState {
@@ -55,9 +55,14 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     const { workspace } = get()
     try {
       setWorkspaceHash(workspace)
+      set({ error: null })
     } catch (error) {
       console.error('Failed to save workspace to hash:', error)
-      set({ error: error instanceof Error ? error.message : 'Failed to save workspace' })
+      if (error instanceof HashError && (error.code === 'SIZE_EXCEEDED' || error.code === 'HASH_SIZE_EXCEEDED')) {
+        set({ error: 'hash_size_exceeded' })
+      } else {
+        set({ error: error instanceof Error ? error.message : 'Failed to save workspace' })
+      }
     }
   },
 

@@ -102,6 +102,38 @@ export function getShareableURL(workspace: Workspace): string {
 }
 
 /**
+ * Calculate workspace size info (for UI indicators)
+ */
+export function getWorkspaceSize(workspace: Workspace): {
+  jsonBytes: number
+  compressedBytes: number
+  maxCompressed: number
+  percent: number
+  fileCount: number
+} {
+  try {
+    const validated = WorkspaceSchemaV2.parse(workspace)
+    const json = JSON.stringify(validated)
+    const compressed = LZString.compressToEncodedURIComponent(json)
+    return {
+      jsonBytes: json.length,
+      compressedBytes: compressed.length,
+      maxCompressed: MAX_HASH_SIZE,
+      percent: Math.round((compressed.length / MAX_HASH_SIZE) * 100),
+      fileCount: workspace.files.length,
+    }
+  } catch {
+    return {
+      jsonBytes: 0,
+      compressedBytes: 0,
+      maxCompressed: MAX_HASH_SIZE,
+      percent: 0,
+      fileCount: workspace.files.length,
+    }
+  }
+}
+
+/**
  * Get short hash identifier (first 8 chars) for remix tracking
  */
 export function getShortHash(): string {

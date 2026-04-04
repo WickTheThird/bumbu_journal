@@ -15,7 +15,7 @@ import RemixButton from '../components/RemixButton'
 import RemixAttribution from '../components/RemixAttribution'
 import EmbedModal from '../components/EmbedModal'
 import { saveToRecentProjects } from '../lib/recentProjects'
-import { getShortHash, getProjectTitle } from '../lib/hash'
+import { getShortHash, getProjectTitle, getWorkspaceSize } from '../lib/hash'
 import { getCurrentUser } from '../lib/github'
 import FileTree from '../components/FileTree'
 import { useWorkspaceStore } from '../store/workspace'
@@ -506,7 +506,44 @@ export default function IDE() {
         
         {/* Desktop toolbar */}
         <div className="hidden md:flex items-center gap-2">
-          {error && <span className="text-red-400 text-sm mr-4">{error}</span>}
+          {/* Size indicator + hash overflow warning */}
+          {(() => {
+            if (error === 'hash_size_exceeded') {
+              return (
+                <button
+                  onClick={() => {
+                    setUpgradeReason('cloud_limit')
+                    setUpgradeMessage('Your project is too large for URL storage. Save to the cloud to keep working.')
+                    setShowUpgrade(true)
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs font-medium cursor-pointer hover:bg-red-500/20 transition-colors mr-2"
+                  title="Project exceeds URL size limit"
+                >
+                  <CloudOff className="w-3.5 h-3.5" />
+                  Too large for URL — save to cloud
+                </button>
+              )
+            }
+            const size = getWorkspaceSize(workspace)
+            if (size.percent >= 80) {
+              return (
+                <span
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono mr-2 ${
+                    size.percent >= 95
+                      ? 'bg-red-500/10 text-red-400'
+                      : 'bg-amber-500/10 text-amber-400'
+                  }`}
+                  title={`${Math.round(size.compressedBytes / 1024)}KB / ${Math.round(size.maxCompressed / 1024)}KB compressed`}
+                >
+                  {size.percent}% URL capacity
+                </span>
+              )
+            }
+            if (error && error !== 'hash_size_exceeded') {
+              return <span className="text-red-400 text-sm mr-4">{error}</span>
+            }
+            return null
+          })()}
           
           {canRun && (
             <button onClick={handleRun} disabled={isRunning} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600/30 disabled:opacity-50 transition" title="Run (Ctrl+Enter)">
@@ -550,7 +587,11 @@ export default function IDE() {
             <Code className="w-4 h-4" />
           </button>
           
-          <button onClick={handleSaveToCloud} disabled={isSaving} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-50" title={cloudProjectId ? 'Update cloud project' : 'Save to cloud'}>
+          <button onClick={handleSaveToCloud} disabled={isSaving} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition disabled:opacity-50 cursor-pointer ${
+            error === 'hash_size_exceeded'
+              ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40 animate-pulse-slow'
+              : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+          }`} title={cloudProjectId ? 'Update cloud project' : 'Save to cloud'}>
             {isSaving ? (
               <div className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
             ) : showCloudSaved ? (
