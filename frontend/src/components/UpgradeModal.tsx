@@ -38,28 +38,29 @@ export default function UpgradeModal({ isOpen, onClose, reason = 'generic', mess
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#0f0f11] border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+      <div className="relative bg-ide-surface border border-ide-border rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-white transition"
+          className="absolute top-4 right-4 text-ide-muted hover:text-white transition-colors cursor-pointer"
+          aria-label="Close upgrade modal"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Icon */}
-        <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-5">
-          <Sparkles className="w-6 h-6 text-purple-400" />
+        <div className="w-12 h-12 bg-ide-accent/10 rounded-xl flex items-center justify-center mb-5">
+          <Sparkles className="w-6 h-6 text-ide-accent" />
         </div>
 
         {/* Content */}
         <h2 className="text-xl font-bold text-white mb-2">{content.title}</h2>
-        <p className="text-gray-400 text-sm leading-relaxed mb-2">
+        <p className="text-slate-400 text-sm leading-relaxed mb-2">
           {message || content.description}
         </p>
 
         {/* Free tier note */}
-        <p className="text-gray-500 text-xs mb-6">
+        <p className="text-ide-muted text-xs mb-6">
           Your existing URL-based projects are always free and unlimited.
         </p>
 
@@ -68,14 +69,14 @@ export default function UpgradeModal({ isOpen, onClose, reason = 'generic', mess
           <Link
             to="/pricing"
             onClick={onClose}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm transition"
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-ide-accent hover:bg-ide-accent-glow text-white font-medium text-sm transition-all duration-200 shadow-neon-purple cursor-pointer"
           >
             {content.cta}
             <ArrowRight className="w-4 h-4" />
           </Link>
           <button
             onClick={onClose}
-            className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm transition"
+            className="px-4 py-3 rounded-xl bg-ide-surface-2 hover:bg-ide-border text-slate-400 text-sm transition-colors cursor-pointer"
           >
             Later
           </button>
