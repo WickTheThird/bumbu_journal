@@ -1,16 +1,16 @@
 /**
  * HashIDEA Domain Proxy Worker
  *
- * Deploy on: projects.hashideea.dev
+ * Deploy on: hashidea-domains.bumbufilip22.workers.dev
  *
- * When a custom domain (e.g. myapp.com) CNAMEs to projects.hashideea.dev,
+ * When a custom domain (e.g. myapp.com) CNAMEs to hashidea-domains.bumbufilip22.workers.dev,
  * this worker reads the Host header, looks up the project ID via the API,
  * and redirects to the embed page.
  *
  * Setup:
  *   1. Create this Worker in Cloudflare dashboard
- *   2. Add a custom domain: projects.hashideea.dev
- *   3. Users CNAME their domains to projects.hashideea.dev
+ *   2. Add a custom domain: hashidea-domains.bumbufilip22.workers.dev
+ *   3. Users CNAME their domains to hashidea-domains.bumbufilip22.workers.dev
  *   4. Cloudflare auto-provisions SSL for each custom domain
  *
  * Environment variables:
@@ -23,8 +23,8 @@ export default {
     const host = request.headers.get('Host') || '';
 
     // Skip if it's the base domain itself (not a custom domain)
-    if (host === 'projects.hashideea.dev' || host.endsWith('.workers.dev')) {
-      return new Response('HashIDEA Domain Proxy\n\nPoint your CNAME to projects.hashideea.dev to host your project.', {
+    if (host === 'hashidea-domains.bumbufilip22.workers.dev' || host.endsWith('.workers.dev')) {
+      return new Response('HashIDEA Domain Proxy\n\nPoint your CNAME to hashidea-domains.bumbufilip22.workers.dev to host your project.', {
         status: 200,
         headers: { 'Content-Type': 'text/plain' },
       });

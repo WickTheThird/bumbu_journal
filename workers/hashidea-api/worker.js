@@ -749,8 +749,8 @@ async function addDomain(request, env, user, projectId, origin) {
 
   return json({
     id, domain, project_id: projectId, verified: false,
-    cname_target: 'projects.hashideea.dev',
-    instructions: `Add a CNAME record for "${domain}" pointing to "projects.hashideea.dev"`,
+    cname_target: 'hashidea-domains.bumbufilip22.workers.dev',
+    instructions: `Add a CNAME record for "${domain}" pointing to "hashidea-domains.bumbufilip22.workers.dev"`,
   }, 201, origin);
 }
 
@@ -779,7 +779,7 @@ async function getDomain(env, user, projectId, origin) {
     id: domain.id,
     domain: domain.domain,
     verified: !!domain.verified,
-    cname_target: 'projects.hashideea.dev',
+    cname_target: 'hashidea-domains.bumbufilip22.workers.dev',
     created_at: domain.created_at,
   }, 200, origin);
 }
