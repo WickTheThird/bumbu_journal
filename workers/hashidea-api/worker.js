@@ -501,6 +501,209 @@ async function handleWebhook(request, env, origin) {
   return json({ received: true }, 200, origin);
 }
 
+// ── Likes ───────────────────────────────────────────
+
+// POST /api/projects/:id/like
+async function likeProject(env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const existing = await env.DB.prepare('SELECT 1 FROM likes WHERE user_id = ? AND project_id = ?')
+    .bind(user.id, projectId).first();
+  if (existing) {
+    const count = (await env.DB.prepare('SELECT like_count FROM projects WHERE id = ?').bind(projectId).first())?.like_count || 0;
+    return json({ liked: true, like_count: count }, 200, origin);
+  }
+
+  await env.DB.prepare('INSERT INTO likes (user_id, project_id) VALUES (?, ?)').bind(user.id, projectId).run();
+  await env.DB.prepare('UPDATE projects SET like_count = like_count + 1 WHERE id = ?').bind(projectId).run();
+  const count = (await env.DB.prepare('SELECT like_count FROM projects WHERE id = ?').bind(projectId).first())?.like_count || 0;
+  return json({ liked: true, like_count: count }, 200, origin);
+}
+
+// DELETE /api/projects/:id/like
+async function unlikeProject(env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const existing = await env.DB.prepare('SELECT 1 FROM likes WHERE user_id = ? AND project_id = ?')
+    .bind(user.id, projectId).first();
+  if (!existing) {
+    const count = (await env.DB.prepare('SELECT like_count FROM projects WHERE id = ?').bind(projectId).first())?.like_count || 0;
+    return json({ liked: false, like_count: count }, 200, origin);
+  }
+
+  await env.DB.prepare('DELETE FROM likes WHERE user_id = ? AND project_id = ?').bind(user.id, projectId).run();
+  await env.DB.prepare('UPDATE projects SET like_count = MAX(0, like_count - 1) WHERE id = ?').bind(projectId).run();
+  const count = (await env.DB.prepare('SELECT like_count FROM projects WHERE id = ?').bind(projectId).first())?.like_count || 0;
+  return json({ liked: false, like_count: count }, 200, origin);
+}
+
+// ── Bookmarks ───────────────────────────────────────
+
+// POST /api/projects/:id/bookmark
+async function bookmarkProject(env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const existing = await env.DB.prepare('SELECT 1 FROM bookmarks WHERE user_id = ? AND project_id = ?')
+    .bind(user.id, projectId).first();
+  if (!existing) {
+    await env.DB.prepare('INSERT INTO bookmarks (user_id, project_id) VALUES (?, ?)').bind(user.id, projectId).run();
+  }
+  return json({ bookmarked: true }, 200, origin);
+}
+
+// DELETE /api/projects/:id/bookmark
+async function unbookmarkProject(env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+  await env.DB.prepare('DELETE FROM bookmarks WHERE user_id = ? AND project_id = ?').bind(user.id, projectId).run();
+  return json({ bookmarked: false }, 200, origin);
+}
+
+// GET /api/me/bookmarks
+async function getMyBookmarks(env, user, request, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const url = new URL(request.url);
+  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
+  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')));
+  const offset = (page - 1) * limit;
+
+  const countResult = await env.DB.prepare('SELECT COUNT(*) as total FROM bookmarks WHERE user_id = ?').bind(user.id).first();
+  const total = countResult?.total || 0;
+
+  const { results } = await env.DB.prepare(`
+    SELECT p.id, p.title, p.description, p.view_count, p.fork_count, p.like_count, p.tags, p.created_at, p.updated_at,
+           u.username, u.avatar_url
+    FROM bookmarks b
+    JOIN projects p ON b.project_id = p.id
+    LEFT JOIN users u ON p.owner_id = u.id
+    WHERE b.user_id = ?
+    ORDER BY b.created_at DESC
+    LIMIT ? OFFSET ?
+  `).bind(user.id, limit, offset).all();
+
+  const projects = (results || []).map(r => ({
+    id: r.id, title: r.title, description: r.description,
+    view_count: r.view_count, fork_count: r.fork_count, like_count: r.like_count,
+    tags: r.tags || '', created_at: r.created_at, updated_at: r.updated_at,
+    owner: r.username ? { username: r.username, avatar_url: r.avatar_url } : null,
+  }));
+
+  return json({ projects, total, page, pages: Math.ceil(total / limit) }, 200, origin);
+}
+
+// ── Follows ─────────────────────────────────────────
+
+// POST /api/users/:username/follow
+async function followUser(env, user, username, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const target = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
+  if (!target) return error('User not found', 404, origin);
+  if (target.id === user.id) return error('Cannot follow yourself', 400, origin);
+
+  const existing = await env.DB.prepare('SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ?')
+    .bind(user.id, target.id).first();
+  if (!existing) {
+    await env.DB.prepare('INSERT INTO follows (follower_id, following_id) VALUES (?, ?)').bind(user.id, target.id).run();
+  }
+  return json({ following: true }, 200, origin);
+}
+
+// DELETE /api/users/:username/follow
+async function unfollowUser(env, user, username, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const target = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
+  if (!target) return error('User not found', 404, origin);
+
+  await env.DB.prepare('DELETE FROM follows WHERE follower_id = ? AND following_id = ?').bind(user.id, target.id).run();
+  return json({ following: false }, 200, origin);
+}
+
+// GET /api/users/:username (enhanced profile)
+async function getUserProfile(env, user, username, origin) {
+  const dbUser = await env.DB.prepare('SELECT id, username, avatar_url, bio, website, created_at FROM users WHERE username = ?')
+    .bind(username).first();
+  if (!dbUser) return error('User not found', 404, origin);
+
+  const projectCount = (await env.DB.prepare('SELECT COUNT(*) as c FROM projects WHERE owner_id = ? AND is_public = 1').bind(dbUser.id).first())?.c || 0;
+  const totalViews = (await env.DB.prepare('SELECT COALESCE(SUM(view_count), 0) as v FROM projects WHERE owner_id = ?').bind(dbUser.id).first())?.v || 0;
+  const followerCount = (await env.DB.prepare('SELECT COUNT(*) as c FROM follows WHERE following_id = ?').bind(dbUser.id).first())?.c || 0;
+  const followingCount = (await env.DB.prepare('SELECT COUNT(*) as c FROM follows WHERE follower_id = ?').bind(dbUser.id).first())?.c || 0;
+
+  let isFollowing = false;
+  if (user) {
+    isFollowing = !!(await env.DB.prepare('SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ?').bind(user.id, dbUser.id).first());
+  }
+
+  return json({
+    username: dbUser.username,
+    avatar_url: dbUser.avatar_url,
+    bio: dbUser.bio || '',
+    website: dbUser.website || '',
+    created_at: dbUser.created_at,
+    project_count: projectCount,
+    total_views: totalViews,
+    follower_count: followerCount,
+    following_count: followingCount,
+    is_following: isFollowing,
+  }, 200, origin);
+}
+
+// PATCH /api/me/profile
+async function updateProfile(request, env, user, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+  const body = await request.json();
+
+  const updates = [];
+  const values = [];
+  if (body.bio !== undefined) { updates.push('bio = ?'); values.push(String(body.bio).slice(0, 200)); }
+  if (body.website !== undefined) { updates.push('website = ?'); values.push(String(body.website).slice(0, 200)); }
+
+  if (updates.length === 0) return json({ ok: true }, 200, origin);
+
+  values.push(user.id);
+  await env.DB.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+  return json({ ok: true }, 200, origin);
+}
+
+// GET /api/me/feed
+async function getMyFeed(env, user, request, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const url = new URL(request.url);
+  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
+  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')));
+  const offset = (page - 1) * limit;
+
+  const countResult = await env.DB.prepare(`
+    SELECT COUNT(*) as total FROM projects p
+    JOIN follows f ON f.following_id = p.owner_id
+    WHERE f.follower_id = ? AND p.is_public = 1
+  `).bind(user.id).first();
+  const total = countResult?.total || 0;
+
+  const { results } = await env.DB.prepare(`
+    SELECT p.id, p.title, p.description, p.view_count, p.fork_count, p.like_count, p.tags, p.created_at, p.updated_at,
+           u.username, u.avatar_url
+    FROM projects p
+    JOIN follows f ON f.following_id = p.owner_id
+    JOIN users u ON p.owner_id = u.id
+    WHERE f.follower_id = ? AND p.is_public = 1
+    ORDER BY p.created_at DESC
+    LIMIT ? OFFSET ?
+  `).bind(user.id, limit, offset).all();
+
+  const projects = (results || []).map(r => ({
+    id: r.id, title: r.title, description: r.description,
+    view_count: r.view_count, fork_count: r.fork_count, like_count: r.like_count,
+    tags: r.tags || '', created_at: r.created_at, updated_at: r.updated_at,
+    owner: r.username ? { username: r.username, avatar_url: r.avatar_url } : null,
+  }));
+
+  return json({ projects, total, page, pages: Math.ceil(total / limit) }, 200, origin);
+}
+
 // ── Gallery ─────────────────────────────────────────
 
 // GET /api/gallery
@@ -540,8 +743,8 @@ async function getGallery(request, env, origin) {
       break;
     case 'trending':
     default:
-      // Trending: (views + 5*forks) * decay where decay = 1/(1 + age_in_days)
-      orderBy = "(p.view_count + p.fork_count * 5) * (1.0 / (1.0 + (julianday('now') - julianday(p.created_at)))) DESC";
+      // Trending: (views + 5*forks + 2*likes) * decay where decay = 1/(1 + age_in_days)
+      orderBy = "(p.view_count + p.fork_count * 5 + p.like_count * 2) * (1.0 / (1.0 + (julianday('now') - julianday(p.created_at)))) DESC";
       break;
   }
 
@@ -552,7 +755,7 @@ async function getGallery(request, env, origin) {
 
   // Fetch projects
   const query = `
-    SELECT p.id, p.title, p.description, p.view_count, p.fork_count, p.tags, p.created_at, p.updated_at,
+    SELECT p.id, p.title, p.description, p.view_count, p.fork_count, p.like_count, p.tags, p.created_at, p.updated_at,
            u.username, u.avatar_url
     FROM projects p
     LEFT JOIN users u ON p.owner_id = u.id
@@ -571,6 +774,7 @@ async function getGallery(request, env, origin) {
     description: r.description,
     view_count: r.view_count,
     fork_count: r.fork_count,
+    like_count: r.like_count || 0,
     tags: r.tags || '',
     created_at: r.created_at,
     updated_at: r.updated_at,
@@ -631,6 +835,44 @@ export default {
       const userMatch = path.match(/^\/api\/users\/([^/]+)\/projects$/);
       if (userMatch && method === 'GET') {
         return getUserProjects(env, userMatch[1], origin);
+      }
+
+      // User profile + follow
+      const userProfileMatch = path.match(/^\/api\/users\/([^/]+)$/);
+      if (userProfileMatch && method === 'GET') {
+        return getUserProfile(env, await getUser(), userProfileMatch[1], origin);
+      }
+
+      const followMatch = path.match(/^\/api\/users\/([^/]+)\/follow$/);
+      if (followMatch) {
+        if (method === 'POST') return followUser(env, await getUser(), followMatch[1], origin);
+        if (method === 'DELETE') return unfollowUser(env, await getUser(), followMatch[1], origin);
+      }
+
+      // Likes
+      const likeMatch = path.match(/^\/api\/projects\/([a-z0-9]+)\/like$/);
+      if (likeMatch) {
+        if (method === 'POST') return likeProject(env, await getUser(), likeMatch[1], origin);
+        if (method === 'DELETE') return unlikeProject(env, await getUser(), likeMatch[1], origin);
+      }
+
+      // Bookmarks
+      const bookmarkMatch = path.match(/^\/api\/projects\/([a-z0-9]+)\/bookmark$/);
+      if (bookmarkMatch) {
+        if (method === 'POST') return bookmarkProject(env, await getUser(), bookmarkMatch[1], origin);
+        if (method === 'DELETE') return unbookmarkProject(env, await getUser(), bookmarkMatch[1], origin);
+      }
+
+      if (path === '/api/me/bookmarks' && method === 'GET') {
+        return getMyBookmarks(env, await getUser(), request, origin);
+      }
+
+      if (path === '/api/me/profile' && method === 'PATCH') {
+        return updateProfile(request, env, await getUser(), origin);
+      }
+
+      if (path === '/api/me/feed' && method === 'GET') {
+        return getMyFeed(env, await getUser(), request, origin);
       }
 
       // Gallery

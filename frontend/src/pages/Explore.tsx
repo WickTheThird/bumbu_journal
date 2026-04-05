@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Github, Search, TrendingUp, Clock, Eye, GitFork, Loader2, Compass } from 'lucide-react'
+import { Github, Search, TrendingUp, Clock, Eye, GitFork, Loader2, Compass, Bookmark, Users } from 'lucide-react'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import ProjectCard from '../components/ProjectCard'
-import { getGallery, GalleryProject } from '../lib/api'
+import GitHubModal from '../components/GitHubModal'
+import { getGallery, getMyBookmarks, getMyFeed, GalleryProject } from '../lib/api'
+import { isAuthenticated } from '../lib/github'
 
 type SortMode = 'trending' | 'latest' | 'most_viewed' | 'most_forked'
+type ViewMode = 'gallery' | 'bookmarks' | 'feed'
 
 const SORT_OPTIONS: { id: SortMode; label: string; icon: typeof TrendingUp }[] = [
   { id: 'trending', label: 'Trending', icon: TrendingUp },
@@ -24,12 +27,21 @@ export default function Explore() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [view, setView] = useState<ViewMode>('gallery')
+  const [showLogin, setShowLogin] = useState(false)
 
   const fetchProjects = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await getGallery({ sort, q: query || undefined, page, limit: 20 })
+      let res
+      if (view === 'bookmarks') {
+        res = await getMyBookmarks({ page, limit: 20 })
+      } else if (view === 'feed') {
+        res = await getMyFeed({ page, limit: 20 })
+      } else {
+        res = await getGallery({ sort, q: query || undefined, page, limit: 20 })
+      }
       setProjects(res.projects)
       setTotalPages(res.pages)
       setTotal(res.total)
@@ -39,7 +51,7 @@ export default function Explore() {
     } finally {
       setLoading(false)
     }
-  }, [sort, query, page])
+  }, [sort, query, page, view])
 
   useEffect(() => {
     fetchProjects()
@@ -56,6 +68,15 @@ export default function Explore() {
 
   const handleSortChange = (newSort: SortMode) => {
     setSort(newSort)
+    setPage(1)
+  }
+
+  const handleViewChange = (newView: ViewMode) => {
+    if ((newView === 'bookmarks' || newView === 'feed') && !isAuthenticated()) {
+      setShowLogin(true)
+      return
+    }
+    setView(newView)
     setPage(1)
   }
 
@@ -95,40 +116,66 @@ export default function Explore() {
           </div>
           <p className="text-slate-400 mb-8">Discover projects from the community</p>
 
-          {/* Search */}
-          <div className="relative max-w-md mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ide-muted" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search projects..."
-              className="w-full pl-10 pr-4 py-2.5 bg-ide-surface border border-ide-border rounded-lg text-sm text-white placeholder:text-ide-muted focus:outline-none focus:border-ide-accent/50 focus:ring-1 focus:ring-ide-accent/30 transition-all"
-            />
-          </div>
-
-          {/* Sort tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-1">
-            {SORT_OPTIONS.map(({ id, label, icon: Icon }) => (
+          {/* View tabs: Gallery / Bookmarks / Following */}
+          <div className="flex items-center gap-1 mb-6 border-b border-ide-border/50 pb-3">
+            {[
+              { id: 'gallery' as ViewMode, label: 'All Projects', icon: Compass },
+              { id: 'bookmarks' as ViewMode, label: 'Bookmarks', icon: Bookmark },
+              { id: 'feed' as ViewMode, label: 'Following', icon: Users },
+            ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                onClick={() => handleSortChange(id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  sort === id
-                    ? 'bg-ide-accent/15 text-ide-accent border border-ide-accent/30'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-ide-surface border border-transparent'
+                onClick={() => handleViewChange(id)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  view === id
+                    ? 'bg-ide-accent/15 text-ide-accent'
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-ide-surface'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-4 h-4" />
                 {label}
               </button>
             ))}
-            {total > 0 && (
-              <span className="text-xs text-ide-muted ml-auto pl-4">
-                {total} project{total !== 1 ? 's' : ''}
-              </span>
-            )}
           </div>
+
+          {/* Search (only for gallery view) */}
+          {view === 'gallery' && (
+            <>
+              <div className="relative max-w-md mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ide-muted" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Search projects..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-ide-surface border border-ide-border rounded-lg text-sm text-white placeholder:text-ide-muted focus:outline-none focus:border-ide-accent/50 focus:ring-1 focus:ring-ide-accent/30 transition-all"
+                />
+              </div>
+
+              {/* Sort tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                {SORT_OPTIONS.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => handleSortChange(id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
+                      sort === id
+                        ? 'bg-ide-accent/15 text-ide-accent border border-ide-accent/30'
+                        : 'text-slate-500 hover:text-slate-300 hover:bg-ide-surface border border-transparent'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </button>
+                ))}
+                {total > 0 && (
+                  <span className="text-xs text-ide-muted ml-auto pl-4">
+                    {total} project{total !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -151,23 +198,29 @@ export default function Explore() {
             <div className="text-center py-32">
               <Compass className="w-12 h-12 text-ide-muted mx-auto mb-4" />
               <p className="text-slate-400 mb-2">
-                {query ? `No projects found for "${query}"` : 'No projects yet'}
+                {view === 'bookmarks' ? 'No bookmarked projects yet'
+                  : view === 'feed' ? 'Follow users to see their projects here'
+                  : query ? `No projects found for "${query}"` : 'No projects yet'}
               </p>
               <p className="text-sm text-ide-muted mb-6">
-                {query ? 'Try a different search term' : 'Be the first to share a project!'}
+                {view === 'bookmarks' ? 'Bookmark projects from the gallery to save them here'
+                  : view === 'feed' ? 'Visit user profiles and click Follow to build your feed'
+                  : query ? 'Try a different search term' : 'Be the first to share a project!'}
               </p>
-              <Link
-                to="/ide"
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-ide-accent hover:bg-ide-accent-glow text-white text-sm font-medium rounded-lg transition-all cursor-pointer"
-              >
-                Create a project
-              </Link>
+              {view === 'gallery' && (
+                <Link
+                  to="/ide"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-ide-accent hover:bg-ide-accent-glow text-white text-sm font-medium rounded-lg transition-all cursor-pointer"
+                >
+                  Create a project
+                </Link>
+              )}
             </div>
           ) : (
             <>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {projects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
+                  <ProjectCard key={project.id} project={project} onAuthRequired={() => setShowLogin(true)} />
                 ))}
               </div>
 
@@ -214,6 +267,8 @@ export default function Explore() {
           </div>
         </div>
       </footer>
+
+      <GitHubModal isOpen={showLogin} onClose={() => setShowLogin(false)} onImport={() => setShowLogin(false)} />
     </div>
   )
 }

@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
 import { Eye, GitFork } from 'lucide-react'
 import { GalleryProject } from '../lib/api'
+import LikeButton from './LikeButton'
+import BookmarkButton from './BookmarkButton'
 
 interface ProjectCardProps {
   project: GalleryProject
+  onAuthRequired?: () => void
 }
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({ project, onAuthRequired }: ProjectCardProps) {
   return (
     <Link
       to={`/p/${project.id}`}
@@ -41,7 +44,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           <span className="text-xs text-slate-500">Anonymous</span>
         )}
 
-        {/* Stats */}
+        {/* Stats + actions */}
         <div className="flex items-center gap-3 text-xs text-slate-500 flex-shrink-0">
           <span className="flex items-center gap-1" title={`${project.view_count} views`}>
             <Eye className="w-3.5 h-3.5" />
@@ -53,6 +56,15 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               {project.fork_count}
             </span>
           )}
+          <LikeButton
+            projectId={project.id}
+            initialCount={project.like_count}
+            onAuthRequired={onAuthRequired}
+          />
+          <BookmarkButton
+            projectId={project.id}
+            onAuthRequired={onAuthRequired}
+          />
         </div>
       </div>
     </Link>

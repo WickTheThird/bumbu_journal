@@ -149,6 +149,7 @@ export interface GalleryProject {
   description: string | null
   view_count: number
   fork_count: number
+  like_count: number
   tags: string
   created_at: string
   updated_at: string
@@ -177,6 +178,76 @@ export async function getGallery(opts: {
   if (opts.limit) params.set('limit', String(opts.limit))
   const qs = params.toString()
   return request(`/api/gallery${qs ? `?${qs}` : ''}`)
+}
+
+// ── Likes ──────────────────────────────────────────
+
+export async function likeProject(id: string): Promise<{ liked: boolean; like_count: number }> {
+  return request(`/api/projects/${id}/like`, { method: 'POST' })
+}
+
+export async function unlikeProject(id: string): Promise<{ liked: boolean; like_count: number }> {
+  return request(`/api/projects/${id}/like`, { method: 'DELETE' })
+}
+
+// ── Bookmarks ──────────────────────────────────────
+
+export async function bookmarkProject(id: string): Promise<{ bookmarked: boolean }> {
+  return request(`/api/projects/${id}/bookmark`, { method: 'POST' })
+}
+
+export async function unbookmarkProject(id: string): Promise<{ bookmarked: boolean }> {
+  return request(`/api/projects/${id}/bookmark`, { method: 'DELETE' })
+}
+
+export async function getMyBookmarks(opts: { page?: number; limit?: number } = {}): Promise<GalleryResponse> {
+  const params = new URLSearchParams()
+  if (opts.page) params.set('page', String(opts.page))
+  if (opts.limit) params.set('limit', String(opts.limit))
+  const qs = params.toString()
+  return request(`/api/me/bookmarks${qs ? `?${qs}` : ''}`)
+}
+
+// ── Follows ────────────────────────────────────────
+
+export interface UserProfile {
+  username: string
+  avatar_url: string
+  bio: string
+  website: string
+  created_at: string
+  project_count: number
+  total_views: number
+  follower_count: number
+  following_count: number
+  is_following: boolean
+}
+
+export async function getUserProfile(username: string): Promise<UserProfile> {
+  return request(`/api/users/${username}`)
+}
+
+export async function followUser(username: string): Promise<{ following: boolean }> {
+  return request(`/api/users/${username}/follow`, { method: 'POST' })
+}
+
+export async function unfollowUser(username: string): Promise<{ following: boolean }> {
+  return request(`/api/users/${username}/follow`, { method: 'DELETE' })
+}
+
+export async function updateMyProfile(data: { bio?: string; website?: string }): Promise<{ ok: boolean }> {
+  return request('/api/me/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function getMyFeed(opts: { page?: number; limit?: number } = {}): Promise<GalleryResponse> {
+  const params = new URLSearchParams()
+  if (opts.page) params.set('page', String(opts.page))
+  if (opts.limit) params.set('limit', String(opts.limit))
+  const qs = params.toString()
+  return request(`/api/me/feed${qs ? `?${qs}` : ''}`)
 }
 
 // ── Billing ────────────────────────────────────────
