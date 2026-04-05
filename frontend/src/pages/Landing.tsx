@@ -140,7 +140,7 @@ export default function Landing() {
             <span className="flex items-center gap-2"><Check className="w-4 h-4 text-neon-green" /> No account needed</span>
             <span className="flex items-center gap-2"><Check className="w-4 h-4 text-neon-green" /> 5 frameworks supported</span>
             <span className="flex items-center gap-2"><Check className="w-4 h-4 text-neon-green" /> Full npm ecosystem</span>
-            <span className="flex items-center gap-2"><Check className="w-4 h-4 text-neon-green" /> Open source</span>
+            <span className="flex items-center gap-2"><Check className="w-4 h-4 text-neon-green" /> Python + TypeScript</span>
           </div>
         </div>
       </section>
