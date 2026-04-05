@@ -122,7 +122,7 @@ export default function Landing() {
               to="/ide"
               className="group px-8 py-3.5 bg-ide-accent hover:bg-ide-accent-glow text-white font-medium rounded-lg flex items-center gap-2 transition-all duration-200 shadow-neon-purple hover:shadow-glow cursor-pointer text-lg"
             >
-              Start building — it's free
+              Start building - it's free
               <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
 
@@ -152,7 +152,7 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           {/* Caption above demo */}
           <p className="text-center text-sm text-ide-muted mb-4 font-mono">
-            <span className="text-neon-green">{'>'}</span> Try it — click the button in the preview
+            <span className="text-neon-green">{'>'}</span> Try it - click the button in the preview
           </p>
           <div className="rounded-xl overflow-hidden border border-ide-border bg-ide-surface shadow-card animate-glow-pulse">
             {/* Browser chrome */}
@@ -228,7 +228,7 @@ export default function Landing() {
               Three steps. Zero config.
             </h2>
             <p className="text-lg text-slate-400 max-w-xl mx-auto">
-              From empty file to live, shareable app — without ever leaving your browser.
+              From empty file to live, shareable app. Without ever leaving your browser.
             </p>
           </div>
 
@@ -256,7 +256,7 @@ export default function Landing() {
                 color: 'text-neon-green',
                 bg: 'from-neon-green/20 to-neon-green/5',
                 title: 'Share',
-                desc: 'Copy the URL. That\'s it. Your recipient opens the link and sees your running app — no deploy, no account, no wait.',
+                desc: 'Copy the URL. That\'s it. Your recipient opens the link and sees your running app. No deploy, no account, no wait.',
               },
             ].map(({ step, icon: Icon, color, bg, title, desc }) => (
               <div key={step} className="relative group">
@@ -299,14 +299,14 @@ export default function Landing() {
                 color: 'text-ide-accent',
                 bg: 'bg-ide-accent/10',
                 title: 'Instant sharing',
-                desc: 'Paste the URL in Slack, Twitter, email, docs — your recipient sees a running app, not a repo.',
+                desc: 'Paste the URL in Slack, Twitter, email, or docs. Your recipient sees a running app, not a repo.',
               },
               {
                 icon: Package,
                 color: 'text-neon-cyan',
                 bg: 'bg-neon-cyan/10',
                 title: 'Any npm package',
-                desc: 'Import React, Three.js, Framer Motion, Chart.js — 2M+ packages resolve automatically from esm.sh.',
+                desc: 'Import React, Three.js, Framer Motion, Chart.js. Over 2M packages resolve automatically from esm.sh.',
               },
               {
                 icon: GitFork,
@@ -347,7 +347,7 @@ export default function Landing() {
             {[
               { icon: Terminal, title: 'Monaco Editor', desc: 'IntelliSense, multi-file tabs, split panes, themes' },
               { icon: Zap, title: 'Live Preview', desc: 'Hot reload in milliseconds via esbuild-wasm' },
-              { icon: Layers, title: '5 Frameworks', desc: 'React, Vue, Svelte, Solid, Preact — auto-detected' },
+              { icon: Layers, title: '5 Frameworks', desc: 'React, Vue, Svelte, Solid, Preact. Auto-detected from your code' },
               { icon: Globe, title: 'Python + JS', desc: 'Run Python via Pyodide or JS/TS in a sandboxed iframe' },
               { icon: Package, title: 'npm Packages', desc: '2M+ packages from esm.sh, resolved automatically' },
               { icon: Github, title: 'GitHub Import', desc: 'Clone any public repo into the IDE in one click' },

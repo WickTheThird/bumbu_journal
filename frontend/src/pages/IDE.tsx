@@ -528,7 +528,7 @@ export default function IDE() {
                   title="Project exceeds URL size limit"
                 >
                   <CloudOff className="w-3.5 h-3.5" />
-                  Too large for URL — save to cloud
+                  Too large for URL - save to cloud
                 </button>
               )
             }
