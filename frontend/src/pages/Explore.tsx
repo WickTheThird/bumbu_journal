@@ -60,7 +60,7 @@ export default function Explore() {
   }
 
   return (
-    <div className="min-h-screen bg-ide-bg text-ide-text relative">
+    <div className="min-h-screen bg-ide-bg text-ide-text relative flex flex-col">
       <BackgroundAnimation />
 
       {/* Nav */}
@@ -133,7 +133,7 @@ export default function Explore() {
       </section>
 
       {/* Projects Grid */}
-      <section className="relative z-10 pb-20 px-6">
+      <section className="relative z-10 pb-20 px-6 flex-1">
         <div className="section-container">
           {loading && projects.length === 0 ? (
             <div className="flex items-center justify-center py-32">
