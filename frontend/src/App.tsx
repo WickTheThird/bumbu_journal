@@ -7,6 +7,7 @@ import ProjectPage from './pages/ProjectPage'
 import UserProfile from './pages/UserProfile'
 import Pricing from './pages/Pricing'
 import Explore from './pages/Explore'
+import Dashboard from './pages/Dashboard'
 
 function App() {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ function App() {
       <Route path="/u/:username" element={<UserProfile />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/explore" element={<Explore />} />
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   )
 }

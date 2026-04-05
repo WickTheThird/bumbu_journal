@@ -704,6 +704,105 @@ async function getMyFeed(env, user, request, origin) {
   return json({ projects, total, page, pages: Math.ceil(total / limit) }, 200, origin);
 }
 
+// ── Custom Domains ──────────────────────────────────
+
+// POST /api/projects/:id/domain
+async function addDomain(request, env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const project = await env.DB.prepare('SELECT * FROM projects WHERE id = ?').bind(projectId).first();
+  if (!project) return error('Project not found', 404, origin);
+  if (project.owner_id !== user.id) return error('Forbidden', 403, origin);
+
+  const plan = user.plan || 'free';
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+
+  if (limits.custom_domains === 0) {
+    return json({ error: 'plan_limit', message: 'Custom domains require a Starter plan or above.', feature: 'custom_domains', plan }, 403, origin);
+  }
+
+  // Check domain count
+  const domainCount = (await env.DB.prepare('SELECT COUNT(*) as c FROM custom_domains WHERE user_id = ?').bind(user.id).first())?.c || 0;
+  if (domainCount >= limits.custom_domains) {
+    return json({ error: 'plan_limit', message: `Your ${plan} plan allows ${limits.custom_domains} custom domain${limits.custom_domains > 1 ? 's' : ''}. Upgrade for more.`, feature: 'custom_domains', plan }, 403, origin);
+  }
+
+  const body = await request.json();
+  let domain = (body.domain || '').toLowerCase().trim();
+
+  // Strip protocol and trailing slash
+  domain = domain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  if (!domain || domain.includes('/') || !domain.includes('.')) {
+    return error('Invalid domain', 400, origin);
+  }
+
+  // Check domain not already taken
+  const existing = await env.DB.prepare('SELECT * FROM custom_domains WHERE domain = ?').bind(domain).first();
+  if (existing) {
+    if (existing.user_id === user.id) return error('You already own this domain', 400, origin);
+    return error('Domain already in use', 409, origin);
+  }
+
+  const id = generateId();
+  await env.DB.prepare('INSERT INTO custom_domains (id, domain, project_id, user_id) VALUES (?, ?, ?, ?)')
+    .bind(id, domain, projectId, user.id).run();
+
+  return json({
+    id, domain, project_id: projectId, verified: false,
+    cname_target: 'projects.hashideea.dev',
+    instructions: `Add a CNAME record for "${domain}" pointing to "projects.hashideea.dev"`,
+  }, 201, origin);
+}
+
+// DELETE /api/projects/:id/domain
+async function removeDomain(env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const domain = await env.DB.prepare('SELECT * FROM custom_domains WHERE project_id = ? AND user_id = ?')
+    .bind(projectId, user.id).first();
+  if (!domain) return error('No domain found', 404, origin);
+
+  await env.DB.prepare('DELETE FROM custom_domains WHERE id = ?').bind(domain.id).run();
+  return json({ ok: true }, 200, origin);
+}
+
+// GET /api/projects/:id/domain
+async function getDomain(env, user, projectId, origin) {
+  if (!user) return error('Unauthorized', 401, origin);
+
+  const domain = await env.DB.prepare('SELECT * FROM custom_domains WHERE project_id = ? AND user_id = ?')
+    .bind(projectId, user.id).first();
+
+  if (!domain) return json({ domain: null }, 200, origin);
+
+  return json({
+    id: domain.id,
+    domain: domain.domain,
+    verified: !!domain.verified,
+    cname_target: 'projects.hashideea.dev',
+    created_at: domain.created_at,
+  }, 200, origin);
+}
+
+// GET /api/domains/lookup?domain=myapp.com (public, used by proxy)
+async function lookupDomain(request, env, origin) {
+  const url = new URL(request.url);
+  const domain = (url.searchParams.get('domain') || '').toLowerCase().trim();
+  if (!domain) return error('Domain required', 400, origin);
+
+  const record = await env.DB.prepare(
+    'SELECT cd.project_id, cd.verified FROM custom_domains cd WHERE cd.domain = ?'
+  ).bind(domain).first();
+
+  if (!record) return error('Domain not found', 404, origin);
+
+  return json({
+    project_id: record.project_id,
+    verified: !!record.verified,
+    embed_url: `https://hashideea.com/embed/${record.project_id}?hideHeader=true`,
+  }, 200, origin);
+}
+
 // ── Gallery ─────────────────────────────────────────
 
 // GET /api/gallery
@@ -873,6 +972,18 @@ export default {
 
       if (path === '/api/me/feed' && method === 'GET') {
         return getMyFeed(env, await getUser(), request, origin);
+      }
+
+      // Custom domains
+      const domainMatch = path.match(/^\/api\/projects\/([a-z0-9]+)\/domain$/);
+      if (domainMatch) {
+        if (method === 'POST') return addDomain(request, env, await getUser(), domainMatch[1], origin);
+        if (method === 'DELETE') return removeDomain(env, await getUser(), domainMatch[1], origin);
+        if (method === 'GET') return getDomain(env, await getUser(), domainMatch[1], origin);
+      }
+
+      if (path === '/api/domains/lookup' && method === 'GET') {
+        return lookupDomain(request, env, origin);
       }
 
       // Gallery

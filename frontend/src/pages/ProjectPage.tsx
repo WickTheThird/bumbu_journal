@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Hash, Eye, GitFork, Trash2, Pencil, ExternalLink, User, Code } from 'lucide-react'
+import DomainSettings from '../components/DomainSettings'
 import { useWorkspaceStore } from '../store/workspace'
 import { getProject, deleteProject, CloudProject } from '../lib/api'
 import { isAuthenticated, getCurrentUser } from '../lib/github'
@@ -243,6 +244,13 @@ export default function ProjectPage() {
               </>
             )}
           </div>
+
+          {/* Domain settings for owners */}
+          {isOwner && (
+            <div className="mt-8 pt-6 border-t border-ide-border/50">
+              <DomainSettings projectId={id!} />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -36,7 +36,9 @@ export interface UserInfo {
   github_id: number
   username: string
   avatar_url: string
+  plan: 'free' | 'starter' | 'pro' | 'team'
   project_count: number
+  limits: { cloud_projects: number; private_projects: number; custom_domains: number }
 }
 
 function getAuthHeaders(): HeadersInit {
@@ -248,6 +250,40 @@ export async function getMyFeed(opts: { page?: number; limit?: number } = {}): P
   if (opts.limit) params.set('limit', String(opts.limit))
   const qs = params.toString()
   return request(`/api/me/feed${qs ? `?${qs}` : ''}`)
+}
+
+// ── Custom Domains ─────────────────────────────────
+
+export interface DomainInfo {
+  id: string
+  domain: string
+  verified: boolean
+  cname_target: string
+  created_at: string
+}
+
+export interface DomainAddResult {
+  id: string
+  domain: string
+  project_id: string
+  verified: boolean
+  cname_target: string
+  instructions: string
+}
+
+export async function addDomain(projectId: string, domain: string): Promise<DomainAddResult> {
+  return request(`/api/projects/${projectId}/domain`, {
+    method: 'POST',
+    body: JSON.stringify({ domain }),
+  })
+}
+
+export async function removeDomain(projectId: string): Promise<{ ok: boolean }> {
+  return request(`/api/projects/${projectId}/domain`, { method: 'DELETE' })
+}
+
+export async function getDomain(projectId: string): Promise<{ domain: DomainInfo | null }> {
+  return request(`/api/projects/${projectId}/domain`)
 }
 
 // ── Billing ────────────────────────────────────────
