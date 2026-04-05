@@ -227,6 +227,12 @@ async function createProject(request, env, user, origin) {
 
   await env.PROJECTS.put(id, JSON.stringify(body.workspace));
 
+  // Increment fork_count on the original project
+  if (body.remix_from) {
+    await env.DB.prepare('UPDATE projects SET fork_count = fork_count + 1 WHERE id = ?')
+      .bind(body.remix_from).run();
+  }
+
   return json({ id, url: `https://hashideea.com/p/${id}` }, 201, origin);
 }
 
@@ -495,6 +501,90 @@ async function handleWebhook(request, env, origin) {
   return json({ received: true }, 200, origin);
 }
 
+// ── Gallery ─────────────────────────────────────────
+
+// GET /api/gallery
+async function getGallery(request, env, origin) {
+  const url = new URL(request.url);
+  const sort = url.searchParams.get('sort') || 'trending';
+  const q = url.searchParams.get('q') || '';
+  const tag = url.searchParams.get('tag') || '';
+  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
+  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')));
+  const offset = (page - 1) * limit;
+
+  // Build WHERE clause
+  let where = 'WHERE p.is_public = 1';
+  const bindings = [];
+
+  if (q) {
+    where += ' AND (p.title LIKE ? OR p.description LIKE ?)';
+    bindings.push(`%${q}%`, `%${q}%`);
+  }
+  if (tag) {
+    where += ' AND p.tags LIKE ?';
+    bindings.push(`%${tag}%`);
+  }
+
+  // Build ORDER BY
+  let orderBy;
+  switch (sort) {
+    case 'latest':
+      orderBy = 'p.created_at DESC';
+      break;
+    case 'most_viewed':
+      orderBy = 'p.view_count DESC';
+      break;
+    case 'most_forked':
+      orderBy = 'p.fork_count DESC';
+      break;
+    case 'trending':
+    default:
+      // Trending: (views + 5*forks) * decay where decay = 1/(1 + age_in_days)
+      orderBy = "(p.view_count + p.fork_count * 5) * (1.0 / (1.0 + (julianday('now') - julianday(p.created_at)))) DESC";
+      break;
+  }
+
+  // Count total
+  const countQuery = `SELECT COUNT(*) as total FROM projects p ${where}`;
+  const countResult = await env.DB.prepare(countQuery).bind(...bindings).first();
+  const total = countResult?.total || 0;
+
+  // Fetch projects
+  const query = `
+    SELECT p.id, p.title, p.description, p.view_count, p.fork_count, p.tags, p.created_at, p.updated_at,
+           u.username, u.avatar_url
+    FROM projects p
+    LEFT JOIN users u ON p.owner_id = u.id
+    ${where}
+    ORDER BY ${orderBy}
+    LIMIT ? OFFSET ?
+  `;
+
+  const { results } = await env.DB.prepare(query)
+    .bind(...bindings, limit, offset)
+    .all();
+
+  const projects = (results || []).map(r => ({
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    view_count: r.view_count,
+    fork_count: r.fork_count,
+    tags: r.tags || '',
+    created_at: r.created_at,
+    updated_at: r.updated_at,
+    owner: r.username ? { username: r.username, avatar_url: r.avatar_url } : null,
+  }));
+
+  return json({
+    projects,
+    total,
+    page,
+    pages: Math.ceil(total / limit),
+  }, 200, origin);
+}
+
 // ── Router ──────────────────────────────────────────
 
 export default {
@@ -541,6 +631,11 @@ export default {
       const userMatch = path.match(/^\/api\/users\/([^/]+)\/projects$/);
       if (userMatch && method === 'GET') {
         return getUserProjects(env, userMatch[1], origin);
+      }
+
+      // Gallery
+      if (path === '/api/gallery' && method === 'GET') {
+        return getGallery(request, env, origin);
       }
 
       // Billing

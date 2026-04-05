@@ -141,6 +141,44 @@ export async function getUserProjects(userId: string): Promise<{ projects: Proje
   return request(`/api/users/${userId}/projects`)
 }
 
+// ── Gallery ────────────────────────────────────────
+
+export interface GalleryProject {
+  id: string
+  title: string
+  description: string | null
+  view_count: number
+  fork_count: number
+  tags: string
+  created_at: string
+  updated_at: string
+  owner: { username: string; avatar_url: string } | null
+}
+
+export interface GalleryResponse {
+  projects: GalleryProject[]
+  total: number
+  page: number
+  pages: number
+}
+
+export async function getGallery(opts: {
+  sort?: 'trending' | 'latest' | 'most_viewed' | 'most_forked'
+  q?: string
+  tag?: string
+  page?: number
+  limit?: number
+} = {}): Promise<GalleryResponse> {
+  const params = new URLSearchParams()
+  if (opts.sort) params.set('sort', opts.sort)
+  if (opts.q) params.set('q', opts.q)
+  if (opts.tag) params.set('tag', opts.tag)
+  if (opts.page) params.set('page', String(opts.page))
+  if (opts.limit) params.set('limit', String(opts.limit))
+  const qs = params.toString()
+  return request(`/api/gallery${qs ? `?${qs}` : ''}`)
+}
+
 // ── Billing ────────────────────────────────────────
 
 export interface BillingStatus {
