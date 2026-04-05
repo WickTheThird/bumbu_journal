@@ -27,6 +27,7 @@ function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/ide" element={<IDE />} />
       <Route path="/embed" element={<Embed />} />
+      <Route path="/embed/:id" element={<Embed />} />
       <Route path="/p/:id" element={<ProjectPage />} />
       <Route path="/u/:username" element={<UserProfile />} />
       <Route path="/pricing" element={<Pricing />} />

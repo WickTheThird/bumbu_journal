@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Hash, Eye, GitFork, Trash2, Pencil, ExternalLink, User } from 'lucide-react'
+import { Hash, Eye, GitFork, Trash2, Pencil, ExternalLink, User, Code } from 'lucide-react'
 import { useWorkspaceStore } from '../store/workspace'
 import { getProject, deleteProject, CloudProject } from '../lib/api'
 import { isAuthenticated, getCurrentUser } from '../lib/github'
@@ -190,6 +190,18 @@ export default function ProjectPage() {
             >
               <GitFork className="w-4 h-4" />
               Fork
+            </button>
+
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/embed/${id}`
+                navigator.clipboard.writeText(url)
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ide-surface hover:bg-ide-surface-2 text-slate-300 font-medium cursor-pointer transition-all duration-300"
+              title="Copy embed URL for this project"
+            >
+              <Code className="w-4 h-4" />
+              Embed
             </button>
 
             {isOwner && (
