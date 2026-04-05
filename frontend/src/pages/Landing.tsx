@@ -351,7 +351,7 @@ export default function Landing() {
               { icon: Globe, title: 'Python + JS', desc: 'Run Python via Pyodide or JS/TS in a sandboxed iframe' },
               { icon: Package, title: 'npm Packages', desc: '2M+ packages from esm.sh, resolved automatically' },
               { icon: Github, title: 'GitHub Import', desc: 'Clone any public repo into the IDE in one click' },
-              { icon: Lock, title: 'Cloud Storage', desc: 'Save privately with short URLs and version control' },
+              { icon: Lock, title: 'Cloud Hosting', desc: 'Save to cloud, get short embed URLs, add custom domains' },
               { icon: Code2, title: '32 Templates', desc: 'Counters, games, dashboards, Python, charts, and more' },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="p-5 bg-ide-surface rounded-lg border border-ide-border/50 hover:border-ide-accent/20 transition-all duration-300 group">

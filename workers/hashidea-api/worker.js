@@ -23,10 +23,10 @@ const PRICE_TO_PLAN = {
 // ── Plan limits ─────────────────────────────────────
 
 const PLAN_LIMITS = {
-  free:    { cloud_projects: 3,  private_projects: 0 },
-  starter: { cloud_projects: -1, private_projects: -1 }, // -1 = unlimited
-  pro:     { cloud_projects: -1, private_projects: -1 },
-  team:    { cloud_projects: -1, private_projects: -1 },
+  free:    { cloud_projects: 3,  private_projects: 0, custom_domains: 0 },
+  starter: { cloud_projects: -1, private_projects: -1, custom_domains: 1 },  // -1 = unlimited
+  pro:     { cloud_projects: -1, private_projects: -1, custom_domains: 5 },
+  team:    { cloud_projects: -1, private_projects: -1, custom_domains: 10 },
 };
 
 // ── Helpers ─────────────────────────────────────────
