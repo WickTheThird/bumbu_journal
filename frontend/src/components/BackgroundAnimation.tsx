@@ -32,15 +32,15 @@ export default function BackgroundAnimation() {
 
     const createParticles = () => {
       particles = []
-      const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 15000))
+      const count = Math.min(120, Math.floor((canvas.width * canvas.height) / 10000))
       for (let i = 0; i < count; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
-          size: Math.random() * 1.5 + 0.5,
-          opacity: Math.random() * 0.5 + 0.1,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          size: Math.random() * 2 + 0.8,
+          opacity: Math.random() * 0.5 + 0.2,
           hue: Math.random() > 0.7 ? 270 : Math.random() > 0.5 ? 200 : 160,
         })
       }
@@ -56,11 +56,11 @@ export default function BackgroundAnimation() {
           const dy = particles[i].y - particles[j].y
           const dist = Math.sqrt(dx * dx + dy * dy)
 
-          if (dist < 150) {
-            const opacity = (1 - dist / 150) * 0.15
+          if (dist < 160) {
+            const opacity = (1 - dist / 160) * 0.2
             ctx.beginPath()
             ctx.strokeStyle = `hsla(270, 60%, 60%, ${opacity})`
-            ctx.lineWidth = 0.5
+            ctx.lineWidth = 0.6
             ctx.moveTo(particles[i].x, particles[i].y)
             ctx.lineTo(particles[j].x, particles[j].y)
             ctx.stroke()
@@ -70,19 +70,27 @@ export default function BackgroundAnimation() {
 
       // Draw particles and update
       for (const p of particles) {
-        // Mouse repulsion
         const dx = p.x - mouseX
         const dy = p.y - mouseY
         const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < 200 && dist > 0) {
-          const force = (200 - dist) / 200
-          p.vx += (dx / dist) * force * 0.02
-          p.vy += (dy / dist) * force * 0.02
+
+        // Mouse interaction: gentle attract when far, repel when very close
+        if (dist < 250 && dist > 0) {
+          const force = (250 - dist) / 250
+          if (dist < 60) {
+            // Repel when very close
+            p.vx += (dx / dist) * force * 0.04
+            p.vy += (dy / dist) * force * 0.04
+          } else {
+            // Attract gently
+            p.vx -= (dx / dist) * force * 0.008
+            p.vy -= (dy / dist) * force * 0.008
+          }
         }
 
         // Damping
-        p.vx *= 0.99
-        p.vy *= 0.99
+        p.vx *= 0.985
+        p.vy *= 0.985
 
         p.x += p.vx
         p.y += p.vy
@@ -93,10 +101,14 @@ export default function BackgroundAnimation() {
         if (p.y < 0) p.y = canvas.height
         if (p.y > canvas.height) p.y = 0
 
-        // Draw dot
+        // Brighten particles near mouse
+        const mouseDist = Math.sqrt((p.x - mouseX) ** 2 + (p.y - mouseY) ** 2)
+        const brightBoost = mouseDist < 200 ? (1 - mouseDist / 200) * 0.4 : 0
+
+        // Draw dot with glow near mouse
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${p.hue}, 70%, 65%, ${p.opacity})`
+        ctx.arc(p.x, p.y, p.size + brightBoost * 1.5, 0, Math.PI * 2)
+        ctx.fillStyle = `hsla(${p.hue}, 70%, ${65 + brightBoost * 20}%, ${p.opacity + brightBoost})`
         ctx.fill()
       }
 
@@ -140,7 +152,7 @@ export default function BackgroundAnimation() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.75 }}
       aria-hidden="true"
     />
   )
